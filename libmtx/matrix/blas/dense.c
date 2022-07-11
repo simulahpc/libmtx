@@ -257,7 +257,7 @@ static int mtxmatrix_blas_init_entries_idx(
 
     if (symmetry == mtx_unsymmetric) {
         for (int64_t k = 0; k < size; k++)
-            idx[k] = rowidx[k]*num_columns+colidx[k];
+            idx[k] = (int64_t) rowidx[k] * (int64_t) num_columns + (int64_t) colidx[k];
     } else if (num_rows == num_columns &&
                (symmetry == mtx_symmetric || symmetry == mtx_hermitian))
     {
@@ -304,15 +304,14 @@ int mtxmatrix_blas_init_entries_real_single(
     err = mtxmatrix_blas_init_entries_idx(
         A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
-    struct mtxvector_packed x;
-    enum mtxvectortype vectortype = mtxvector_blas;
-    err = mtxvector_packed_init_real_single(
-        &x, vectortype, A->size, size, idx, data);
+    struct mtxvector_blas x;
+    err = mtxvector_blas_init_packed_real_single(
+        &x, A->size, size, idx, data);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
     free(idx);
     err = mtxvector_blas_ussc(&A->a, &x);
-    if (err) { mtxvector_packed_free(&x); mtxmatrix_blas_free(A); return err; }
-    mtxvector_packed_free(&x);
+    if (err) { mtxvector_blas_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxvector_blas_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -342,15 +341,14 @@ int mtxmatrix_blas_init_entries_real_double(
     err = mtxmatrix_blas_init_entries_idx(
         A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
-    struct mtxvector_packed x;
-    enum mtxvectortype vectortype = mtxvector_blas;
-    err = mtxvector_packed_init_real_double(
-        &x, vectortype, A->size, size, idx, data);
+    struct mtxvector_blas x;
+    err = mtxvector_blas_init_packed_real_double(
+        &x, A->size, size, idx, data);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
     free(idx);
     err = mtxvector_blas_ussc(&A->a, &x);
-    if (err) { mtxvector_packed_free(&x); mtxmatrix_blas_free(A); return err; }
-    mtxvector_packed_free(&x);
+    if (err) { mtxvector_blas_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxvector_blas_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -380,15 +378,14 @@ int mtxmatrix_blas_init_entries_complex_single(
     err = mtxmatrix_blas_init_entries_idx(
         A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
-    struct mtxvector_packed x;
-    enum mtxvectortype vectortype = mtxvector_blas;
-    err = mtxvector_packed_init_complex_single(
-        &x, vectortype, A->size, size, idx, data);
+    struct mtxvector_blas x;
+    err = mtxvector_blas_init_packed_complex_single(
+        &x, A->size, size, idx, data);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
     free(idx);
     err = mtxvector_blas_ussc(&A->a, &x);
-    if (err) { mtxvector_packed_free(&x); mtxmatrix_blas_free(A); return err; }
-    mtxvector_packed_free(&x);
+    if (err) { mtxvector_blas_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxvector_blas_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -418,15 +415,14 @@ int mtxmatrix_blas_init_entries_complex_double(
     err = mtxmatrix_blas_init_entries_idx(
         A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
-    struct mtxvector_packed x;
-    enum mtxvectortype vectortype = mtxvector_blas;
-    err = mtxvector_packed_init_complex_double(
-        &x, vectortype, A->size, size, idx, data);
+    struct mtxvector_blas x;
+    err = mtxvector_blas_init_packed_complex_double(
+        &x, A->size, size, idx, data);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
     free(idx);
     err = mtxvector_blas_ussc(&A->a, &x);
-    if (err) { mtxvector_packed_free(&x); mtxmatrix_blas_free(A); return err; }
-    mtxvector_packed_free(&x);
+    if (err) { mtxvector_blas_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxvector_blas_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -456,15 +452,14 @@ int mtxmatrix_blas_init_entries_integer_single(
     err = mtxmatrix_blas_init_entries_idx(
         A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
-    struct mtxvector_packed x;
-    enum mtxvectortype vectortype = mtxvector_blas;
-    err = mtxvector_packed_init_integer_single(
-        &x, vectortype, A->size, size, idx, data);
+    struct mtxvector_blas x;
+    err = mtxvector_blas_init_packed_integer_single(
+        &x, A->size, size, idx, data);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
     free(idx);
     err = mtxvector_blas_ussc(&A->a, &x);
-    if (err) { mtxvector_packed_free(&x); mtxmatrix_blas_free(A); return err; }
-    mtxvector_packed_free(&x);
+    if (err) { mtxvector_blas_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxvector_blas_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -494,15 +489,14 @@ int mtxmatrix_blas_init_entries_integer_double(
     err = mtxmatrix_blas_init_entries_idx(
         A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
-    struct mtxvector_packed x;
-    enum mtxvectortype vectortype = mtxvector_blas;
-    err = mtxvector_packed_init_integer_double(
-        &x, vectortype, A->size, size, idx, data);
+    struct mtxvector_blas x;
+    err = mtxvector_blas_init_packed_integer_double(
+        &x, A->size, size, idx, data);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
     free(idx);
     err = mtxvector_blas_ussc(&A->a, &x);
-    if (err) { mtxvector_packed_free(&x); mtxmatrix_blas_free(A); return err; }
-    mtxvector_packed_free(&x);
+    if (err) { mtxvector_blas_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxvector_blas_free(&x);
     return MTX_SUCCESS;
 }
 

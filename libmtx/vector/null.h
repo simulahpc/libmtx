@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-06-06
+ * Last modified: 2022-07-11
  *
  * Data structures and routines for dense vectors, where vector
  * operations do nothing. Note that this produces incorrect results,
@@ -42,11 +42,10 @@
 
 struct mtxfile;
 struct mtxvector;
-struct mtxvector_packed;
 
 /**
- * ‘mtxvector_null’ represents a dense vector, where vector operations
- * are implemented to do nothing.
+ * ‘mtxvector_null’ represents a vector, where vector operations are
+ * implemented to do nothing.
  *
  * This produces incorrect results, so it is only useful for the
  * purpose of eliminating vector operations while debugging and
@@ -55,7 +54,7 @@ struct mtxvector_packed;
 struct mtxvector_null
 {
     /**
-     * ‘base’ is the underlying dense vector.
+     * ‘base’ is the underlying vector.
      */
     struct mtxvector_base base;
 };
@@ -79,8 +78,21 @@ enum mtxprecision mtxvector_null_precision(const struct mtxvector_null * x);
  */
 int64_t mtxvector_null_size(const struct mtxvector_null * x);
 
+/**
+ * ‘mtxvector_null_num_nonzeros()’ gets the number of explicitly
+ * stored vector entries.
+ */
+int64_t mtxvector_null_num_nonzeros(const struct mtxvector_null * x);
+
+/**
+ * ‘mtxvector_null_idx()’ gets a pointer to an array containing the
+ * offset of each nonzero vector entry for a vector in packed storage
+ * format.
+ */
+int64_t * mtxvector_null_idx(const struct mtxvector_null * x);
+
 /*
- * Memory management
+ * memory management
  */
 
 /**
@@ -106,7 +118,7 @@ int mtxvector_null_init_copy(
     const struct mtxvector_null * src);
 
 /*
- * Allocation and initialisation
+ * initialise vectors in full storage format
  */
 
 /**
@@ -181,7 +193,7 @@ int mtxvector_null_init_pattern(
     int64_t size);
 
 /*
- * initialise vectors from strided arrays
+ * initialise vectors in full storage format from strided arrays
  */
 
 /**
@@ -243,6 +255,213 @@ int mtxvector_null_init_strided_integer_double(
     int64_t size,
     int64_t stride,
     const int64_t * data);
+
+/*
+ * initialise vectors in packed storage format
+ */
+
+/**
+ * ‘mtxvector_null_alloc_packed()’ allocates a vector in packed
+ * storage format.
+ */
+int mtxvector_null_alloc_packed(
+    struct mtxvector_null * x,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx);
+
+/**
+ * ‘mtxvector_null_init_packed_real_single()’ allocates and initialises a
+ * vector with real, single precision coefficients.
+ */
+int mtxvector_null_init_packed_real_single(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const float * data);
+
+/**
+ * ‘mtxvector_null_init_packed_real_double()’ allocates and initialises a
+ * vector with real, double precision coefficients.
+ */
+int mtxvector_null_init_packed_real_double(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const double * data);
+
+/**
+ * ‘mtxvector_null_init_packed_complex_single()’ allocates and initialises
+ * a vector with complex, single precision coefficients.
+ */
+int mtxvector_null_init_packed_complex_single(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxvector_null_init_packed_complex_double()’ allocates and initialises
+ * a vector with complex, double precision coefficients.
+ */
+int mtxvector_null_init_packed_complex_double(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxvector_null_init_packed_integer_single()’ allocates and initialises
+ * a vector with integer, single precision coefficients.
+ */
+int mtxvector_null_init_packed_integer_single(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const int32_t * data);
+
+/**
+ * ‘mtxvector_null_init_packed_integer_double()’ allocates and initialises
+ * a vector with integer, double precision coefficients.
+ */
+int mtxvector_null_init_packed_integer_double(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const int64_t * data);
+
+/**
+ * ‘mtxvector_null_init_packed_pattern()’ allocates and initialises a
+ * binary pattern vector, where every entry has a value of one.
+ */
+int mtxvector_null_init_packed_pattern(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx);
+
+/*
+ * initialise vectors in packed storage format from strided arrays
+ */
+
+/**
+ * ‘mtxvector_null_alloc_packed_strided()’ allocates a vector in
+ * packed storage format.
+ */
+int mtxvector_null_alloc_packed_strided(
+    struct mtxvector_null * x,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx);
+
+/**
+ * ‘mtxvector_null_init_packed_strided_real_single()’ allocates and
+ * initialises a vector with real, single precision coefficients.
+ */
+int mtxvector_null_init_packed_strided_real_single(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const float * data);
+
+/**
+ * ‘mtxvector_null_init_packed_strided_real_double()’ allocates and
+ * initialises a vector with real, double precision coefficients.
+ */
+int mtxvector_null_init_packed_strided_real_double(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const double * data);
+
+/**
+ * ‘mtxvector_null_init_packed_strided_complex_single()’ allocates and
+ * initialises a vector with complex, single precision coefficients.
+ */
+int mtxvector_null_init_packed_strided_complex_single(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxvector_null_init_packed_strided_complex_double()’ allocates and
+ * initialises a vector with complex, double precision coefficients.
+ */
+int mtxvector_null_init_packed_strided_complex_double(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxvector_null_init_packed_strided_integer_single()’ allocates and
+ * initialises a vector with integer, single precision coefficients.
+ */
+int mtxvector_null_init_packed_strided_integer_single(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const int32_t * data);
+
+/**
+ * ‘mtxvector_null_init_packed_strided_integer_double()’ allocates and
+ * initialises a vector with integer, double precision coefficients.
+ */
+int mtxvector_null_init_packed_strided_integer_double(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const int64_t * data);
+
+/**
+ * ‘mtxvector_null_init_packed_pattern()’ allocates and initialises a
+ * binary pattern vector, where every nonzero entry has a value of
+ * one.
+ */
+int mtxvector_null_init_packed_strided_pattern(
+    struct mtxvector_null * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx);
 
 /*
  * accessing values
@@ -333,7 +552,7 @@ int mtxvector_null_get_integer_double(
     int64_t * a);
 
 /*
- * Modifying values
+ * modifying values
  */
 
 /**
@@ -775,7 +994,7 @@ int mtxvector_null_iamax(
  * is undefined.
  */
 int mtxvector_null_ussdot(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_null * x,
     const struct mtxvector_null * y,
     float * dot,
     int64_t * num_flops);
@@ -790,7 +1009,7 @@ int mtxvector_null_ussdot(
  * is undefined.
  */
 int mtxvector_null_usddot(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_null * x,
     const struct mtxvector_null * y,
     double * dot,
     int64_t * num_flops);
@@ -806,7 +1025,7 @@ int mtxvector_null_usddot(
  * is undefined.
  */
 int mtxvector_null_uscdotu(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_null * x,
     const struct mtxvector_null * y,
     float (* dot)[2],
     int64_t * num_flops);
@@ -822,7 +1041,7 @@ int mtxvector_null_uscdotu(
  * is undefined.
  */
 int mtxvector_null_uszdotu(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_null * x,
     const struct mtxvector_null * y,
     double (* dot)[2],
     int64_t * num_flops);
@@ -837,7 +1056,7 @@ int mtxvector_null_uszdotu(
  * is undefined.
  */
 int mtxvector_null_uscdotc(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_null * x,
     const struct mtxvector_null * y,
     float (* dot)[2],
     int64_t * num_flops);
@@ -852,7 +1071,7 @@ int mtxvector_null_uscdotc(
  * is undefined.
  */
 int mtxvector_null_uszdotc(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_null * x,
     const struct mtxvector_null * y,
     double (* dot)[2],
     int64_t * num_flops);
@@ -867,9 +1086,9 @@ int mtxvector_null_uszdotc(
  * otherwise the result is undefined.
  */
 int mtxvector_null_ussaxpy(
-    struct mtxvector_null * y,
     float alpha,
-    const struct mtxvector_packed * x,
+    const struct mtxvector_null * x,
+    struct mtxvector_null * y,
     int64_t * num_flops);
 
 /**
@@ -882,9 +1101,9 @@ int mtxvector_null_ussaxpy(
  * otherwise the result is undefined.
  */
 int mtxvector_null_usdaxpy(
-    struct mtxvector_null * y,
     double alpha,
-    const struct mtxvector_packed * x,
+    const struct mtxvector_null * x,
+    struct mtxvector_null * y,
     int64_t * num_flops);
 
 /**
@@ -897,9 +1116,9 @@ int mtxvector_null_usdaxpy(
  * otherwise the result is undefined.
  */
 int mtxvector_null_uscaxpy(
-    struct mtxvector_null * y,
     float alpha[2],
-    const struct mtxvector_packed * x,
+    const struct mtxvector_null * x,
+    struct mtxvector_null * y,
     int64_t * num_flops);
 
 /**
@@ -912,9 +1131,9 @@ int mtxvector_null_uscaxpy(
  * otherwise the result is undefined.
  */
 int mtxvector_null_uszaxpy(
-    struct mtxvector_null * y,
     double alpha[2],
-    const struct mtxvector_packed * x,
+    const struct mtxvector_null * x,
+    struct mtxvector_null * y,
     int64_t * num_flops);
 
 /**
@@ -923,7 +1142,7 @@ int mtxvector_null_uszaxpy(
  * the packed vector are allowed.
  */
 int mtxvector_null_usga(
-    struct mtxvector_packed * x,
+    struct mtxvector_null * x,
     const struct mtxvector_null * y);
 
 /**
@@ -933,7 +1152,7 @@ int mtxvector_null_usga(
  * indices in the packed vector are allowed.
  */
 int mtxvector_null_usgz(
-    struct mtxvector_packed * xpacked,
+    struct mtxvector_null * x,
     struct mtxvector_null * y);
 
 /**
@@ -944,7 +1163,7 @@ int mtxvector_null_usgz(
  */
 int mtxvector_null_ussc(
     struct mtxvector_null * y,
-    const struct mtxvector_packed * x);
+    const struct mtxvector_null * x);
 
 /*
  * Level 1 BLAS-like extensions
@@ -958,8 +1177,8 @@ int mtxvector_null_ussc(
  * are, however, allowed in the packed vector ‘z’.
  */
 int mtxvector_null_usscga(
-    struct mtxvector_packed * zpacked,
-    const struct mtxvector_packed * xpacked);
+    struct mtxvector_null * z,
+    const struct mtxvector_null * x);
 
 /*
  * MPI functions

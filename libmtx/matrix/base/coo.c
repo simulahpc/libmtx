@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-07-12
  *
  * Data structures for matrices in coordinate format.
  */
@@ -1640,28 +1640,22 @@ int mtxmatrix_coo_split(
                  dsts[p]->rowidx[k] == dsts[p]->colidx[k]) ? 1 : 2;
         }
 
-        struct mtxvector_packed dst;
-        dst.size = size;
-        dst.num_nonzeros = partsize;
-        dst.idx = &invperm[offset];
-        dst.x.type = mtxvector_base;
-        int err = mtxvector_base_alloc(
-            &dst.x.storage.base, src->a.field, src->a.precision, partsize);
+        int err = mtxvector_base_alloc_packed(
+            &dsts[p]->a, src->a.field, src->a.precision, size, partsize, &invperm[offset]);
         if (err) {
             free(dsts[p]->colidx); free(dsts[p]->rowidx);
             for (int q = p-1; q >= 0; q--) mtxmatrix_coo_free(dsts[q]);
             free(invperm);
             return err;
         }
-        err = mtxvector_base_usga(&dst, &src->a);
+        err = mtxvector_base_usga(&dsts[p]->a, &src->a);
         if (err) {
-            mtxvector_base_free(&dst.x.storage.base);
+            mtxvector_base_free(&dsts[p]->a);
             free(dsts[p]->colidx); free(dsts[p]->rowidx);
             for (int q = p-1; q >= 0; q--) mtxmatrix_coo_free(dsts[q]);
             free(invperm);
             return err;
         }
-        dsts[p]->a = dst.x.storage.base;
         offset += partsize;
     }
     free(invperm);

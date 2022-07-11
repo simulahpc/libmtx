@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-04
+ * Last modified: 2022-07-12
  *
  * Unit tests for sparse matrices in CSR format.
  */
@@ -118,7 +118,6 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         TEST_ASSERT_EQ(2, x_->diag.num_nonzeros);
         TEST_ASSERT_EQ(0, x_->diag.idx[0]);
         TEST_ASSERT_EQ(3, x_->diag.idx[1]);
-        TEST_ASSERT_EQ(mtxvector_base, x_->diag.x.type);
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
@@ -232,7 +231,6 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         TEST_ASSERT_EQ(2, x_->diag.num_nonzeros);
         TEST_ASSERT_EQ(0, x_->diag.idx[0]);
         TEST_ASSERT_EQ(3, x_->diag.idx[1]);
-        TEST_ASSERT_EQ(mtxvector_base, x_->diag.x.type);
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
@@ -355,7 +353,6 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         TEST_ASSERT_EQ(2, x_->diag.num_nonzeros);
         TEST_ASSERT_EQ(0, x_->diag.idx[0]);
         TEST_ASSERT_EQ(3, x_->diag.idx[1]);
-        TEST_ASSERT_EQ(mtxvector_base, x_->diag.x.type);
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }

@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-06-06
+ * Last modified: 2022-07-11
  *
  * Data structures and routines for dense vectors with vector
  * operations accelerated by an external BLAS library.
@@ -40,7 +40,6 @@
 
 struct mtxfile;
 struct mtxvector;
-struct mtxvector_packed;
 
 /**
  * ‘mtxvector_blas’ represents a dense vector that can perform
@@ -73,8 +72,21 @@ enum mtxprecision mtxvector_blas_precision(const struct mtxvector_blas * x);
  */
 int64_t mtxvector_blas_size(const struct mtxvector_blas * x);
 
+/**
+ * ‘mtxvector_blas_num_nonzeros()’ gets the number of explicitly
+ * stored vector entries.
+ */
+int64_t mtxvector_blas_num_nonzeros(const struct mtxvector_blas * x);
+
+/**
+ * ‘mtxvector_blas_idx()’ gets a pointer to an array containing the
+ * offset of each nonzero vector entry for a vector in packed storage
+ * format.
+ */
+int64_t * mtxvector_blas_idx(const struct mtxvector_blas * x);
+
 /*
- * Memory management
+ * memory management
  */
 
 /**
@@ -100,7 +112,7 @@ int mtxvector_blas_init_copy(
     const struct mtxvector_blas * src);
 
 /*
- * Allocation and initialisation
+ * initialise vectors in full storage format
  */
 
 /**
@@ -175,7 +187,7 @@ int mtxvector_blas_init_pattern(
     int64_t size);
 
 /*
- * initialise vectors from strided arrays
+ * initialise vectors in full storage format from strided arrays
  */
 
 /**
@@ -237,6 +249,213 @@ int mtxvector_blas_init_strided_integer_double(
     int64_t size,
     int64_t stride,
     const int64_t * data);
+
+/*
+ * initialise vectors in packed storage format
+ */
+
+/**
+ * ‘mtxvector_blas_alloc_packed()’ allocates a vector in packed
+ * storage format.
+ */
+int mtxvector_blas_alloc_packed(
+    struct mtxvector_blas * x,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx);
+
+/**
+ * ‘mtxvector_blas_init_packed_real_single()’ allocates and initialises a
+ * vector with real, single precision coefficients.
+ */
+int mtxvector_blas_init_packed_real_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const float * data);
+
+/**
+ * ‘mtxvector_blas_init_packed_real_double()’ allocates and initialises a
+ * vector with real, double precision coefficients.
+ */
+int mtxvector_blas_init_packed_real_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const double * data);
+
+/**
+ * ‘mtxvector_blas_init_packed_complex_single()’ allocates and initialises
+ * a vector with complex, single precision coefficients.
+ */
+int mtxvector_blas_init_packed_complex_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxvector_blas_init_packed_complex_double()’ allocates and initialises
+ * a vector with complex, double precision coefficients.
+ */
+int mtxvector_blas_init_packed_complex_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxvector_blas_init_packed_integer_single()’ allocates and initialises
+ * a vector with integer, single precision coefficients.
+ */
+int mtxvector_blas_init_packed_integer_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const int32_t * data);
+
+/**
+ * ‘mtxvector_blas_init_packed_integer_double()’ allocates and initialises
+ * a vector with integer, double precision coefficients.
+ */
+int mtxvector_blas_init_packed_integer_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const int64_t * data);
+
+/**
+ * ‘mtxvector_blas_init_packed_pattern()’ allocates and initialises a
+ * binary pattern vector, where every entry has a value of one.
+ */
+int mtxvector_blas_init_packed_pattern(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx);
+
+/*
+ * initialise vectors in packed storage format from strided arrays
+ */
+
+/**
+ * ‘mtxvector_blas_alloc_packed_strided()’ allocates a vector in
+ * packed storage format.
+ */
+int mtxvector_blas_alloc_packed_strided(
+    struct mtxvector_blas * x,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx);
+
+/**
+ * ‘mtxvector_blas_init_packed_strided_real_single()’ allocates and
+ * initialises a vector with real, single precision coefficients.
+ */
+int mtxvector_blas_init_packed_strided_real_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const float * data);
+
+/**
+ * ‘mtxvector_blas_init_packed_strided_real_double()’ allocates and
+ * initialises a vector with real, double precision coefficients.
+ */
+int mtxvector_blas_init_packed_strided_real_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const double * data);
+
+/**
+ * ‘mtxvector_blas_init_packed_strided_complex_single()’ allocates and
+ * initialises a vector with complex, single precision coefficients.
+ */
+int mtxvector_blas_init_packed_strided_complex_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxvector_blas_init_packed_strided_complex_double()’ allocates and
+ * initialises a vector with complex, double precision coefficients.
+ */
+int mtxvector_blas_init_packed_strided_complex_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxvector_blas_init_packed_strided_integer_single()’ allocates and
+ * initialises a vector with integer, single precision coefficients.
+ */
+int mtxvector_blas_init_packed_strided_integer_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const int32_t * data);
+
+/**
+ * ‘mtxvector_blas_init_packed_strided_integer_double()’ allocates and
+ * initialises a vector with integer, double precision coefficients.
+ */
+int mtxvector_blas_init_packed_strided_integer_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const int64_t * data);
+
+/**
+ * ‘mtxvector_blas_init_packed_pattern()’ allocates and initialises a
+ * binary pattern vector, where every nonzero entry has a value of
+ * one.
+ */
+int mtxvector_blas_init_packed_strided_pattern(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx);
 
 /*
  * accessing values
@@ -595,6 +814,32 @@ int mtxvector_blas_daxpy(
     int64_t * num_flops);
 
 /**
+ * ‘mtxvector_blas_caxpy()’ adds a vector to another one multiplied by
+ * a single precision floating point complex number, ‘y = a*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxvector_blas_caxpy(
+    float a[2],
+    const struct mtxvector_blas * x,
+    struct mtxvector_blas * y,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_blas_zaxpy()’ adds a vector to another one multiplied by
+ * a double precision floating point complex number, ‘y = a*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxvector_blas_zaxpy(
+    double a[2],
+    const struct mtxvector_blas * x,
+    struct mtxvector_blas * y,
+    int64_t * num_flops);
+
+/**
  * ‘mtxvector_blas_saypx()’ multiplies a vector by a single precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  *
@@ -769,7 +1014,7 @@ int mtxvector_blas_iamax(
  * is undefined.
  */
 int mtxvector_blas_ussdot(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * x,
     const struct mtxvector_blas * y,
     float * dot,
     int64_t * num_flops);
@@ -784,7 +1029,7 @@ int mtxvector_blas_ussdot(
  * is undefined.
  */
 int mtxvector_blas_usddot(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * x,
     const struct mtxvector_blas * y,
     double * dot,
     int64_t * num_flops);
@@ -800,7 +1045,7 @@ int mtxvector_blas_usddot(
  * is undefined.
  */
 int mtxvector_blas_uscdotu(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * x,
     const struct mtxvector_blas * y,
     float (* dot)[2],
     int64_t * num_flops);
@@ -816,7 +1061,7 @@ int mtxvector_blas_uscdotu(
  * is undefined.
  */
 int mtxvector_blas_uszdotu(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * x,
     const struct mtxvector_blas * y,
     double (* dot)[2],
     int64_t * num_flops);
@@ -831,7 +1076,7 @@ int mtxvector_blas_uszdotu(
  * is undefined.
  */
 int mtxvector_blas_uscdotc(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * x,
     const struct mtxvector_blas * y,
     float (* dot)[2],
     int64_t * num_flops);
@@ -846,7 +1091,7 @@ int mtxvector_blas_uscdotc(
  * is undefined.
  */
 int mtxvector_blas_uszdotc(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * x,
     const struct mtxvector_blas * y,
     double (* dot)[2],
     int64_t * num_flops);
@@ -861,9 +1106,9 @@ int mtxvector_blas_uszdotc(
  * otherwise the result is undefined.
  */
 int mtxvector_blas_ussaxpy(
-    struct mtxvector_blas * y,
     float alpha,
-    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * x,
+    struct mtxvector_blas * y,
     int64_t * num_flops);
 
 /**
@@ -876,9 +1121,9 @@ int mtxvector_blas_ussaxpy(
  * otherwise the result is undefined.
  */
 int mtxvector_blas_usdaxpy(
-    struct mtxvector_blas * y,
     double alpha,
-    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * x,
+    struct mtxvector_blas * y,
     int64_t * num_flops);
 
 /**
@@ -891,9 +1136,9 @@ int mtxvector_blas_usdaxpy(
  * otherwise the result is undefined.
  */
 int mtxvector_blas_uscaxpy(
-    struct mtxvector_blas * y,
     float alpha[2],
-    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * x,
+    struct mtxvector_blas * y,
     int64_t * num_flops);
 
 /**
@@ -906,9 +1151,9 @@ int mtxvector_blas_uscaxpy(
  * otherwise the result is undefined.
  */
 int mtxvector_blas_uszaxpy(
-    struct mtxvector_blas * y,
     double alpha[2],
-    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * x,
+    struct mtxvector_blas * y,
     int64_t * num_flops);
 
 /**
@@ -917,7 +1162,7 @@ int mtxvector_blas_uszaxpy(
  * the packed vector are allowed.
  */
 int mtxvector_blas_usga(
-    struct mtxvector_packed * x,
+    struct mtxvector_blas * x,
     const struct mtxvector_blas * y);
 
 /**
@@ -927,7 +1172,7 @@ int mtxvector_blas_usga(
  * indices in the packed vector are allowed.
  */
 int mtxvector_blas_usgz(
-    struct mtxvector_packed * xpacked,
+    struct mtxvector_blas * x,
     struct mtxvector_blas * y);
 
 /**
@@ -938,7 +1183,7 @@ int mtxvector_blas_usgz(
  */
 int mtxvector_blas_ussc(
     struct mtxvector_blas * y,
-    const struct mtxvector_packed * x);
+    const struct mtxvector_blas * x);
 
 /*
  * Level 1 BLAS-like extensions
@@ -952,8 +1197,8 @@ int mtxvector_blas_ussc(
  * are, however, allowed in the packed vector ‘z’.
  */
 int mtxvector_blas_usscga(
-    struct mtxvector_packed * zpacked,
-    const struct mtxvector_packed * xpacked);
+    struct mtxvector_blas * z,
+    const struct mtxvector_blas * x);
 
 /*
  * MPI functions

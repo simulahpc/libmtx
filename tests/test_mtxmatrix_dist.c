@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-06-06
+ * Last modified: 2022-07-12
  *
  * Unit tests for distributed matrices.
  */
@@ -2535,8 +2535,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(
                 MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
                 ? mtxdisterror_description(&disterr) : mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -2556,8 +2556,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(
                 MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
                 ? mtxdisterror_description(&disterr) : mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -2575,8 +2575,8 @@ int test_mtxmatrix_dist_gemv(void)
         /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
         /*     err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr); */
         /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-        /*     TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type); */
-        /*     const struct mtxvector_base * y_ = &y.xp.x.storage.base; */
+        /*     TEST_ASSERT_EQ(mtxvector_base, y.xp.type); */
+        /*     const struct mtxvector_base * y_ = &y.xp.storage.base; */
         /*     TEST_ASSERT_EQ(mtx_field_real, y_->field); */
         /*     TEST_ASSERT_EQ(mtx_single, y_->precision); */
         /*     if (rank == 0) { */
@@ -2594,8 +2594,8 @@ int test_mtxmatrix_dist_gemv(void)
         /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
         /*     err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr); */
         /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-        /*     TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type); */
-        /*     const struct mtxvector_base * y_ = &y.xp.x.storage.base; */
+        /*     TEST_ASSERT_EQ(mtxvector_base, y.xp.type); */
+        /*     const struct mtxvector_base * y_ = &y.xp.storage.base; */
         /*     TEST_ASSERT_EQ(mtx_field_real, y_->field); */
         /*     TEST_ASSERT_EQ(mtx_single, y_->precision); */
         /*     if (rank == 0) { */
@@ -2638,8 +2638,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -2657,8 +2657,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -2676,8 +2676,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -2695,8 +2695,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -2739,8 +2739,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -2758,8 +2758,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -2777,8 +2777,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -2794,8 +2794,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -2838,8 +2838,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -2857,8 +2857,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -2876,8 +2876,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -2895,8 +2895,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -2939,8 +2939,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -2955,8 +2955,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -2971,8 +2971,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -2987,8 +2987,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3003,8 +3003,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3019,8 +3019,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3037,8 +3037,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3053,8 +3053,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3069,8 +3069,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3087,8 +3087,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3103,8 +3103,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3119,8 +3119,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3160,8 +3160,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3176,8 +3176,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3192,8 +3192,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3208,8 +3208,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3224,8 +3224,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3240,8 +3240,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3258,8 +3258,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3274,8 +3274,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3290,8 +3290,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3308,8 +3308,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3324,8 +3324,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3340,8 +3340,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3381,8 +3381,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3397,8 +3397,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3413,8 +3413,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3429,8 +3429,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3445,8 +3445,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3461,8 +3461,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3479,8 +3479,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3495,8 +3495,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3511,8 +3511,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3529,8 +3529,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3545,8 +3545,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3561,8 +3561,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3602,8 +3602,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3618,8 +3618,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3634,8 +3634,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3650,8 +3650,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3666,8 +3666,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3682,8 +3682,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3700,8 +3700,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3716,8 +3716,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3732,8 +3732,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3750,8 +3750,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3766,8 +3766,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3782,8 +3782,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3823,8 +3823,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3839,8 +3839,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3855,8 +3855,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3871,8 +3871,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3887,8 +3887,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3903,8 +3903,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3921,8 +3921,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3937,8 +3937,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3953,8 +3953,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3971,8 +3971,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -3987,8 +3987,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4003,8 +4003,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4044,8 +4044,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4060,8 +4060,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4076,8 +4076,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4092,8 +4092,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4108,8 +4108,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4124,8 +4124,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4142,8 +4142,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4158,8 +4158,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4174,8 +4174,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4192,8 +4192,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4208,8 +4208,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4224,8 +4224,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_complex, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             TEST_ASSERT_EQ(2, y_->size);
@@ -4265,8 +4265,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -4284,8 +4284,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -4303,8 +4303,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -4322,8 +4322,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -4366,8 +4366,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -4385,8 +4385,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -4404,8 +4404,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -4423,8 +4423,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
             if (rank == 0) {
@@ -4467,8 +4467,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -4486,8 +4486,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -4505,8 +4505,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -4524,8 +4524,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -4568,8 +4568,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -4587,8 +4587,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -4606,8 +4606,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {
@@ -4625,8 +4625,8 @@ int test_mtxmatrix_dist_gemv(void)
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
-            const struct mtxvector_base * y_ = &y.xp.x.storage.base;
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.type);
+            const struct mtxvector_base * y_ = &y.xp.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
             if (rank == 0) {

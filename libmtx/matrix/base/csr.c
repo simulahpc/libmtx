@@ -16,9 +16,9 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-07-12
  *
- * Data structures for matrices in coordinate format.
+ * Matrices in CSR format.
  */
 
 #include <libmtx/libmtx-config.h>
@@ -140,7 +140,7 @@ int mtxmatrix_csr_rowcolidx(
 void mtxmatrix_csr_free(
     struct mtxmatrix_csr * A)
 {
-    mtxvector_packed_free(&A->diag);
+    mtxvector_base_free(&A->diag);
     mtxvector_base_free(&A->a);
     free(A->colidx);
     free(A->rowptr);
@@ -246,9 +246,8 @@ int mtxmatrix_csr_alloc_entries(
             }
         }
         A->num_nonzeros = 2*A->size-num_diagonals;
-        err = mtxvector_packed_alloc(
-            &A->diag, mtxvector_base, field, precision,
-            A->size, num_diagonals, NULL);
+        err = mtxvector_base_alloc_packed(
+            &A->diag, field, precision, A->size, num_diagonals, NULL);
         if (err) {
             mtxvector_base_free(&A->a);
             free(A->colidx); free(A->rowptr);
@@ -263,8 +262,8 @@ int mtxmatrix_csr_alloc_entries(
         }
     } else if (symmetry == mtx_unsymmetric) {
         A->num_nonzeros = A->size;
-        err = mtxvector_packed_alloc(
-            &A->diag, mtxvector_base, field, precision, A->size, 0, NULL);
+        err = mtxvector_base_alloc_packed(
+            &A->diag, field, precision, A->size, 0, NULL);
         if (err) {
             mtxvector_base_free(&A->a);
             free(A->colidx); free(A->rowptr);
@@ -295,15 +294,13 @@ int mtxmatrix_csr_init_entries_real_single(
         A, mtx_field_real, mtx_single, symmetry, num_rows, num_columns,
         size, sizeof(*rowidx), 0, rowidx, colidx, perm);
     if (err) { free(perm); return err; }
-    struct mtxvector_packed x;
+    struct mtxvector_base x;
+    x.idx = perm;
+    x.field = mtx_field_real;
+    x.precision = mtx_single;
     x.size = A->size;
     x.num_nonzeros = size;
-    x.idx = perm;
-    x.x.type = mtxvector_base;
-    x.x.storage.base.field = mtx_field_real;
-    x.x.storage.base.precision = mtx_single;
-    x.x.storage.base.size = size;
-    x.x.storage.base.data.real_single = (float *) data;
+    x.data.real_single = (float *) data;
     err = mtxvector_base_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
     free(perm);
@@ -331,15 +328,13 @@ int mtxmatrix_csr_init_entries_real_double(
         A, mtx_field_real, mtx_double, symmetry, num_rows, num_columns,
         size, sizeof(*rowidx), 0, rowidx, colidx, perm);
     if (err) { free(perm); return err; }
-    struct mtxvector_packed x;
+    struct mtxvector_base x;
+    x.idx = perm;
+    x.field = mtx_field_real;
+    x.precision = mtx_double;
     x.size = A->size;
     x.num_nonzeros = size;
-    x.idx = perm;
-    x.x.type = mtxvector_base;
-    x.x.storage.base.field = mtx_field_real;
-    x.x.storage.base.precision = mtx_double;
-    x.x.storage.base.size = size;
-    x.x.storage.base.data.real_double = (double *) data;
+    x.data.real_double = (double *) data;
     err = mtxvector_base_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
     free(perm);
@@ -367,15 +362,13 @@ int mtxmatrix_csr_init_entries_complex_single(
         A, mtx_field_complex, mtx_single, symmetry, num_rows, num_columns,
         size, sizeof(*rowidx), 0, rowidx, colidx, perm);
     if (err) { free(perm); return err; }
-    struct mtxvector_packed x;
+    struct mtxvector_base x;
+    x.idx = perm;
+    x.field = mtx_field_complex;
+    x.precision = mtx_single;
     x.size = A->size;
     x.num_nonzeros = size;
-    x.idx = perm;
-    x.x.type = mtxvector_base;
-    x.x.storage.base.field = mtx_field_complex;
-    x.x.storage.base.precision = mtx_single;
-    x.x.storage.base.size = size;
-    x.x.storage.base.data.complex_single = (float (*)[2]) data;
+    x.data.complex_single = (float (*)[2]) data;
     err = mtxvector_base_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
     free(perm);
@@ -403,15 +396,13 @@ int mtxmatrix_csr_init_entries_complex_double(
         A, mtx_field_complex, mtx_double, symmetry, num_rows, num_columns,
         size, sizeof(*rowidx), 0, rowidx, colidx, perm);
     if (err) { free(perm); return err; }
-    struct mtxvector_packed x;
+    struct mtxvector_base x;
+    x.idx = perm;
+    x.field = mtx_field_complex;
+    x.precision = mtx_double;
     x.size = A->size;
     x.num_nonzeros = size;
-    x.idx = perm;
-    x.x.type = mtxvector_base;
-    x.x.storage.base.field = mtx_field_complex;
-    x.x.storage.base.precision = mtx_double;
-    x.x.storage.base.size = size;
-    x.x.storage.base.data.complex_double = (double (*)[2]) data;
+    x.data.complex_double = (double (*)[2]) data;
     err = mtxvector_base_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
     free(perm);
@@ -439,15 +430,13 @@ int mtxmatrix_csr_init_entries_integer_single(
         A, mtx_field_integer, mtx_single, symmetry, num_rows, num_columns,
         size, sizeof(*rowidx), 0, rowidx, colidx, perm);
     if (err) { free(perm); return err; }
-    struct mtxvector_packed x;
+    struct mtxvector_base x;
+    x.idx = perm;
+    x.field = mtx_field_integer;
+    x.precision = mtx_single;
     x.size = A->size;
     x.num_nonzeros = size;
-    x.idx = perm;
-    x.x.type = mtxvector_base;
-    x.x.storage.base.field = mtx_field_integer;
-    x.x.storage.base.precision = mtx_single;
-    x.x.storage.base.size = size;
-    x.x.storage.base.data.integer_single = (int32_t *) data;
+    x.data.integer_single = (int32_t *) data;
     err = mtxvector_base_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
     free(perm);
@@ -475,15 +464,13 @@ int mtxmatrix_csr_init_entries_integer_double(
         A, mtx_field_integer, mtx_double, symmetry, num_rows, num_columns,
         size, sizeof(*rowidx), 0, rowidx, colidx, perm);
     if (err) { free(perm); return err; }
-    struct mtxvector_packed x;
+    struct mtxvector_base x;
+    x.idx = perm;
+    x.field = mtx_field_integer;
+    x.precision = mtx_double;
     x.size = A->size;
     x.num_nonzeros = size;
-    x.idx = perm;
-    x.x.type = mtxvector_base;
-    x.x.storage.base.field = mtx_field_integer;
-    x.x.storage.base.precision = mtx_double;
-    x.x.storage.base.size = size;
-    x.x.storage.base.data.integer_double = (int64_t *) data;
+    x.data.integer_double = (int64_t *) data;
     err = mtxvector_base_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
     free(perm);
@@ -688,9 +675,8 @@ int mtxmatrix_csr_alloc_rows(
             }
         }
         A->num_nonzeros = 2*A->size-num_diagonals;
-        err = mtxvector_packed_alloc(
-            &A->diag, mtxvector_base, field, precision,
-            A->size, num_diagonals, NULL);
+        err = mtxvector_base_alloc_packed(
+            &A->diag, field, precision, A->size, num_diagonals, NULL);
         if (err) {
             mtxvector_base_free(&A->a);
             free(A->colidx); free(A->rowptr);
@@ -705,8 +691,8 @@ int mtxmatrix_csr_alloc_rows(
         }
     } else if (symmetry == mtx_unsymmetric) {
         A->num_nonzeros = A->size;
-        err = mtxvector_packed_alloc(
-            &A->diag, mtxvector_base, field, precision, A->size, 0, NULL);
+        err = mtxvector_base_alloc_packed(
+            &A->diag, field, precision, A->size, 0, NULL);
         if (err) {
             mtxvector_base_free(&A->a);
             free(A->colidx); free(A->rowptr);
@@ -1694,28 +1680,22 @@ int mtxmatrix_csr_split(
         for (int i = 0; i < dsts[p]->num_rows; i++)
             dsts[p]->rowptr[i+1] += dsts[p]->rowptr[i];
 
-        struct mtxvector_packed dst;
-        dst.size = size;
-        dst.num_nonzeros = partsize;
-        dst.idx = &invperm[offset];
-        dst.x.type = mtxvector_base;
-        int err = mtxvector_base_alloc(
-            &dst.x.storage.base, src->a.field, src->a.precision, partsize);
+        int err = mtxvector_base_alloc_packed(
+            &dsts[p]->a, src->a.field, src->a.precision, size, partsize, &invperm[offset]);
         if (err) {
             free(dsts[p]->colidx); free(dsts[p]->rowptr);
             for (int q = p-1; q >= 0; q--) mtxmatrix_csr_free(dsts[q]);
             free(rowidx); free(invperm);
             return err;
         }
-        err = mtxvector_base_usga(&dst, &src->a);
+        err = mtxvector_base_usga(&dsts[p]->a, &src->a);
         if (err) {
-            mtxvector_base_free(&dst.x.storage.base);
+            mtxvector_base_free(&dsts[p]->a);
             free(dsts[p]->colidx); free(dsts[p]->rowptr);
             for (int q = p-1; q >= 0; q--) mtxmatrix_csr_free(dsts[q]);
             free(rowidx); free(invperm);
             return err;
         }
-        dsts[p]->a = dst.x.storage.base;
 
         /* extract diagonals for symmetric and Hermitian matrices */
         if (dsts[p]->num_rows == dsts[p]->num_columns &&
@@ -1730,8 +1710,8 @@ int mtxmatrix_csr_split(
                 }
             }
             dsts[p]->num_nonzeros = 2*dsts[p]->size-num_diagonals;
-            err = mtxvector_packed_alloc(
-                &dsts[p]->diag, mtxvector_base, dsts[p]->a.field, dsts[p]->a.precision,
+            err = mtxvector_base_alloc_packed(
+                &dsts[p]->diag, dsts[p]->a.field, dsts[p]->a.precision,
                 dsts[p]->size, num_diagonals, NULL);
             if (err) {
                 mtxvector_base_free(&dsts[p]->a);
@@ -1749,9 +1729,8 @@ int mtxmatrix_csr_split(
             }
         } else if (dsts[p]->symmetry == mtx_unsymmetric) {
             dsts[p]->num_nonzeros = dsts[p]->size;
-            err = mtxvector_packed_alloc(
-                &dsts[p]->diag, mtxvector_base,
-                dsts[p]->a.field, dsts[p]->a.precision, dsts[p]->size, 0, NULL);
+            err = mtxvector_base_alloc_packed(
+                &dsts[p]->diag, dsts[p]->a.field, dsts[p]->a.precision, dsts[p]->size, 0, NULL);
             if (err) {
                 mtxvector_base_free(&dsts[p]->a);
                 free(dsts[p]->colidx); free(dsts[p]->rowptr);
@@ -2335,7 +2314,7 @@ int mtxmatrix_csr_sgemv(
         } else { return MTX_ERR_INVALID_FIELD; }
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
         int err = mtxvector_base_usgz(
-            (struct mtxvector_packed *) &A->diag,
+            (struct mtxvector_base *) &A->diag,
             (struct mtxvector_base *) &A->a);
         if (err) return err;
         if (a->field == mtx_field_real) {
@@ -2349,7 +2328,7 @@ int mtxmatrix_csr_sgemv(
                         ydata[j[k]] += alpha*Adata[k]*xdata[i];
                     }
                 }
-                const float * Adiag = A->diag.x.storage.base.data.real_single;
+                const float * Adiag = A->diag.data.real_single;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i] += alpha*Adiag[k]*xdata[i];
@@ -2365,7 +2344,7 @@ int mtxmatrix_csr_sgemv(
                         ydata[j[k]] += alpha*Adata[k]*xdata[i];
                     }
                 }
-                const double * Adiag = A->diag.x.storage.base.data.real_double;
+                const double * Adiag = A->diag.data.real_double;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i] += alpha*Adiag[k]*xdata[i];
@@ -2386,7 +2365,7 @@ int mtxmatrix_csr_sgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                    const float (* Adiag)[2] = A->diag.data.complex_single;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]);
@@ -2405,7 +2384,7 @@ int mtxmatrix_csr_sgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                    const double (* Adiag)[2] = A->diag.data.complex_double;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]);
@@ -2426,7 +2405,7 @@ int mtxmatrix_csr_sgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                    const float (* Adiag)[2] = A->diag.data.complex_single;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]);
@@ -2445,7 +2424,7 @@ int mtxmatrix_csr_sgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                    const double (* Adiag)[2] = A->diag.data.complex_double;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]);
@@ -2465,7 +2444,7 @@ int mtxmatrix_csr_sgemv(
                         ydata[j[k]] += alpha*Adata[k]*xdata[i];
                     }
                 }
-                const int32_t * Adiag = A->diag.x.storage.base.data.integer_single;
+                const int32_t * Adiag = A->diag.data.integer_single;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i] += alpha*Adiag[k]*xdata[i];
@@ -2481,7 +2460,7 @@ int mtxmatrix_csr_sgemv(
                         ydata[j[k]] += alpha*Adata[k]*xdata[i];
                     }
                 }
-                const int64_t * Adiag = A->diag.x.storage.base.data.integer_double;
+                const int64_t * Adiag = A->diag.data.integer_double;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i] += alpha*Adiag[k]*xdata[i];
@@ -2496,7 +2475,7 @@ int mtxmatrix_csr_sgemv(
         return MTX_ERR_INVALID_SYMMETRY;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
         int err = mtxvector_base_usgz(
-            (struct mtxvector_packed *) &A->diag,
+            (struct mtxvector_base *) &A->diag,
             (struct mtxvector_base *) &A->a);
         if (err) return err;
         if (a->field == mtx_field_complex) {
@@ -2513,7 +2492,7 @@ int mtxmatrix_csr_sgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                    const float (* Adiag)[2] = A->diag.data.complex_single;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]);
@@ -2532,7 +2511,7 @@ int mtxmatrix_csr_sgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                    const double (* Adiag)[2] = A->diag.data.complex_double;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]);
@@ -2553,7 +2532,7 @@ int mtxmatrix_csr_sgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                    const float (* Adiag)[2] = A->diag.data.complex_single;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]);
@@ -2572,7 +2551,7 @@ int mtxmatrix_csr_sgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                    const double (* Adiag)[2] = A->diag.data.complex_double;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]);
@@ -2806,7 +2785,7 @@ int mtxmatrix_csr_dgemv(
         } else { return MTX_ERR_INVALID_FIELD; }
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
         int err = mtxvector_base_usgz(
-            (struct mtxvector_packed *) &A->diag,
+            (struct mtxvector_base *) &A->diag,
             (struct mtxvector_base *) &A->a);
         if (err) return err;
         if (a->field == mtx_field_real) {
@@ -2820,7 +2799,7 @@ int mtxmatrix_csr_dgemv(
                         ydata[j[k]] += alpha*Adata[k]*xdata[i];
                     }
                 }
-                const float * Adiag = A->diag.x.storage.base.data.real_single;
+                const float * Adiag = A->diag.data.real_single;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i] += alpha*Adiag[k]*xdata[i];
@@ -2836,7 +2815,7 @@ int mtxmatrix_csr_dgemv(
                         ydata[j[k]] += alpha*Adata[k]*xdata[i];
                     }
                 }
-                const double * Adiag = A->diag.x.storage.base.data.real_double;
+                const double * Adiag = A->diag.data.real_double;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i] += alpha*Adiag[k]*xdata[i];
@@ -2857,7 +2836,7 @@ int mtxmatrix_csr_dgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                    const float (* Adiag)[2] = A->diag.data.complex_single;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]);
@@ -2876,7 +2855,7 @@ int mtxmatrix_csr_dgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                    const double (* Adiag)[2] = A->diag.data.complex_double;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]);
@@ -2897,7 +2876,7 @@ int mtxmatrix_csr_dgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                    const float (* Adiag)[2] = A->diag.data.complex_single;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]);
@@ -2916,7 +2895,7 @@ int mtxmatrix_csr_dgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                    const double (* Adiag)[2] = A->diag.data.complex_double;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]);
@@ -2936,7 +2915,7 @@ int mtxmatrix_csr_dgemv(
                         ydata[j[k]] += alpha*Adata[k]*xdata[i];
                     }
                 }
-                const int32_t * Adiag = A->diag.x.storage.base.data.integer_single;
+                const int32_t * Adiag = A->diag.data.integer_single;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i] += alpha*Adiag[k]*xdata[i];
@@ -2952,7 +2931,7 @@ int mtxmatrix_csr_dgemv(
                         ydata[j[k]] += alpha*Adata[k]*xdata[i];
                     }
                 }
-                const int64_t * Adiag = A->diag.x.storage.base.data.integer_double;
+                const int64_t * Adiag = A->diag.data.integer_double;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i] += alpha*Adiag[k]*xdata[i];
@@ -2967,7 +2946,7 @@ int mtxmatrix_csr_dgemv(
         return MTX_ERR_INVALID_SYMMETRY;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
         int err = mtxvector_base_usgz(
-            (struct mtxvector_packed *) &A->diag,
+            (struct mtxvector_base *) &A->diag,
             (struct mtxvector_base *) &A->a);
         if (err) return err;
         if (a->field == mtx_field_complex) {
@@ -2984,7 +2963,7 @@ int mtxmatrix_csr_dgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                    const float (* Adiag)[2] = A->diag.data.complex_single;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]);
@@ -3003,7 +2982,7 @@ int mtxmatrix_csr_dgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                    const double (* Adiag)[2] = A->diag.data.complex_double;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]);
@@ -3024,7 +3003,7 @@ int mtxmatrix_csr_dgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                    const float (* Adiag)[2] = A->diag.data.complex_single;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]);
@@ -3043,7 +3022,7 @@ int mtxmatrix_csr_dgemv(
                             ydata[j[k]][1] += alpha*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]);
                         }
                     }
-                    const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                    const double (* Adiag)[2] = A->diag.data.complex_double;
                     for (int k = 0; k < A->diag.num_nonzeros; k++) {
                         int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]);
@@ -3189,7 +3168,7 @@ int mtxmatrix_csr_cgemv(
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
         int err = mtxvector_base_usgz(
-            (struct mtxvector_packed *) &A->diag,
+            (struct mtxvector_base *) &A->diag,
             (struct mtxvector_base *) &A->a);
         if (err) return err;
         if (trans == mtx_notrans || trans == mtx_trans) {
@@ -3205,7 +3184,7 @@ int mtxmatrix_csr_cgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                const float (* Adiag)[2] = A->diag.data.complex_single;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]+Adiag[k][1]*xdata[i][0]);
@@ -3224,7 +3203,7 @@ int mtxmatrix_csr_cgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                const double (* Adiag)[2] = A->diag.data.complex_double;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[j[k]][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]+Adiag[k][1]*xdata[i][0]);
@@ -3245,7 +3224,7 @@ int mtxmatrix_csr_cgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                const float (* Adiag)[2] = A->diag.data.complex_single;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]-Adiag[k][1]*xdata[i][0]);
@@ -3264,7 +3243,7 @@ int mtxmatrix_csr_cgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                const double (* Adiag)[2] = A->diag.data.complex_double;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]-Adiag[k][1]*xdata[i][0]);
@@ -3277,7 +3256,7 @@ int mtxmatrix_csr_cgemv(
         if (err) return err;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
         int err = mtxvector_base_usgz(
-            (struct mtxvector_packed *) &A->diag,
+            (struct mtxvector_base *) &A->diag,
             (struct mtxvector_base *) &A->a);
         if (err) return err;
         if (trans == mtx_notrans || trans == mtx_conjtrans) {
@@ -3293,7 +3272,7 @@ int mtxmatrix_csr_cgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                const float (* Adiag)[2] = A->diag.data.complex_single;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]-Adiag[k][1]*xdata[i][0]);
@@ -3312,7 +3291,7 @@ int mtxmatrix_csr_cgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                const double (* Adiag)[2] = A->diag.data.complex_double;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]-Adiag[k][1]*xdata[i][0]);
@@ -3333,7 +3312,7 @@ int mtxmatrix_csr_cgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                const float (* Adiag)[2] = A->diag.data.complex_single;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]+Adiag[k][1]*xdata[i][0]);
@@ -3352,7 +3331,7 @@ int mtxmatrix_csr_cgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                const double (* Adiag)[2] = A->diag.data.complex_double;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]+Adiag[k][1]*xdata[i][0]);
@@ -3497,7 +3476,7 @@ int mtxmatrix_csr_zgemv(
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
         int err = mtxvector_base_usgz(
-            (struct mtxvector_packed *) &A->diag,
+            (struct mtxvector_base *) &A->diag,
             (struct mtxvector_base *) &A->a);
         if (err) return err;
         if (trans == mtx_notrans || trans == mtx_trans) {
@@ -3513,7 +3492,7 @@ int mtxmatrix_csr_zgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                const float (* Adiag)[2] = A->diag.data.complex_single;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]+Adiag[k][1]*xdata[i][0]);
@@ -3532,7 +3511,7 @@ int mtxmatrix_csr_zgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                const double (* Adiag)[2] = A->diag.data.complex_double;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[j[k]][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]+Adiag[k][1]*xdata[i][0]);
@@ -3553,7 +3532,7 @@ int mtxmatrix_csr_zgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                const float (* Adiag)[2] = A->diag.data.complex_single;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]-Adiag[k][1]*xdata[i][0]);
@@ -3572,7 +3551,7 @@ int mtxmatrix_csr_zgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                const double (* Adiag)[2] = A->diag.data.complex_double;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                         ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]-Adiag[k][1]*xdata[i][0]);
@@ -3585,7 +3564,7 @@ int mtxmatrix_csr_zgemv(
         if (err) return err;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
         int err = mtxvector_base_usgz(
-            (struct mtxvector_packed *) &A->diag,
+            (struct mtxvector_base *) &A->diag,
             (struct mtxvector_base *) &A->a);
         if (err) return err;
         if (trans == mtx_notrans || trans == mtx_conjtrans) {
@@ -3601,7 +3580,7 @@ int mtxmatrix_csr_zgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                const float (* Adiag)[2] = A->diag.data.complex_single;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]-Adiag[k][1]*xdata[i][0]);
@@ -3620,7 +3599,7 @@ int mtxmatrix_csr_zgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                const double (* Adiag)[2] = A->diag.data.complex_double;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]+Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]-Adiag[k][1]*xdata[i][0]);
@@ -3641,7 +3620,7 @@ int mtxmatrix_csr_zgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const float (* Adiag)[2] = A->diag.x.storage.base.data.complex_single;
+                const float (* Adiag)[2] = A->diag.data.complex_single;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]+Adiag[k][1]*xdata[i][0]);
@@ -3660,7 +3639,7 @@ int mtxmatrix_csr_zgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0]) + alpha[1]*(Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1]);
                     }
                 }
-                const double (* Adiag)[2] = A->diag.x.storage.base.data.complex_double;
+                const double (* Adiag)[2] = A->diag.data.complex_double;
                 for (int k = 0; k < A->diag.num_nonzeros; k++) {
                     int i = A->colidx[A->diag.idx[k]];
                     ydata[i][0] += alpha[0]*(Adiag[k][0]*xdata[i][0]-Adiag[k][1]*xdata[i][1]) - alpha[1]*(Adiag[k][0]*xdata[i][1]+Adiag[k][1]*xdata[i][0]);

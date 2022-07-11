@@ -118,10 +118,9 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
         TEST_ASSERT_EQ(x_->a.base.data.real_single[1], 3.0f);
         TEST_ASSERT_EQ(x_->a.base.data.real_single[2], 4.0f);
         TEST_ASSERT_EQ(x_->a.base.data.real_single[3], 9.0f);
-        TEST_ASSERT_EQ(2, x_->diag.num_nonzeros);
-        TEST_ASSERT_EQ(0, x_->diag.idx[0]);
-        TEST_ASSERT_EQ(3, x_->diag.idx[1]);
-        TEST_ASSERT_EQ(mtxvector_omp, x_->diag.x.type);
+        TEST_ASSERT_EQ(2, x_->diag.base.num_nonzeros);
+        TEST_ASSERT_EQ(0, x_->diag.base.idx[0]);
+        TEST_ASSERT_EQ(3, x_->diag.base.idx[1]);
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
@@ -232,10 +231,9 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
         TEST_ASSERT_EQ(x_->a.base.data.real_double[1], 3.0);
         TEST_ASSERT_EQ(x_->a.base.data.real_double[2], 4.0);
         TEST_ASSERT_EQ(x_->a.base.data.real_double[3], 9.0);
-        TEST_ASSERT_EQ(2, x_->diag.num_nonzeros);
-        TEST_ASSERT_EQ(0, x_->diag.idx[0]);
-        TEST_ASSERT_EQ(3, x_->diag.idx[1]);
-        TEST_ASSERT_EQ(mtxvector_omp, x_->diag.x.type);
+        TEST_ASSERT_EQ(2, x_->diag.base.num_nonzeros);
+        TEST_ASSERT_EQ(0, x_->diag.base.idx[0]);
+        TEST_ASSERT_EQ(3, x_->diag.base.idx[1]);
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
@@ -355,10 +353,9 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
         TEST_ASSERT_EQ(x_->a.base.data.complex_single[2][1],-4.0f);
         TEST_ASSERT_EQ(x_->a.base.data.complex_single[3][0], 9.0f);
         TEST_ASSERT_EQ(x_->a.base.data.complex_single[3][1],-9.0f);
-        TEST_ASSERT_EQ(2, x_->diag.num_nonzeros);
-        TEST_ASSERT_EQ(0, x_->diag.idx[0]);
-        TEST_ASSERT_EQ(3, x_->diag.idx[1]);
-        TEST_ASSERT_EQ(mtxvector_omp, x_->diag.x.type);
+        TEST_ASSERT_EQ(2, x_->diag.base.num_nonzeros);
+        TEST_ASSERT_EQ(0, x_->diag.base.idx[0]);
+        TEST_ASSERT_EQ(3, x_->diag.base.idx[1]);
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
@@ -439,9 +436,9 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
         TEST_ASSERT_EQ(x_->a.base.data.complex_single[2][1],-4.0f);
         TEST_ASSERT_EQ(x_->a.base.data.complex_single[3][0], 9.0f);
         TEST_ASSERT_EQ(x_->a.base.data.complex_single[3][1],-9.0f);
-        TEST_ASSERT_EQ(2, x_->diag.num_nonzeros);
-        TEST_ASSERT_EQ(0, x_->diag.idx[0]);
-        TEST_ASSERT_EQ(3, x_->diag.idx[1]);
+        TEST_ASSERT_EQ(2, x_->diag.base.num_nonzeros);
+        TEST_ASSERT_EQ(0, x_->diag.base.idx[0]);
+        TEST_ASSERT_EQ(3, x_->diag.base.idx[1]);
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
@@ -558,9 +555,9 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
         TEST_ASSERT_EQ(x_->a.base.data.integer_single[1], 3);
         TEST_ASSERT_EQ(x_->a.base.data.integer_single[2], 4);
         TEST_ASSERT_EQ(x_->a.base.data.integer_single[3], 9);
-        TEST_ASSERT_EQ(2, x_->diag.num_nonzeros);
-        TEST_ASSERT_EQ(0, x_->diag.idx[0]);
-        TEST_ASSERT_EQ(3, x_->diag.idx[1]);
+        TEST_ASSERT_EQ(2, x_->diag.base.num_nonzeros);
+        TEST_ASSERT_EQ(0, x_->diag.base.idx[0]);
+        TEST_ASSERT_EQ(3, x_->diag.base.idx[1]);
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
@@ -670,9 +667,9 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
         TEST_ASSERT_EQ(x_->a.base.data.integer_double[1], 3);
         TEST_ASSERT_EQ(x_->a.base.data.integer_double[2], 4);
         TEST_ASSERT_EQ(x_->a.base.data.integer_double[3], 9);
-        TEST_ASSERT_EQ(2, x_->diag.num_nonzeros);
-        TEST_ASSERT_EQ(0, x_->diag.idx[0]);
-        TEST_ASSERT_EQ(3, x_->diag.idx[1]);
+        TEST_ASSERT_EQ(2, x_->diag.base.num_nonzeros);
+        TEST_ASSERT_EQ(0, x_->diag.base.idx[0]);
+        TEST_ASSERT_EQ(3, x_->diag.base.idx[1]);
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
@@ -770,9 +767,9 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
         TEST_ASSERT_EQ(x_->colidx[2], 0);
         TEST_ASSERT_EQ(x_->colidx[3], 2);
         TEST_ASSERT_EQ(mtx_field_pattern, x_->a.base.field);
-        TEST_ASSERT_EQ(2, x_->diag.num_nonzeros);
-        TEST_ASSERT_EQ(0, x_->diag.idx[0]);
-        TEST_ASSERT_EQ(3, x_->diag.idx[1]);
+        TEST_ASSERT_EQ(2, x_->diag.base.num_nonzeros);
+        TEST_ASSERT_EQ(0, x_->diag.base.idx[0]);
+        TEST_ASSERT_EQ(3, x_->diag.base.idx[1]);
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }

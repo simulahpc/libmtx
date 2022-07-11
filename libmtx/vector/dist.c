@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-12
+ * Last modified: 2022-07-12
  *
  * Data structures and routines for distributed sparse vectors in
  * packed form.
@@ -33,7 +33,6 @@
 #include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/util/sort.h>
 #include <libmtx/vector/dist.h>
-#include <libmtx/vector/packed.h>
 #include <libmtx/vector/vector.h>
 
 #include <mpi.h>
@@ -55,7 +54,7 @@
 void mtxvector_dist_free(
     struct mtxvector_dist * x)
 {
-    mtxvector_packed_free(&x->xp);
+    mtxvector_free(&x->xp);
 }
 
 static int mtxvector_dist_init_comm(
@@ -140,7 +139,7 @@ int mtxvector_dist_alloc(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_alloc(
+    err = mtxvector_alloc_packed(
         &x->xp, type, field, precision, size, num_nonzeros, idx);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -171,7 +170,7 @@ int mtxvector_dist_init_real_single(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_real_single(
+    err = mtxvector_init_packed_real_single(
         &x->xp, type, size, num_nonzeros, idx, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -195,7 +194,7 @@ int mtxvector_dist_init_real_double(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_real_double(
+    err = mtxvector_init_packed_real_double(
         &x->xp, type, size, num_nonzeros, idx, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -219,7 +218,7 @@ int mtxvector_dist_init_complex_single(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_complex_single(
+    err = mtxvector_init_packed_complex_single(
         &x->xp, type, size, num_nonzeros, idx, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -243,7 +242,7 @@ int mtxvector_dist_init_complex_double(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_complex_double(
+    err = mtxvector_init_packed_complex_double(
         &x->xp, type, size, num_nonzeros, idx, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -267,7 +266,7 @@ int mtxvector_dist_init_integer_single(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_integer_single(
+    err = mtxvector_init_packed_integer_single(
         &x->xp, type, size, num_nonzeros, idx, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -291,7 +290,7 @@ int mtxvector_dist_init_integer_double(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_integer_double(
+    err = mtxvector_init_packed_integer_double(
         &x->xp, type, size, num_nonzeros, idx, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -314,7 +313,7 @@ int mtxvector_dist_init_pattern(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_pattern(
+    err = mtxvector_init_packed_pattern(
         &x->xp, type, size, num_nonzeros, idx);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -341,7 +340,7 @@ int mtxvector_dist_init_strided_real_single(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_strided_real_single(
+    err = mtxvector_init_packed_strided_real_single(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -368,7 +367,7 @@ int mtxvector_dist_init_strided_real_double(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_strided_real_double(
+    err = mtxvector_init_packed_strided_real_double(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -395,7 +394,7 @@ int mtxvector_dist_init_strided_complex_single(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_strided_complex_single(
+    err = mtxvector_init_packed_strided_complex_single(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -422,7 +421,7 @@ int mtxvector_dist_init_strided_complex_double(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_strided_complex_double(
+    err = mtxvector_init_packed_strided_complex_double(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -449,7 +448,7 @@ int mtxvector_dist_init_strided_integer_single(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_strided_integer_single(
+    err = mtxvector_init_packed_strided_integer_single(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -476,7 +475,7 @@ int mtxvector_dist_init_strided_integer_double(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_strided_integer_double(
+    err = mtxvector_init_packed_strided_integer_double(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -501,7 +500,7 @@ int mtxvector_dist_init_strided_pattern(
     if (err) return err;
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
-    err = mtxvector_packed_init_strided_pattern(
+    err = mtxvector_init_packed_strided_pattern(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -519,7 +518,7 @@ int mtxvector_dist_setzero(
     struct mtxvector_dist * x,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_setzero(&x->xp);
+    int err = mtxvector_setzero(&x->xp);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -534,7 +533,7 @@ int mtxvector_dist_set_constant_real_single(
     float a,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_set_constant_real_single(&x->xp, a);
+    int err = mtxvector_set_constant_real_single(&x->xp, a);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -549,7 +548,7 @@ int mtxvector_dist_set_constant_real_double(
     double a,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_set_constant_real_double(&x->xp, a);
+    int err = mtxvector_set_constant_real_double(&x->xp, a);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -564,7 +563,7 @@ int mtxvector_dist_set_constant_complex_single(
     float a[2],
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_set_constant_complex_single(&x->xp, a);
+    int err = mtxvector_set_constant_complex_single(&x->xp, a);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -579,7 +578,7 @@ int mtxvector_dist_set_constant_complex_double(
     double a[2],
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_set_constant_complex_double(&x->xp, a);
+    int err = mtxvector_set_constant_complex_double(&x->xp, a);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -593,7 +592,7 @@ int mtxvector_dist_set_constant_integer_single(
     int32_t a,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_set_constant_integer_single(&x->xp, a);
+    int err = mtxvector_set_constant_integer_single(&x->xp, a);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -607,7 +606,7 @@ int mtxvector_dist_set_constant_integer_double(
     int64_t a,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_set_constant_integer_double(&x->xp, a);
+    int err = mtxvector_set_constant_integer_double(&x->xp, a);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -700,11 +699,11 @@ int mtxvector_dist_from_mtxfile(
             /* receive from the root process */
             struct mtxfile recvmtxfile;
             err = err ? err : mtxfile_recv(&recvmtxfile, root, 0, comm, disterr);
-            err = err ? err : mtxvector_packed_from_mtxfile(
+            err = err ? err : mtxvector_from_mtxfile(
                 &x->xp, &recvmtxfile, type);
             mtxfile_free(&recvmtxfile);
         } else if (rank == root && p == root) {
-            err = err ? err : mtxvector_packed_from_mtxfile(
+            err = err ? err : mtxvector_from_mtxfile(
                 &x->xp, &sendmtxfile, type);
             mtxfile_free(&sendmtxfile);
         }
@@ -727,10 +726,10 @@ int mtxvector_dist_to_mtxfile(
 {
     int err;
     enum mtxfield field;
-    err = mtxvector_field(&x->xp.x, &field);
+    err = mtxvector_field(&x->xp, &field);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     enum mtxprecision precision;
-    err = mtxvector_precision(&x->xp.x, &precision);
+    err = mtxvector_precision(&x->xp, &precision);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     struct mtxfileheader mtxheader;
@@ -778,19 +777,21 @@ int mtxvector_dist_to_mtxfile(
         } else if (x->rank != root && x->rank == p) {
             /* send to the root process */
             struct mtxfile sendmtxfile;
-            err = mtxvector_packed_to_mtxfile(&sendmtxfile, &x->xp, mtxfmt);
+            err = mtxvector_to_mtxfile(&sendmtxfile, &x->xp, 0, NULL, mtxfmt);
             err = err ? err : mtxfile_send(&sendmtxfile, root, 0, x->comm, disterr);
             mtxfile_free(&sendmtxfile);
         } else if (x->rank == root && p == root) {
             struct mtxfile sendmtxfile;
-            err = mtxvector_packed_to_mtxfile(&sendmtxfile, &x->xp, mtxfmt);
+            err = mtxvector_to_mtxfile(&sendmtxfile, &x->xp, 0, NULL, mtxfmt);
+            int64_t num_nonzeros;
+            err = err ? err : mtxvector_num_nonzeros(&x->xp, &num_nonzeros);
             err = err ? err : mtxfiledata_copy(
                 &mtxfile->data, &sendmtxfile.data,
                 sendmtxfile.header.object, sendmtxfile.header.format,
                 sendmtxfile.header.field, sendmtxfile.precision,
-                x->xp.num_nonzeros, offset, 0);
+                num_nonzeros, offset, 0);
             mtxfile_free(&sendmtxfile);
-            offset += x->xp.num_nonzeros;
+            offset += num_nonzeros;
         }
         if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -934,10 +935,16 @@ int mtxvector_dist_to_mtxdistfile(
     struct mtxdisterror * disterr)
 {
     enum mtxfield field;
-    int err = mtxvector_field(&x->xp.x, &field);
+    int err = mtxvector_field(&x->xp, &field);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     enum mtxprecision precision;
-    err = mtxvector_precision(&x->xp.x, &precision);
+    err = mtxvector_precision(&x->xp, &precision);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t num_nonzeros;
+    err = mtxvector_num_nonzeros(&x->xp, &num_nonzeros);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    const int64_t * idx;
+    err = mtxvector_idx(&x->xp, (int64_t **) &idx);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     struct mtxfileheader mtxheader;
@@ -961,11 +968,11 @@ int mtxvector_dist_to_mtxdistfile(
 
     err = mtxdistfile_alloc(
         mtxdistfile, &mtxheader, NULL, &mtxsize, precision,
-        x->xp.num_nonzeros, x->xp.idx, x->comm, disterr);
+        num_nonzeros, idx, x->comm, disterr);
     if (err) return err;
 
     struct mtxfile mtxfile;
-    err = mtxvector_packed_to_mtxfile(&mtxfile, &x->xp, mtxfmt);
+    err = mtxvector_to_mtxfile(&mtxfile, &x->xp, 0, NULL, mtxfmt);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxdistfile_free(mtxdistfile);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -975,7 +982,7 @@ int mtxvector_dist_to_mtxdistfile(
         &mtxdistfile->data, &mtxfile.data,
         mtxfile.header.object, mtxfile.header.format,
         mtxfile.header.field, mtxfile.precision,
-        x->xp.num_nonzeros, 0, 0);
+        num_nonzeros, 0, 0);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxfile_free(&mtxfile);
         mtxdistfile_free(mtxdistfile);
@@ -1076,11 +1083,11 @@ int mtxvector_dist_split(
     int64_t * invperm,
     struct mtxdisterror * disterr)
 {
-    struct mtxvector_packed ** packeddsts = malloc(
-        num_parts * sizeof(struct mtxvector_packed *));
+    struct mtxvector ** packeddsts = malloc(
+        num_parts * sizeof(struct mtxvector *));
     if (!packeddsts) return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) packeddsts[p] = &dsts[p]->xp;
-    int err = mtxvector_packed_split(
+    int err = mtxvector_split(
         num_parts, packeddsts, &src->xp, size, parts, invperm);
     if (err) { free(packeddsts); return err; }
     free(packeddsts);
@@ -1088,11 +1095,22 @@ int mtxvector_dist_split(
         dsts[p]->comm = src->comm;
         dsts[p]->comm_size = src->comm_size;
         dsts[p]->rank = src->rank;
-        err = mtxvector_dist_init_size(
-            dsts[p], dsts[p]->xp.size, dsts[p]->xp.num_nonzeros,
-            dsts[p]->comm, disterr);
+        int64_t size;
+        err = mtxvector_size(&dsts[p]->xp, &size);
         if (err) {
-            for (int q = 0; q < num_parts; q++) mtxvector_packed_free(&dsts[q]->xp);
+            for (int q = 0; q < num_parts; q++) mtxvector_free(&dsts[q]->xp);
+            return err;
+        }
+        int64_t num_nonzeros;
+        err = mtxvector_num_nonzeros(&dsts[p]->xp, &num_nonzeros);
+        if (err) {
+            for (int q = 0; q < num_parts; q++) mtxvector_free(&dsts[q]->xp);
+            return err;
+        }
+        err = mtxvector_dist_init_size(
+            dsts[p], size, num_nonzeros, dsts[p]->comm, disterr);
+        if (err) {
+            for (int q = 0; q < num_parts; q++) mtxvector_free(&dsts[q]->xp);
             return err;
         }
     }
@@ -1119,7 +1137,7 @@ int mtxvector_dist_swap(
 {
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    int err = mtxvector_packed_swap(&x->xp, &y->xp);
+    int err = mtxvector_swap(&x->xp, &y->xp);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1139,7 +1157,7 @@ int mtxvector_dist_copy(
 {
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    int err = mtxvector_packed_copy(&y->xp, &x->xp);
+    int err = mtxvector_copy(&y->xp, &x->xp);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1154,7 +1172,7 @@ int mtxvector_dist_sscal(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_sscal(a, &x->xp, num_flops);
+    int err = mtxvector_sscal(a, &x->xp, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1169,7 +1187,7 @@ int mtxvector_dist_dscal(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_dscal(a, &x->xp, num_flops);
+    int err = mtxvector_dscal(a, &x->xp, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1184,7 +1202,7 @@ int mtxvector_dist_cscal(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_cscal(a, &x->xp, num_flops);
+    int err = mtxvector_cscal(a, &x->xp, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1199,7 +1217,7 @@ int mtxvector_dist_zscal(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_zscal(a, &x->xp, num_flops);
+    int err = mtxvector_zscal(a, &x->xp, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1225,7 +1243,7 @@ int mtxvector_dist_saxpy(
 {
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    int err = mtxvector_packed_saxpy(a, &x->xp, &y->xp, num_flops);
+    int err = mtxvector_saxpy(a, &x->xp, &y->xp, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1251,7 +1269,7 @@ int mtxvector_dist_daxpy(
 {
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    int err = mtxvector_packed_daxpy(a, &x->xp, &y->xp, num_flops);
+    int err = mtxvector_daxpy(a, &x->xp, &y->xp, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1277,7 +1295,7 @@ int mtxvector_dist_saypx(
 {
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    int err = mtxvector_packed_saypx(a, &y->xp, &x->xp, num_flops);
+    int err = mtxvector_saypx(a, &y->xp, &x->xp, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1303,7 +1321,7 @@ int mtxvector_dist_daypx(
 {
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    int err = mtxvector_packed_daypx(a, &y->xp, &x->xp, num_flops);
+    int err = mtxvector_daypx(a, &y->xp, &x->xp, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1335,7 +1353,7 @@ int mtxvector_dist_sdot(
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    err = mtxvector_packed_sdot(&x->xp, &y->xp, dot, num_flops);
+    err = mtxvector_sdot(&x->xp, &y->xp, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 1, MPI_FLOAT, MPI_SUM, x->comm);
@@ -1371,7 +1389,7 @@ int mtxvector_dist_ddot(
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    err = mtxvector_packed_ddot(&x->xp, &y->xp, dot, num_flops);
+    err = mtxvector_ddot(&x->xp, &y->xp, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 1, MPI_DOUBLE, MPI_SUM, x->comm);
@@ -1408,7 +1426,7 @@ int mtxvector_dist_cdotu(
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    err = mtxvector_packed_cdotu(&x->xp, &y->xp, dot, num_flops);
+    err = mtxvector_cdotu(&x->xp, &y->xp, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 2, MPI_FLOAT, MPI_SUM, x->comm);
@@ -1445,7 +1463,7 @@ int mtxvector_dist_zdotu(
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    err = mtxvector_packed_zdotu(&x->xp, &y->xp, dot, num_flops);
+    err = mtxvector_zdotu(&x->xp, &y->xp, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 2, MPI_DOUBLE, MPI_SUM, x->comm);
@@ -1481,7 +1499,7 @@ int mtxvector_dist_cdotc(
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    err = mtxvector_packed_cdotc(&x->xp, &y->xp, dot, num_flops);
+    err = mtxvector_cdotc(&x->xp, &y->xp, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 2, MPI_FLOAT, MPI_SUM, x->comm);
@@ -1517,7 +1535,7 @@ int mtxvector_dist_zdotc(
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    err = mtxvector_packed_zdotc(&x->xp, &y->xp, dot, num_flops);
+    err = mtxvector_zdotc(&x->xp, &y->xp, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 2, MPI_DOUBLE, MPI_SUM, x->comm);
@@ -1538,7 +1556,7 @@ int mtxvector_dist_snrm2(
     struct mtxdisterror * disterr)
 {
     float dot[2] = {0.0f, 0.0f};
-    int err = mtxvector_packed_cdotc(&x->xp, &x->xp, &dot, num_flops);
+    int err = mtxvector_cdotc(&x->xp, &x->xp, &dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 1, MPI_FLOAT, MPI_SUM, x->comm);
@@ -1560,7 +1578,7 @@ int mtxvector_dist_dnrm2(
     struct mtxdisterror * disterr)
 {
     double dot[2] = {0.0, 0.0};
-    int err = mtxvector_packed_zdotc(&x->xp, &x->xp, &dot, num_flops);
+    int err = mtxvector_zdotc(&x->xp, &x->xp, &dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 1, MPI_DOUBLE, MPI_SUM, x->comm);
@@ -1583,7 +1601,7 @@ int mtxvector_dist_sasum(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_sasum(&x->xp, asum, num_flops);
+    int err = mtxvector_sasum(&x->xp, asum, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, asum, 1, MPI_FLOAT, MPI_SUM, x->comm);
@@ -1605,7 +1623,7 @@ int mtxvector_dist_dasum(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_packed_dasum(&x->xp, asum, num_flops);
+    int err = mtxvector_dasum(&x->xp, asum, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, asum, 1, MPI_DOUBLE, MPI_SUM, x->comm);
@@ -1677,8 +1695,8 @@ struct mtxvector_dist_usscga_impl
     int * sendranks;
     int * sendcounts;
     int * sdispls;
-    struct mtxvector_packed sendbuf;
-    struct mtxvector_packed recvbuf;
+    struct mtxvector sendbuf;
+    struct mtxvector recvbuf;
 
     /**
      * ‘req’ is an array of length ‘comm_size’, containing MPI
@@ -1715,10 +1733,22 @@ int mtxvector_dist_usscga_init(
     int apsize = (size+comm_size-1) / comm_size;
 
     enum mtxfield field;
-    err = mtxvector_field(&x->xp.x, &field);
+    err = mtxvector_field(&x->xp, &field);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     enum mtxprecision precision;
-    err = mtxvector_precision(&x->xp.x, &precision);
+    err = mtxvector_precision(&x->xp, &precision);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t xnum_nonzeros;
+    err = mtxvector_num_nonzeros(&x->xp, &xnum_nonzeros);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t znum_nonzeros;
+    err = mtxvector_num_nonzeros(&z->xp, &znum_nonzeros);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    const int64_t * xidx;
+    err = mtxvector_idx(&x->xp, (int64_t **) &xidx);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    const int64_t * zidx;
+    err = mtxvector_idx(&z->xp, (int64_t **) &zidx);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     /*
@@ -1746,12 +1776,12 @@ int mtxvector_dist_usscga_init(
 #ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA_INIT
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
-            fprintf(stderr, "x->xp.idx=[");
-            for (int64_t i = 0; i < x->xp.num_nonzeros; i++)
-                fprintf(stderr, " %"PRId64, x->xp.idx[i]);
-            fprintf(stderr, "], z->xp.idx=[");
-            for (int64_t i = 0; i < z->xp.num_nonzeros; i++)
-                fprintf(stderr, " %"PRId64, z->xp.idx[i]);
+            fprintf(stderr, "xidx=[");
+            for (int64_t i = 0; i < xnum_nonzeros; i++)
+                fprintf(stderr, " %"PRId64, xidx[i]);
+            fprintf(stderr, "], zidx=[");
+            for (int64_t i = 0; i < znum_nonzeros; i++)
+                fprintf(stderr, " %"PRId64, zidx[i]);
             fprintf(stderr, "]\n");
         }
         MPI_Barrier(comm);
@@ -1774,7 +1804,7 @@ int mtxvector_dist_usscga_init(
         return MTX_ERR_MPI_COLLECTIVE;
     }
     err = assumedpartition_write(
-        size, x->xp.num_nonzeros, x->xp.idx, apsize,
+        size, xnum_nonzeros, xidx, apsize,
         apownerrank, apowneridx, comm, disterr);
     if (err) {
         free(apowneridx); free(apownerrank);
@@ -1802,25 +1832,25 @@ int mtxvector_dist_usscga_init(
      * process owns the corresponding element of the input array.
      */
 
-    int * idxsrcrank = malloc(z->xp.num_nonzeros * sizeof(int));
+    int * idxsrcrank = malloc(znum_nonzeros * sizeof(int));
     err = !idxsrcrank ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(apowneridx); free(apownerrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    for (int64_t i = 0; i < z->xp.num_nonzeros; i++) idxsrcrank[i] = -1;
-    int * idxsrclocalidx = malloc(z->xp.num_nonzeros * sizeof(int));
+    for (int64_t i = 0; i < znum_nonzeros; i++) idxsrcrank[i] = -1;
+    int * idxsrclocalidx = malloc(znum_nonzeros * sizeof(int));
     err = !idxsrclocalidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(idxsrcrank);
         free(apowneridx); free(apownerrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    for (int64_t i = 0; i < z->xp.num_nonzeros; i++) idxsrclocalidx[i] = -1;
+    for (int64_t i = 0; i < znum_nonzeros; i++) idxsrclocalidx[i] = -1;
 
     err = assumedpartition_read(
         size, apsize, apownerrank, apowneridx,
-        z->xp.num_nonzeros, z->xp.idx,
+        znum_nonzeros, zidx,
         idxsrcrank, idxsrclocalidx, comm, disterr);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(idxsrclocalidx); free(idxsrcrank);
@@ -1833,10 +1863,10 @@ int mtxvector_dist_usscga_init(
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
             fprintf(stderr, "idxsrcrank=[");
-            for (int64_t i = 0; i < z->xp.num_nonzeros; i++)
+            for (int64_t i = 0; i < znum_nonzeros; i++)
                 fprintf(stderr, " %d", idxsrcrank[i]);
             fprintf(stderr, "], idxsrclocalidx=[");
-            for (int64_t i = 0; i < z->xp.num_nonzeros; i++)
+            for (int64_t i = 0; i < znum_nonzeros; i++)
                 fprintf(stderr, " %d", idxsrclocalidx[i]);
             fprintf(stderr, "]\n");
         }
@@ -1857,21 +1887,21 @@ int mtxvector_dist_usscga_init(
      * count how many elements to request from each process.
      */
 
-    int64_t * zperm = malloc(z->xp.num_nonzeros * sizeof(int64_t));
+    int64_t * zperm = malloc(znum_nonzeros * sizeof(int64_t));
     err = !zperm ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(idxsrclocalidx); free(idxsrcrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = radix_sort_int(z->xp.num_nonzeros, idxsrcrank, zperm);
+    err = radix_sort_int(znum_nonzeros, idxsrcrank, zperm);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(zperm); free(idxsrclocalidx); free(idxsrcrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     int64_t idxsrcrankstart = 0;
     while (idxsrcrank[idxsrcrankstart] < 0) idxsrcrankstart++;
-    int nrecvranks = idxsrcrankstart < z->xp.num_nonzeros ? 1 : 0;
-    for (int64_t i = idxsrcrankstart+1; i < z->xp.num_nonzeros; i++) {
+    int nrecvranks = idxsrcrankstart < znum_nonzeros ? 1 : 0;
+    for (int64_t i = idxsrcrankstart+1; i < znum_nonzeros; i++) {
         if (idxsrcrank[i-1] != idxsrcrank[i])
             nrecvranks++;
     }
@@ -1892,7 +1922,7 @@ int mtxvector_dist_usscga_init(
         recvranks[0] = idxsrcrank[idxsrcrankstart];
         recvcounts[0] = 1;
     }
-    for (int64_t i = idxsrcrankstart+1, p = 0; i < z->xp.num_nonzeros; i++) {
+    for (int64_t i = idxsrcrankstart+1, p = 0; i < znum_nonzeros; i++) {
         if (idxsrcrank[i-1] != idxsrcrank[i]) {
             recvranks[++p] = idxsrcrank[i];
             recvcounts[p] = 0;
@@ -1919,7 +1949,7 @@ int mtxvector_dist_usscga_init(
         free(zperm); free(idxsrclocalidx);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    for (int64_t i = 0; i < z->xp.num_nonzeros; i++) {
+    for (int64_t i = 0; i < znum_nonzeros; i++) {
         if (zperm[i] >= idxsrcrankstart)
             idxsendbuf[zperm[i]-idxsrcrankstart] = idxsrclocalidx[i];
     }
@@ -1929,7 +1959,7 @@ int mtxvector_dist_usscga_init(
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
             fprintf(stderr, "idxsrcrankstart=%d, zperm=[", idxsrcrankstart);
-            for (int64_t i = 0; i < z->xp.num_nonzeros; i++)
+            for (int64_t i = 0; i < znum_nonzeros; i++)
                 fprintf(stderr, " %d", zperm[i]);
             fprintf(stderr, "], idxsendbuf=[");
             for (int64_t i = 0; i < idxsendcount; i++)
@@ -2175,10 +2205,10 @@ int mtxvector_dist_usscga_init(
      * Step 6: Allocate buffers to use for sending and receiving data.
      */
 
-    struct mtxvector_packed sendbuf;
-    err = mtxvector_packed_alloc(
-        &sendbuf, x->xp.x.type, field, precision,
-        x->xp.num_nonzeros, sdispls[nsendranks], idxrecvbuf);
+    struct mtxvector sendbuf;
+    err = mtxvector_alloc_packed(
+        &sendbuf, x->xp.type, field, precision,
+        xnum_nonzeros, sdispls[nsendranks], idxrecvbuf);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(idxrecvbuf);
         free(sdispls); free(sendcounts); free(sendranks);
@@ -2188,12 +2218,12 @@ int mtxvector_dist_usscga_init(
     }
     free(idxrecvbuf);
 
-    struct mtxvector_packed recvbuf;
-    err = mtxvector_packed_alloc(
-        &recvbuf, z->xp.x.type, field, precision,
-        z->xp.num_nonzeros, rdispls[nrecvranks], NULL);
+    struct mtxvector recvbuf;
+    err = mtxvector_alloc_packed(
+        &recvbuf, z->xp.type, field, precision,
+        znum_nonzeros, rdispls[nrecvranks], NULL);
     if (mtxdisterror_allreduce(disterr, err)) {
-        mtxvector_packed_free(&sendbuf);
+        mtxvector_free(&sendbuf);
         free(sdispls); free(sendcounts); free(sendranks);
         free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
@@ -2202,8 +2232,8 @@ int mtxvector_dist_usscga_init(
     MPI_Request * req = malloc(nrecvranks * sizeof(MPI_Request));
     err = !req ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        mtxvector_packed_free(&recvbuf);
-        mtxvector_packed_free(&sendbuf);
+        mtxvector_free(&recvbuf);
+        mtxvector_free(&sendbuf);
         free(sdispls); free(sendcounts); free(sendranks);
         free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
@@ -2216,8 +2246,8 @@ int mtxvector_dist_usscga_init(
     err = !usscga->impl ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(req);
-        mtxvector_packed_free(&recvbuf);
-        mtxvector_packed_free(&sendbuf);
+        mtxvector_free(&recvbuf);
+        mtxvector_free(&sendbuf);
         free(sdispls); free(sendcounts); free(sendranks);
         free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
@@ -2252,8 +2282,8 @@ void mtxvector_dist_usscga_free(
     struct mtxvector_dist_usscga * usscga)
 {
     free(usscga->impl->req);
-    mtxvector_packed_free(&usscga->impl->recvbuf);
-    mtxvector_packed_free(&usscga->impl->sendbuf);
+    mtxvector_free(&usscga->impl->recvbuf);
+    mtxvector_free(&usscga->impl->sendbuf);
     free(usscga->impl->sdispls);
     free(usscga->impl->sendcounts);
     free(usscga->impl->sendranks);
@@ -2286,9 +2316,9 @@ int mtxvector_dist_usscga_start(
      * fill a buffer with the required input vector elements.
      */
 
-    struct mtxvector_packed * sendbuf = &usscga->impl->sendbuf;
+    struct mtxvector * sendbuf = &usscga->impl->sendbuf;
     const struct mtxvector_dist * x = usscga->x;
-    int err = mtxvector_usga(sendbuf, &x->xp.x);
+    int err = mtxvector_usga(sendbuf, &x->xp);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
 #ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA_START
@@ -2311,7 +2341,7 @@ int mtxvector_dist_usscga_start(
      * destination processes.
      */
 
-    struct mtxvector_packed * recvbuf = &usscga->impl->recvbuf;
+    struct mtxvector * recvbuf = &usscga->impl->recvbuf;
     int nrecvranks = usscga->impl->nrecvranks;
     const int * recvranks = usscga->impl->recvranks;
     const int * recvcounts = usscga->impl->recvcounts;
@@ -2319,7 +2349,7 @@ int mtxvector_dist_usscga_start(
     MPI_Request * req = usscga->impl->req;
     for (int p = 0; p < nrecvranks; p++) {
         err = mtxvector_irecv(
-            &recvbuf->x, rdispls[p], recvcounts[p], recvranks[p],
+            recvbuf, rdispls[p], recvcounts[p], recvranks[p],
             5, comm, &req[p], &disterr->mpierrcode);
         if (err) break;
     }
@@ -2331,7 +2361,7 @@ int mtxvector_dist_usscga_start(
     const int * sdispls = usscga->impl->sdispls;
     for (int p = 0; p < nsendranks; p++) {
         err = mtxvector_send(
-            &sendbuf->x, sdispls[p], sendcounts[p], sendranks[p], 5, comm,
+            sendbuf, sdispls[p], sendcounts[p], sendranks[p], 5, comm,
             &disterr->mpierrcode);
         if (err) break;
     }
@@ -2352,7 +2382,13 @@ int mtxvector_dist_usscga_wait(
     const int64_t idxsrcrankstart = usscga->impl->idxsrcrankstart;
     int nrecvranks = usscga->impl->nrecvranks;
     MPI_Request * req = usscga->impl->req;
-    struct mtxvector_packed * recvbuf = &usscga->impl->recvbuf;
+    struct mtxvector * recvbuf = &usscga->impl->recvbuf;
+    int64_t znum_nonzeros;
+    int err = mtxvector_num_nonzeros(&z->xp, &znum_nonzeros);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t * recvbufidx;
+    err = mtxvector_idx(recvbuf, &recvbufidx);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     /*
      * Step 8b: Wait for data to be received.
@@ -2365,11 +2401,11 @@ int mtxvector_dist_usscga_wait(
      * final destinations in the output vector array.
      */
 
-    for (int64_t i = 0; i < z->xp.num_nonzeros; i++) {
+    for (int64_t i = 0; i < znum_nonzeros; i++) {
         if (zperm[i] >= idxsrcrankstart)
-            recvbuf->idx[zperm[i]-idxsrcrankstart] = i;
+            recvbufidx[zperm[i]-idxsrcrankstart] = i;
     }
-    int err = mtxvector_ussc(&z->xp.x, recvbuf);
+    err = mtxvector_ussc(&z->xp, recvbuf);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }

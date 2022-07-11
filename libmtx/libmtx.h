@@ -48,7 +48,6 @@
 #include <libmtx/vector/field.h>
 #include <libmtx/vector/null.h>
 #include <libmtx/vector/omp.h>
-#include <libmtx/vector/packed.h>
 #include <libmtx/vector/precision.h>
 #include <libmtx/vector/vector.h>
 #include <libmtx/version.h>

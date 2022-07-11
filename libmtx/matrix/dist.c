@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-06-06
+ * Last modified: 2022-07-12
  *
  * Data structures and routines for distributed matrices.
  */
@@ -2508,8 +2508,8 @@ struct mtxmatrix_dist_gemv_impl
     struct mtxvector_dist xint;
     struct mtxvector_dist xhalo;
     bool yhalo_needed;
-    struct mtxvector_packed yint;
-    struct mtxvector_packed yhalo;
+    struct mtxvector yint;
+    struct mtxvector yhalo;
     struct mtxvector_dist_usscga usscga_xint;
     struct mtxvector_dist_usscga usscga_xhalo;
 
@@ -2540,6 +2540,10 @@ static int mtxmatrix_dist_gemv_rowparts(
     const struct mtxvector_dist * y,
     int * dstrowparts)
 {
+    int64_t num_nonzeros;
+    int err = mtxvector_num_nonzeros(&x->xp, &num_nonzeros);
+    if (err) return err;
+
     /* Make temporary copies of the row map (i.e., nonzero matrix rows
      * on the current process) and range map (i.e., the elements of
      * the destination vector, y, on the current process).  This is
@@ -2548,29 +2552,29 @@ static int mtxmatrix_dist_gemv_rowparts(
     int64_t * rowmap = malloc(A->rowmapsize * sizeof(int64_t));
     if (!rowmap) return MTX_ERR_ERRNO;
     for (int64_t j = 0; j < A->rowmapsize; j++) rowmap[j] = A->rowmap[j];
-    int64_t * rangemap = malloc(x->xp.num_nonzeros * sizeof(int64_t));
+    int64_t * rangemap = malloc(num_nonzeros * sizeof(int64_t));
     if (!rangemap) { free(rowmap); return MTX_ERR_ERRNO; }
-    for (int64_t j = 0; j < x->xp.num_nonzeros; j++) rangemap[j] = x->xp.idx[j];
+    for (int64_t j = 0; j < num_nonzeros; j++) rangemap[j] = x->idx[j];
     int64_t * rowmapperm = malloc(A->rowmapsize * sizeof(int64_t));
     if (!rowmapperm) { free(rangemap); free(rowmap); return MTX_ERR_ERRNO; }
-    int64_t * rangemapperm = malloc(x->xp.num_nonzeros * sizeof(int64_t));
+    int64_t * rangemapperm = malloc(num_nonzeros * sizeof(int64_t));
     if (!rangemapperm) { free(rowmapperm); free(rangemap); free(rowmap); return MTX_ERR_ERRNO; }
 
     /* compute the intersection of the row map and range map */
     int64_t introwmapsize = 0;
-    int err = setintersection_unsorted_unique_int64(
+    err = setintersection_unsorted_unique_int64(
         &introwmapsize, NULL, A->rowmapsize, rowmap, rowmapperm, NULL,
-        x->xp.num_nonzeros, rangemap, rangemapperm, NULL);
+        num_nonzeros, rangemap, rangemapperm, NULL);
     if (err) { free(rangemapperm); free(rowmapperm); free(rangemap); free(rowmap); return err; }
     int64_t * introwmap = malloc(introwmapsize * sizeof(int64_t));
     if (!introwmap) { free(rangemapperm); free(rowmapperm); free(rangemap); free(rowmap); return MTX_ERR_ERRNO; }
     int64_t * rowmapdstidx = malloc(A->rowmapsize * sizeof(int64_t));
     if (!rowmapdstidx) { free(introwmap); free(rangemapperm); free(rowmapperm); free(rangemap); free(rowmap); return MTX_ERR_ERRNO; }
-    int64_t * rangemapdstidx = malloc(x->xp.num_nonzeros * sizeof(int64_t));
+    int64_t * rangemapdstidx = malloc(num_nonzeros * sizeof(int64_t));
     if (!rangemapdstidx) { free(rowmapdstidx); free(introwmap); free(rangemapperm); free(rowmapperm); free(rangemap); free(rowmap); return MTX_ERR_ERRNO; }
     err = setintersection_sorted_unique_int64(
         &introwmapsize, introwmap, A->rowmapsize, rowmap, rowmapdstidx,
-        x->xp.num_nonzeros, rangemap, rangemapdstidx);
+        num_nonzeros, rangemap, rangemapdstidx);
     if (err) { free(rowmapdstidx); free(introwmap); free(rangemapperm); free(rowmapperm); free(rangemap); free(rowmap); return err; }
     free(rangemapdstidx); free(introwmap); free(rangemap); free(rowmap);
 
@@ -2599,6 +2603,10 @@ static int mtxmatrix_dist_gemv_colparts(
     int * dstcolparts,
     int * dstxcolparts)
 {
+    int64_t num_nonzeros;
+    int err = mtxvector_num_nonzeros(&x->xp, &num_nonzeros);
+    if (err) return err;
+
     /* Make temporary copies of the column map (i.e., nonzero matrix
      * columns on the current process) and domain map (i.e., the
      * elements of the source vector, x, on the current process).
@@ -2607,12 +2615,12 @@ static int mtxmatrix_dist_gemv_colparts(
     int64_t * colmap = malloc(A->colmapsize * sizeof(int64_t));
     if (!colmap) return MTX_ERR_ERRNO;
     for (int64_t j = 0; j < A->colmapsize; j++) colmap[j] = A->colmap[j];
-    int64_t * domainmap = malloc(x->xp.num_nonzeros * sizeof(int64_t));
+    int64_t * domainmap = malloc(num_nonzeros * sizeof(int64_t));
     if (!domainmap) { free(colmap); return MTX_ERR_ERRNO; }
-    for (int64_t j = 0; j < x->xp.num_nonzeros; j++) domainmap[j] = x->xp.idx[j];
+    for (int64_t j = 0; j < num_nonzeros; j++) domainmap[j] = x->idx[j];
     int64_t * colmapperm = malloc(A->colmapsize * sizeof(int64_t));
     if (!colmapperm) { free(domainmap); free(colmap); return MTX_ERR_ERRNO; }
-    int64_t * domainmapperm = malloc(x->xp.num_nonzeros * sizeof(int64_t));
+    int64_t * domainmapperm = malloc(num_nonzeros * sizeof(int64_t));
     if (!domainmapperm) {
         free(colmapperm);
         free(domainmap); free(colmap);
@@ -2621,9 +2629,9 @@ static int mtxmatrix_dist_gemv_colparts(
 
     /* compute the intersection of the column map and domain map */
     int64_t intcolmapsize = 0;
-    int err = setintersection_unsorted_unique_int64(
+    err = setintersection_unsorted_unique_int64(
         &intcolmapsize, NULL, A->colmapsize, colmap, colmapperm, NULL,
-        x->xp.num_nonzeros, domainmap, domainmapperm, NULL);
+        num_nonzeros, domainmap, domainmapperm, NULL);
     if (err) {
         free(domainmapperm); free(colmapperm);
         free(domainmap); free(colmap);
@@ -2641,7 +2649,7 @@ static int mtxmatrix_dist_gemv_colparts(
         free(domainmap); free(colmap);
         return MTX_ERR_ERRNO;
     }
-    int64_t * domainmapdstidx = malloc(x->xp.num_nonzeros * sizeof(int64_t));
+    int64_t * domainmapdstidx = malloc(num_nonzeros * sizeof(int64_t));
     if (!domainmapdstidx) {
         free(colmapdstidx); free(intcolmap);
         free(domainmapperm); free(colmapperm);
@@ -2650,7 +2658,7 @@ static int mtxmatrix_dist_gemv_colparts(
     }
     err = setintersection_sorted_unique_int64(
         &intcolmapsize, intcolmap, A->colmapsize, colmap, colmapdstidx,
-        x->xp.num_nonzeros, domainmap, domainmapdstidx);
+        num_nonzeros, domainmap, domainmapdstidx);
     if (err) {
         free(colmapdstidx); free(intcolmap);
         free(domainmapperm); free(colmapperm);
@@ -2665,8 +2673,8 @@ static int mtxmatrix_dist_gemv_colparts(
     free(colmapdstidx); free(colmapperm);
 
     /* partition vector elements into interior and halo parts */
-    for (int j = 0; j < x->xp.num_nonzeros; j++) {
-        /* fprintf(stderr, "%s:%d: j=%d of %d, x->xp.idx[j]=%d, domainmapperm[j]=%d, domainmapdstidx[j]=%d\n", __FILE__, __LINE__, j, x->xp.num_nonzeros, x->xp.idx[j], domainmapperm[j], domainmapdstidx[j]); */
+    for (int j = 0; j < num_nonzeros; j++) {
+        /* fprintf(stderr, "%s:%d: j=%d of %d, x->idx[j]=%d, domainmapperm[j]=%d, domainmapdstidx[j]=%d\n", __FILE__, __LINE__, j, num_nonzeros, x->idx[j], domainmapperm[j], domainmapdstidx[j]); */
         dstxcolparts[j] = domainmapdstidx[domainmapperm[j]] == -1 ? 1 : 0;
     }
     free(domainmapdstidx); free(domainmapperm);
@@ -2704,12 +2712,15 @@ static int mtxmatrix_dist_gemv_partition(
     struct mtxvector_dist * xint,
     struct mtxvector_dist * xhalo,
     bool * yhalo_needed,
-    struct mtxvector_packed * yint,
-    struct mtxvector_packed * yhalo,
+    struct mtxvector * yint,
+    struct mtxvector * yhalo,
     struct mtxdisterror * disterr)
 {
     int64_t size;
     int err = mtxmatrix_size(&A->Ap, &size);
+    if (err) return err;
+    int64_t num_nonzeros;
+    err = mtxvector_num_nonzeros(&x->xp, &num_nonzeros);
     if (err) return err;
 
     /* partition matrix rows into interior and halo parts */
@@ -2721,7 +2732,7 @@ static int mtxmatrix_dist_gemv_partition(
     /* partition matrix columns into interior and halo parts */
     int * dstcolparts = malloc(A->colmapsize * sizeof(int));
     if (!dstcolparts) { free(dstrowparts); return MTX_ERR_ERRNO; }
-    int * dstxcolparts = malloc(x->xp.num_nonzeros * sizeof(int));
+    int * dstxcolparts = malloc(num_nonzeros * sizeof(int));
     if (!dstxcolparts) { free(dstcolparts); free(dstrowparts); return MTX_ERR_ERRNO; }
     err = mtxmatrix_dist_gemv_colparts(trans, A, x, y, dstcolparts, dstxcolparts);
     if (err) { free(dstxcolparts); free(dstcolparts); free(dstrowparts); return err; }
@@ -2808,9 +2819,18 @@ static int mtxmatrix_dist_gemv_partition(
     *yhalo_needed = dstrowpartsizes[1] > 0;
     if (*yhalo_needed) {
         /* split the destination vector into interior and halo parts */
-        struct mtxvector_packed * ydsts[2] = {yint, yhalo};
-        err = mtxvector_packed_split(
-            2, ydsts, &y->xp, y->xp.num_nonzeros, ydstrowparts, NULL);
+        int64_t ynum_nonzeros;
+        err = mtxvector_num_nonzeros(&y->xp, &ynum_nonzeros);
+        if (err) {
+            mtxmatrix_dist_free(Aint); mtxmatrix_dist_free(Aext);
+            mtxmatrix_dist_free(Acolhalo); mtxmatrix_dist_free(Arowhalo);
+            free(dstxcolparts); free(ydstrowparts);
+            free(dstcolparts); free(dstrowparts);
+            return err;
+        }
+        struct mtxvector * ydsts[2] = {yint, yhalo};
+        err = mtxvector_split(
+            2, ydsts, &y->xp, ynum_nonzeros, ydstrowparts, NULL);
         if (err) {
             mtxmatrix_dist_free(Aint); mtxmatrix_dist_free(Aext);
             mtxmatrix_dist_free(Acolhalo); mtxmatrix_dist_free(Arowhalo);
@@ -2824,10 +2844,10 @@ static int mtxmatrix_dist_gemv_partition(
     /* /\* split the source vector into interior and halo parts *\/ */
     /* struct mtxvector_dist * xdsts[2] = {xint, xhalo}; */
     /* err = mtxvector_dist_split( */
-    /*     2, xdsts, x, x->xp.num_nonzeros, dstxcolparts, NULL, disterr); */
+    /*     2, xdsts, x, num_nonzeros, dstxcolparts, NULL, disterr); */
     /* if (err) { */
     /*     free(dstxcolparts); free(dstcolparts); */
-    /*     mtxvector_packed_free(yint); mtxvector_packed_free(yhalo); */
+    /*     mtxvector_free(yint); mtxvector_free(yhalo); */
     /*     free(dstrowparts); */
     /*     return err; */
     /* } */
@@ -2835,8 +2855,8 @@ static int mtxmatrix_dist_gemv_partition(
     /* allocate source vectors for the interior and halo parts */
 
     /* TODO: fix error handling */
-    err = mtxmatrix_dist_alloc_column_vector(Aint, xint, x->xp.x.type, disterr);
-    err = mtxmatrix_dist_alloc_column_vector(Acolhalo, xhalo, x->xp.x.type, disterr);
+    err = mtxmatrix_dist_alloc_column_vector(Aint, xint, x->xp.type, disterr);
+    err = mtxmatrix_dist_alloc_column_vector(Acolhalo, xhalo, x->xp.type, disterr);
     free(dstxcolparts);
     return MTX_SUCCESS;
 }
@@ -2874,19 +2894,19 @@ int mtxmatrix_dist_gemv_init(
 
         if (trans == mtx_notrans) {
             err = mtxmatrix_dist_alloc_row_vector(
-                A, &impl->z, x->xp.x.type, disterr);
+                A, &impl->z, x->xp.type, disterr);
         } else if (trans == mtx_trans) {
             err = mtxmatrix_dist_alloc_column_vector(
-                A, &impl->z, x->xp.x.type, disterr);
+                A, &impl->z, x->xp.type, disterr);
         } else { free(gemv->impl); return MTX_ERR_INVALID_TRANSPOSITION; }
         if (err) { free(gemv->impl); return err; }
 
         if (trans == mtx_notrans) {
             err = mtxmatrix_dist_alloc_column_vector(
-                A, &impl->w, y->xp.x.type, disterr);
+                A, &impl->w, y->xp.type, disterr);
         } else if (trans == mtx_trans) {
             err = mtxmatrix_dist_alloc_row_vector(
-                A, &impl->w, y->xp.x.type, disterr);
+                A, &impl->w, y->xp.type, disterr);
         } else {
             mtxvector_dist_free(&impl->z);
             free(impl);
@@ -2921,7 +2941,7 @@ int mtxmatrix_dist_gemv_init(
         /* set up the communication for the source vector halo */
         err = mtxvector_dist_usscga_init(&impl->usscga_xint, &impl->xint, x, disterr);
         if (err) {
-            if (impl->yhalo_needed) { mtxvector_packed_free(&impl->yint); mtxvector_packed_free(&impl->yhalo); }
+            if (impl->yhalo_needed) { mtxvector_free(&impl->yint); mtxvector_free(&impl->yhalo); }
             mtxvector_dist_free(&impl->xint); mtxvector_dist_free(&impl->xhalo);
             mtxmatrix_dist_free(&impl->Aint); mtxmatrix_dist_free(&impl->Aext);
             mtxmatrix_dist_free(&impl->Arowhalo); mtxmatrix_dist_free(&impl->Acolhalo);
@@ -2933,7 +2953,7 @@ int mtxmatrix_dist_gemv_init(
         err = mtxvector_dist_usscga_init(&impl->usscga_xhalo, &impl->xhalo, x, disterr);
         if (err) {
             mtxvector_dist_usscga_free(&impl->usscga_xint);
-            if (impl->yhalo_needed) { mtxvector_packed_free(&impl->yint); mtxvector_packed_free(&impl->yhalo); }
+            if (impl->yhalo_needed) { mtxvector_free(&impl->yint); mtxvector_free(&impl->yhalo); }
             mtxvector_dist_free(&impl->xint); mtxvector_dist_free(&impl->xhalo);
             mtxmatrix_dist_free(&impl->Aint); mtxmatrix_dist_free(&impl->Aext);
             mtxmatrix_dist_free(&impl->Arowhalo); mtxmatrix_dist_free(&impl->Acolhalo);
@@ -2960,7 +2980,7 @@ void mtxmatrix_dist_gemv_free(
     } else if (gemv->overlap == mtxgemvoverlap_irecv) {
         mtxvector_dist_usscga_free(&gemv->impl->usscga_xint);
         mtxvector_dist_usscga_free(&gemv->impl->usscga_xhalo);
-        if (gemv->impl->yhalo_needed) { mtxvector_packed_free(&gemv->impl->yint); mtxvector_packed_free(&gemv->impl->yhalo); }
+        if (gemv->impl->yhalo_needed) { mtxvector_free(&gemv->impl->yint); mtxvector_free(&gemv->impl->yhalo); }
         mtxvector_dist_free(&gemv->impl->xint); mtxvector_dist_free(&gemv->impl->xhalo);
         mtxmatrix_dist_free(&gemv->impl->Aint); mtxmatrix_dist_free(&gemv->impl->Aext);
         mtxmatrix_dist_free(&gemv->impl->Arowhalo); mtxmatrix_dist_free(&gemv->impl->Acolhalo);
@@ -2997,15 +3017,15 @@ int mtxmatrix_dist_gemv_sgemv(
         if (err) return err;
         err = mtxmatrix_sgemv(
             gemv->trans, alpha, &gemv->A->Ap,
-            &impl->z.xp.x, 1.0f, &impl->w.xp.x, &impl->num_flops);
+            &impl->z.xp, 1.0f, &impl->w.xp, &impl->num_flops);
         if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
         if (gemv->trans == mtx_notrans) {
             err = mtxvector_saypx(
-                beta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops);
+                beta, &gemv->y->xp, &impl->w.xp, &impl->num_flops);
             if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
         } else if (gemv->trans == mtx_trans) {
             err = mtxvector_saypx(
-                beta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops);
+                beta, &gemv->y->xp, &impl->w.xp, &impl->num_flops);
             if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
     } else {
@@ -3046,15 +3066,15 @@ int mtxmatrix_dist_gemv_dgemv(
         if (err) return err;
         err = mtxmatrix_dgemv(
             gemv->trans, alpha, &gemv->A->Ap,
-            &impl->z.xp.x, 1.0, &impl->w.xp.x, &impl->num_flops);
+            &impl->z.xp, 1.0, &impl->w.xp, &impl->num_flops);
         if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
         if (gemv->trans == mtx_notrans) {
             err = mtxvector_daypx(
-                beta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops);
+                beta, &gemv->y->xp, &impl->w.xp, &impl->num_flops);
             if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
         } else if (gemv->trans == mtx_trans) {
             err = mtxvector_daypx(
-                beta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops);
+                beta, &gemv->y->xp, &impl->w.xp, &impl->num_flops);
             if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
 
@@ -3068,7 +3088,7 @@ int mtxmatrix_dist_gemv_dgemv(
         /* TODO: gather values from the source vector, x, to the
          * temporary vector, xint, which is used for multiplying the
          * interior part of the matrix */
-        /* err = mtxvector_ussc(&impl->xint.xp.x, &gemv->x->xp); */
+        /* err = mtxvector_ussc(&impl->xint.xp, &gemv->x->xp); */
         /* if (err) return err; */
 
         err = mtxvector_dist_usscga_start(&impl->usscga_xhalo, disterr);
@@ -3082,12 +3102,12 @@ int mtxmatrix_dist_gemv_dgemv(
         if (!impl->yhalo_needed) {
             err = mtxmatrix_dgemv(
                 gemv->trans, alpha, &gemv->impl->Aint.Ap,
-                &impl->xint.xp.x, 1.0, &gemv->y->xp.x, &impl->num_flops);
+                &impl->xint.xp, 1.0, &gemv->y->xp, &impl->num_flops);
             if (err) return err;
         } else {
-            err = mtxvector_packed_setzero(&impl->yint);
+            err = mtxvector_setzero(&impl->yint);
             if (err) return err;
-            err = mtxvector_packed_setzero(&impl->yhalo);
+            err = mtxvector_setzero(&impl->yhalo);
             if (err) return err;
 
             /* TODO: support the case where the matrix rows and
@@ -3168,7 +3188,7 @@ int mtxmatrix_dist_gemv_wait(
                 if (!impl->yhalo_needed) {
                     err = mtxmatrix_dgemv(
                         gemv->trans, impl->dalpha, &gemv->impl->Acolhalo.Ap,
-                        &impl->xhalo.xp.x, 1.0, &gemv->y->xp.x, &impl->num_flops);
+                        &impl->xhalo.xp, 1.0, &gemv->y->xp, &impl->num_flops);
                     if (mtxdisterror_allreduce(disterr, err))
                         return MTX_ERR_MPI_COLLECTIVE;
                 } else {
@@ -3180,11 +3200,11 @@ int mtxmatrix_dist_gemv_wait(
 
                 /* if (gemv->trans == mtx_notrans) { */
                 /*     err = mtxvector_daypx( */
-                /*         impl->dbeta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops); */
+                /*         impl->dbeta, &gemv->y->xp, &impl->w.xp, &impl->num_flops); */
                 /*     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE; */
                 /* } else if (gemv->trans == mtx_trans) { */
                 /*     err = mtxvector_daypx( */
-                /*         impl->dbeta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops); */
+                /*         impl->dbeta, &gemv->y->xp, &impl->w.xp, &impl->num_flops); */
                 /*     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE; */
                 /* } else { return MTX_ERR_INVALID_TRANSPOSITION; } */
 

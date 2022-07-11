@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-06-06
+ * Last modified: 2022-07-11
  *
  * Data structures and routines for shared-memory parallel, dense
  * vectors using OpenMP.
@@ -112,8 +112,21 @@ enum mtxprecision mtxvector_omp_precision(const struct mtxvector_omp * x);
  */
 int64_t mtxvector_omp_size(const struct mtxvector_omp * x);
 
+/**
+ * ‘mtxvector_omp_num_nonzeros()’ gets the number of explicitly stored
+ * vector entries.
+ */
+int64_t mtxvector_omp_num_nonzeros(const struct mtxvector_omp * x);
+
+/**
+ * ‘mtxvector_omp_idx()’ gets a pointer to an array containing the
+ * offset of each nonzero vector entry for a vector in packed storage
+ * format.
+ */
+int64_t * mtxvector_omp_idx(const struct mtxvector_omp * x);
+
 /*
- * Memory management
+ * memory management
  */
 
 /**
@@ -139,7 +152,7 @@ int mtxvector_omp_init_copy(
     const struct mtxvector_omp * src);
 
 /*
- * allocation and initialisation
+ * initialise vectors in full storage format
  */
 
 /**
@@ -216,7 +229,7 @@ int mtxvector_omp_init_pattern(
     int64_t size);
 
 /*
- * initialise vectors from strided arrays
+ * initialise vectors in full storage format from strided arrays
  */
 
 /**
@@ -402,6 +415,213 @@ int mtxvector_omp_init_custom_integer_double(
     int64_t size,
     int stride,
     const int64_t * data);
+
+/*
+ * initialise vectors in packed storage format
+ */
+
+/**
+ * ‘mtxvector_omp_alloc_packed()’ allocates a vector in packed
+ * storage format.
+ */
+int mtxvector_omp_alloc_packed(
+    struct mtxvector_omp * x,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx);
+
+/**
+ * ‘mtxvector_omp_init_packed_real_single()’ allocates and initialises a
+ * vector with real, single precision coefficients.
+ */
+int mtxvector_omp_init_packed_real_single(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const float * data);
+
+/**
+ * ‘mtxvector_omp_init_packed_real_double()’ allocates and initialises a
+ * vector with real, double precision coefficients.
+ */
+int mtxvector_omp_init_packed_real_double(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const double * data);
+
+/**
+ * ‘mtxvector_omp_init_packed_complex_single()’ allocates and initialises
+ * a vector with complex, single precision coefficients.
+ */
+int mtxvector_omp_init_packed_complex_single(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxvector_omp_init_packed_complex_double()’ allocates and initialises
+ * a vector with complex, double precision coefficients.
+ */
+int mtxvector_omp_init_packed_complex_double(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxvector_omp_init_packed_integer_single()’ allocates and initialises
+ * a vector with integer, single precision coefficients.
+ */
+int mtxvector_omp_init_packed_integer_single(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const int32_t * data);
+
+/**
+ * ‘mtxvector_omp_init_packed_integer_double()’ allocates and initialises
+ * a vector with integer, double precision coefficients.
+ */
+int mtxvector_omp_init_packed_integer_double(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    const int64_t * data);
+
+/**
+ * ‘mtxvector_omp_init_packed_pattern()’ allocates and initialises a
+ * binary pattern vector, where every entry has a value of one.
+ */
+int mtxvector_omp_init_packed_pattern(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx);
+
+/*
+ * initialise vectors in packed storage format from strided arrays
+ */
+
+/**
+ * ‘mtxvector_omp_alloc_packed_strided()’ allocates a vector in
+ * packed storage format.
+ */
+int mtxvector_omp_alloc_packed_strided(
+    struct mtxvector_omp * x,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx);
+
+/**
+ * ‘mtxvector_omp_init_packed_strided_real_single()’ allocates and
+ * initialises a vector with real, single precision coefficients.
+ */
+int mtxvector_omp_init_packed_strided_real_single(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const float * data);
+
+/**
+ * ‘mtxvector_omp_init_packed_strided_real_double()’ allocates and
+ * initialises a vector with real, double precision coefficients.
+ */
+int mtxvector_omp_init_packed_strided_real_double(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const double * data);
+
+/**
+ * ‘mtxvector_omp_init_packed_strided_complex_single()’ allocates and
+ * initialises a vector with complex, single precision coefficients.
+ */
+int mtxvector_omp_init_packed_strided_complex_single(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxvector_omp_init_packed_strided_complex_double()’ allocates and
+ * initialises a vector with complex, double precision coefficients.
+ */
+int mtxvector_omp_init_packed_strided_complex_double(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxvector_omp_init_packed_strided_integer_single()’ allocates and
+ * initialises a vector with integer, single precision coefficients.
+ */
+int mtxvector_omp_init_packed_strided_integer_single(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const int32_t * data);
+
+/**
+ * ‘mtxvector_omp_init_packed_strided_integer_double()’ allocates and
+ * initialises a vector with integer, double precision coefficients.
+ */
+int mtxvector_omp_init_packed_strided_integer_double(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx,
+    int datastride,
+    const int64_t * data);
+
+/**
+ * ‘mtxvector_omp_init_packed_pattern()’ allocates and initialises a
+ * binary pattern vector, where every nonzero entry has a value of
+ * one.
+ */
+int mtxvector_omp_init_packed_strided_pattern(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * idx);
 
 /*
  * accessing values
@@ -759,6 +979,33 @@ int mtxvector_omp_daxpy(
     struct mtxvector_omp * y,
     int64_t * num_flops);
 
+
+/**
+ * ‘mtxvector_omp_caxpy()’ adds a vector to another one multiplied by
+ * a single precision floating point complex number, ‘y = a*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxvector_omp_caxpy(
+    float a[2],
+    const struct mtxvector_omp * x,
+    struct mtxvector_omp * y,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_omp_zaxpy()’ adds a vector to another one multiplied by
+ * a double precision floating point complex number, ‘y = a*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxvector_omp_zaxpy(
+    double a[2],
+    const struct mtxvector_omp * x,
+    struct mtxvector_omp * y,
+    int64_t * num_flops);
+
 /**
  * ‘mtxvector_omp_saypx()’ multiplies a vector by a single precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
@@ -933,7 +1180,7 @@ int mtxvector_omp_iamax(
  * is undefined.
  */
 int mtxvector_omp_ussdot(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_omp * x,
     const struct mtxvector_omp * y,
     float * dot,
     int64_t * num_flops);
@@ -948,7 +1195,7 @@ int mtxvector_omp_ussdot(
  * is undefined.
  */
 int mtxvector_omp_usddot(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_omp * x,
     const struct mtxvector_omp * y,
     double * dot,
     int64_t * num_flops);
@@ -964,7 +1211,7 @@ int mtxvector_omp_usddot(
  * is undefined.
  */
 int mtxvector_omp_uscdotu(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_omp * x,
     const struct mtxvector_omp * y,
     float (* dot)[2],
     int64_t * num_flops);
@@ -980,7 +1227,7 @@ int mtxvector_omp_uscdotu(
  * is undefined.
  */
 int mtxvector_omp_uszdotu(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_omp * x,
     const struct mtxvector_omp * y,
     double (* dot)[2],
     int64_t * num_flops);
@@ -995,7 +1242,7 @@ int mtxvector_omp_uszdotu(
  * is undefined.
  */
 int mtxvector_omp_uscdotc(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_omp * x,
     const struct mtxvector_omp * y,
     float (* dot)[2],
     int64_t * num_flops);
@@ -1010,7 +1257,7 @@ int mtxvector_omp_uscdotc(
  * is undefined.
  */
 int mtxvector_omp_uszdotc(
-    const struct mtxvector_packed * x,
+    const struct mtxvector_omp * x,
     const struct mtxvector_omp * y,
     double (* dot)[2],
     int64_t * num_flops);
@@ -1025,9 +1272,9 @@ int mtxvector_omp_uszdotc(
  * otherwise the result is undefined.
  */
 int mtxvector_omp_ussaxpy(
-    struct mtxvector_omp * y,
     float alpha,
-    const struct mtxvector_packed * x,
+    const struct mtxvector_omp * x,
+    struct mtxvector_omp * y,
     int64_t * num_flops);
 
 /**
@@ -1040,9 +1287,9 @@ int mtxvector_omp_ussaxpy(
  * otherwise the result is undefined.
  */
 int mtxvector_omp_usdaxpy(
-    struct mtxvector_omp * y,
     double alpha,
-    const struct mtxvector_packed * x,
+    const struct mtxvector_omp * x,
+    struct mtxvector_omp * y,
     int64_t * num_flops);
 
 /**
@@ -1055,9 +1302,9 @@ int mtxvector_omp_usdaxpy(
  * otherwise the result is undefined.
  */
 int mtxvector_omp_uscaxpy(
-    struct mtxvector_omp * y,
     float alpha[2],
-    const struct mtxvector_packed * x,
+    const struct mtxvector_omp * x,
+    struct mtxvector_omp * y,
     int64_t * num_flops);
 
 /**
@@ -1070,9 +1317,9 @@ int mtxvector_omp_uscaxpy(
  * otherwise the result is undefined.
  */
 int mtxvector_omp_uszaxpy(
-    struct mtxvector_omp * y,
     double alpha[2],
-    const struct mtxvector_packed * x,
+    const struct mtxvector_omp * x,
+    struct mtxvector_omp * y,
     int64_t * num_flops);
 
 /**
@@ -1081,7 +1328,7 @@ int mtxvector_omp_uszaxpy(
  * the packed vector are allowed.
  */
 int mtxvector_omp_usga(
-    struct mtxvector_packed * x,
+    struct mtxvector_omp * x,
     const struct mtxvector_omp * y);
 
 /**
@@ -1091,7 +1338,7 @@ int mtxvector_omp_usga(
  * indices in the packed vector are allowed.
  */
 int mtxvector_omp_usgz(
-    struct mtxvector_packed * xpacked,
+    struct mtxvector_omp * x,
     struct mtxvector_omp * y);
 
 /**
@@ -1101,7 +1348,7 @@ int mtxvector_omp_usgz(
  */
 int mtxvector_omp_ussc(
     struct mtxvector_omp * y,
-    const struct mtxvector_packed * x);
+    const struct mtxvector_omp * x);
 
 /*
  * Level 1 BLAS-like extensions
@@ -1115,8 +1362,8 @@ int mtxvector_omp_ussc(
  * are, however, allowed in the packed vector ‘z’.
  */
 int mtxvector_omp_usscga(
-    struct mtxvector_packed * z,
-    const struct mtxvector_packed * x);
+    struct mtxvector_omp * z,
+    const struct mtxvector_omp * x);
 
 /*
  * MPI functions

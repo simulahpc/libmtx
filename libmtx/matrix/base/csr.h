@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-06-06
+ * Last modified: 2022-07-12
  *
  * Matrices in CSR format.
  */
@@ -31,7 +31,6 @@
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/vector/base.h>
-#include <libmtx/vector/packed.h>
 #include <libmtx/vector/vector.h>
 
 #include <stdarg.h>
@@ -105,7 +104,7 @@ struct mtxmatrix_csr
     /**
      * ‘diag’ is a vector storing the diagonal nonzero matrix entries.
      */
-    struct mtxvector_packed diag;
+    struct mtxvector_base diag;
 };
 
 /*

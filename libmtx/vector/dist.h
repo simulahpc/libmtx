@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-12
+ * Last modified: 2022-07-12
  *
  * Data structures and routines for distributed sparse vectors in
  * packed form.
@@ -31,7 +31,6 @@
 #include <libmtx/vector/precision.h>
 #include <libmtx/vector/field.h>
 #include <libmtx/mtxfile/header.h>
-#include <libmtx/vector/packed.h>
 #include <libmtx/vector/vector.h>
 
 #include <mpi.h>
@@ -92,7 +91,20 @@ struct mtxvector_dist
      * ‘xp’ is the underlying storage of the sparse vector in packed
      * form belonging to the current process.
      */
-    struct mtxvector_packed xp;
+    struct mtxvector xp;
+
+    /**
+     * ‘idx’ is an array of length ‘num_nonzeros’, containing the
+     * offset of each nonzero vector entry. Note that offsets are
+     * 0-based, unlike the Matrix Market format, where indices are
+     * 1-based.
+     *
+     * Note that ‘idx’ is set to ‘NULL’ for vectors in full storage
+     * format. In this case, ‘size’ and ‘num_nonzeros’ must be equal,
+     * and elements of the vector are implicitly numbered from ‘0’ up
+     * to ‘size-1’.
+     */
+    const int64_t * idx;
 };
 
 /*
