@@ -2185,7 +2185,7 @@ int mtxvector_dist_usscga_init(
     free(idxsendbuf);
     free(idxrequests);
 
-#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA
+#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA_INIT
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
             fprintf(stderr, "idxrecvbuf=[");
@@ -2208,7 +2208,7 @@ int mtxvector_dist_usscga_init(
     struct mtxvector sendbuf;
     err = mtxvector_alloc_packed(
         &sendbuf, x->xp.type, field, precision,
-        xnum_nonzeros, sdispls[nsendranks], idxrecvbuf);
+        size, sdispls[nsendranks], idxrecvbuf);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(idxrecvbuf);
         free(sdispls); free(sendcounts); free(sendranks);
@@ -2218,10 +2218,8 @@ int mtxvector_dist_usscga_init(
     }
     free(idxrecvbuf);
 
-    struct mtxvector recvbuf;
-    err = mtxvector_alloc_packed(
-        &recvbuf, z->xp.type, field, precision,
-        znum_nonzeros, rdispls[nrecvranks], NULL);
+    int64_t * recvbufidx = malloc(rdispls[nrecvranks] * sizeof(int64_t));
+    err = !recvbufidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxvector_free(&sendbuf);
         free(sdispls); free(sendcounts); free(sendranks);
@@ -2229,6 +2227,23 @@ int mtxvector_dist_usscga_init(
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    for (int64_t i = 0; i < znum_nonzeros; i++) {
+        if (zperm[i] >= idxsrcrankstart)
+            recvbufidx[zperm[i]-idxsrcrankstart] = i;
+    }
+    struct mtxvector recvbuf;
+    err = mtxvector_alloc_packed(
+        &recvbuf, z->xp.type, field, precision,
+        size, rdispls[nrecvranks], recvbufidx);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(recvbufidx);
+        mtxvector_free(&sendbuf);
+        free(sdispls); free(sendcounts); free(sendranks);
+        free(rdispls); free(recvcounts); free(recvranks);
+        free(zperm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    free(recvbufidx);
     MPI_Request * req = malloc(nrecvranks * sizeof(MPI_Request));
     err = !req ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
@@ -2324,11 +2339,13 @@ int mtxvector_dist_usscga_start(
 #ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA_START
     int comm_size = usscga->impl->commsize;
     int rank = usscga->impl->rank;
+    int64_t sendbufsize;
+    mtxvector_size(sendbuf, &sendbufsize);
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
             fprintf(stderr, "sendbuf=(");
-            mtxvector_fwrite(&sendbuf.x, sendbuf.size, sendbuf.idx,
-                             mtxfile_coordinate, stderr, NULL, NULL);
+            mtxvector_fwrite(
+                sendbuf, sendbufsize, NULL, mtxfile_coordinate, stderr, NULL, NULL);
             fprintf(stderr, ")\n");
         }
         MPI_Barrier(comm);
@@ -2378,17 +2395,9 @@ int mtxvector_dist_usscga_wait(
     struct mtxdisterror * disterr)
 {
     struct mtxvector_dist * z = usscga->z;
-    const int64_t * zperm = usscga->impl->zperm;
-    const int64_t idxsrcrankstart = usscga->impl->idxsrcrankstart;
     int nrecvranks = usscga->impl->nrecvranks;
     MPI_Request * req = usscga->impl->req;
     struct mtxvector * recvbuf = &usscga->impl->recvbuf;
-    int64_t znum_nonzeros;
-    int err = mtxvector_num_nonzeros(&z->xp, &znum_nonzeros);
-    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    int64_t * recvbufidx;
-    err = mtxvector_idx(recvbuf, &recvbufidx);
-    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     /*
      * Step 8b: Wait for data to be received.
@@ -2401,11 +2410,7 @@ int mtxvector_dist_usscga_wait(
      * final destinations in the output vector array.
      */
 
-    for (int64_t i = 0; i < znum_nonzeros; i++) {
-        if (zperm[i] >= idxsrcrankstart)
-            recvbufidx[zperm[i]-idxsrcrankstart] = i;
-    }
-    err = mtxvector_ussc(&z->xp, recvbuf);
+    int err = mtxvector_ussc(&z->xp, recvbuf);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }

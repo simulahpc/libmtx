@@ -102,11 +102,11 @@ int test_mtxvector_dist_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_field_real, xbase->field);
         TEST_ASSERT_EQ(mtx_single, xbase->precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, xbase->size);
+            TEST_ASSERT_EQ(2, xbase->num_nonzeros);
             TEST_ASSERT_EQ(1.0f, xbase->data.real_single[0]);
             TEST_ASSERT_EQ(2.0f, xbase->data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, xbase->size);
+            TEST_ASSERT_EQ(1, xbase->num_nonzeros);
             TEST_ASSERT_EQ(4.0f, xbase->data.real_single[0]);
         }
         mtxvector_dist_free(&xdist);
@@ -139,11 +139,11 @@ int test_mtxvector_dist_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_field_real, x->field);
         TEST_ASSERT_EQ(mtx_double, x->precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, x->size);
+            TEST_ASSERT_EQ(2, x->num_nonzeros);
             TEST_ASSERT_EQ(x->data.real_double[0], 1.0);
             TEST_ASSERT_EQ(x->data.real_double[1], 2.0);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, x->size);
+            TEST_ASSERT_EQ(1, x->num_nonzeros);
             TEST_ASSERT_EQ(x->data.real_double[0], 4.0);
         }
         mtxvector_dist_free(&xdist);
@@ -176,13 +176,13 @@ int test_mtxvector_dist_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_field_complex, x->field);
         TEST_ASSERT_EQ(mtx_single, x->precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, x->size);
+            TEST_ASSERT_EQ(2, x->num_nonzeros);
             TEST_ASSERT_EQ(x->data.complex_single[0][0], 1.0f);
             TEST_ASSERT_EQ(x->data.complex_single[0][1], -1.0f);
             TEST_ASSERT_EQ(x->data.complex_single[1][0], 2.0f);
             TEST_ASSERT_EQ(x->data.complex_single[1][1], -2.0f);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, x->size);
+            TEST_ASSERT_EQ(1, x->num_nonzeros);
             TEST_ASSERT_EQ(x->data.complex_single[0][0], 4.0f);
             TEST_ASSERT_EQ(x->data.complex_single[0][1], -4.0f);
         }
@@ -216,13 +216,13 @@ int test_mtxvector_dist_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_field_complex, x->field);
         TEST_ASSERT_EQ(mtx_double, x->precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, x->size);
+            TEST_ASSERT_EQ(2, x->num_nonzeros);
             TEST_ASSERT_EQ(x->data.complex_double[0][0], 1.0);
             TEST_ASSERT_EQ(x->data.complex_double[0][1], -1.0);
             TEST_ASSERT_EQ(x->data.complex_double[1][0], 2.0);
             TEST_ASSERT_EQ(x->data.complex_double[1][1], -2.0);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, x->size);
+            TEST_ASSERT_EQ(1, x->num_nonzeros);
             TEST_ASSERT_EQ(x->data.complex_double[0][0], 4.0);
             TEST_ASSERT_EQ(x->data.complex_double[0][1], -4.0);
         }
@@ -256,11 +256,11 @@ int test_mtxvector_dist_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_field_integer, x->field);
         TEST_ASSERT_EQ(mtx_single, x->precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, x->size);
+            TEST_ASSERT_EQ(2, x->num_nonzeros);
             TEST_ASSERT_EQ(x->data.integer_single[0], 1);
             TEST_ASSERT_EQ(x->data.integer_single[1], 2);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, x->size);
+            TEST_ASSERT_EQ(1, x->num_nonzeros);
             TEST_ASSERT_EQ(x->data.integer_single[0], 4);
         }
         mtxvector_dist_free(&xdist);
@@ -293,11 +293,11 @@ int test_mtxvector_dist_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_field_integer, x->field);
         TEST_ASSERT_EQ(mtx_double, x->precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, x->size);
+            TEST_ASSERT_EQ(2, x->num_nonzeros);
             TEST_ASSERT_EQ(x->data.integer_double[0], 1);
             TEST_ASSERT_EQ(x->data.integer_double[1], 2);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, x->size);
+            TEST_ASSERT_EQ(1, x->num_nonzeros);
             TEST_ASSERT_EQ(x->data.integer_double[0], 4);
         }
         mtxvector_dist_free(&xdist);
@@ -328,9 +328,9 @@ int test_mtxvector_dist_from_mtxfile(void)
         const struct mtxvector_base * x = &xdist.xp.storage.base;
         TEST_ASSERT_EQ(mtx_field_pattern, x->field);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, x->size);
+            TEST_ASSERT_EQ(2, x->num_nonzeros);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, x->size);
+            TEST_ASSERT_EQ(1, x->num_nonzeros);
         }
         mtxvector_dist_free(&xdist);
         mtxfile_free(&mtxfile);
@@ -642,11 +642,11 @@ int test_mtxvector_dist_from_mtxdistfile(void)
         TEST_ASSERT_EQ(mtx_field_real, xbase->field);
         TEST_ASSERT_EQ(mtx_single, xbase->precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, xbase->size);
+            TEST_ASSERT_EQ(2, xbase->num_nonzeros);
             TEST_ASSERT_EQ(1.0f, xbase->data.real_single[0]);
             TEST_ASSERT_EQ(2.0f, xbase->data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, xbase->size);
+            TEST_ASSERT_EQ(1, xbase->num_nonzeros);
             TEST_ASSERT_EQ(4.0f, xbase->data.real_single[0]);
         }
         mtxvector_dist_free(&xdist);
@@ -975,7 +975,8 @@ int test_mtxvector_dist_split(void)
             TEST_ASSERT_EQ(mtxvector_base, dst0.xp.type);
             TEST_ASSERT_EQ(mtx_field_real, dst0.xp.storage.base.field);
             TEST_ASSERT_EQ(mtx_single, dst0.xp.storage.base.precision);
-            TEST_ASSERT_EQ(2, dst0.xp.storage.base.size);
+            TEST_ASSERT_EQ(12, dst0.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, dst0.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(1.0f, dst0.xp.storage.base.data.real_single[0]);
             TEST_ASSERT_EQ(3.0f, dst0.xp.storage.base.data.real_single[1]);
         } else if (rank == 1) {
@@ -985,7 +986,6 @@ int test_mtxvector_dist_split(void)
             TEST_ASSERT_EQ(mtxvector_base, dst0.xp.type);
             TEST_ASSERT_EQ(mtx_field_real, dst0.xp.storage.base.field);
             TEST_ASSERT_EQ(mtx_single, dst0.xp.storage.base.precision);
-            TEST_ASSERT_EQ(1, dst0.xp.storage.base.size);
             TEST_ASSERT_EQ(5.0f, dst0.xp.storage.base.data.real_single[0]);
         }
         TEST_ASSERT_EQ(12, dst1.size);
@@ -996,7 +996,6 @@ int test_mtxvector_dist_split(void)
             TEST_ASSERT_EQ(mtxvector_base, dst1.xp.type);
             TEST_ASSERT_EQ(mtx_field_real, dst1.xp.storage.base.field);
             TEST_ASSERT_EQ(mtx_single, dst1.xp.storage.base.precision);
-            TEST_ASSERT_EQ(0, dst1.xp.storage.base.size);
         } else if (rank == 1) {
             TEST_ASSERT_EQ(12, dst1.xp.storage.base.size);
             TEST_ASSERT_EQ(2, dst1.xp.storage.base.num_nonzeros);
@@ -1005,7 +1004,6 @@ int test_mtxvector_dist_split(void)
             TEST_ASSERT_EQ(mtxvector_base, dst1.xp.type);
             TEST_ASSERT_EQ(mtx_field_real, dst1.xp.storage.base.field);
             TEST_ASSERT_EQ(mtx_single, dst1.xp.storage.base.precision);
-            TEST_ASSERT_EQ(2, dst1.xp.storage.base.size);
             TEST_ASSERT_EQ(7.0f, dst1.xp.storage.base.data.real_single[0]);
             TEST_ASSERT_EQ(9.0f, dst1.xp.storage.base.data.real_single[1]);
         }
@@ -1094,11 +1092,11 @@ int test_mtxvector_dist_swap(void)
         TEST_ASSERT_EQ(mtx_field_real, x.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_single, x.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, x.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, x.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(2.0f, x.xp.storage.base.data.real_single[0]);
             TEST_ASSERT_EQ(1.0f, x.xp.storage.base.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, x.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, x.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(0.0f, x.xp.storage.base.data.real_single[0]);
             TEST_ASSERT_EQ(2.0f, x.xp.storage.base.data.real_single[1]);
             TEST_ASSERT_EQ(1.0f, x.xp.storage.base.data.real_single[2]);
@@ -1107,11 +1105,11 @@ int test_mtxvector_dist_swap(void)
         TEST_ASSERT_EQ(mtx_field_real, y.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_single, y.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(1.0f, y.xp.storage.base.data.real_single[0]);
             TEST_ASSERT_EQ(1.0f, y.xp.storage.base.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(1.0f, y.xp.storage.base.data.real_single[0]);
             TEST_ASSERT_EQ(2.0f, y.xp.storage.base.data.real_single[1]);
             TEST_ASSERT_EQ(3.0f, y.xp.storage.base.data.real_single[2]);
@@ -1167,11 +1165,11 @@ int test_mtxvector_dist_swap(void)
         TEST_ASSERT_EQ(mtx_field_real, x.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_double, x.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, x.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, x.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(2.0, x.xp.storage.base.data.real_double[0]);
             TEST_ASSERT_EQ(1.0, x.xp.storage.base.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, x.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, x.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(0.0, x.xp.storage.base.data.real_double[0]);
             TEST_ASSERT_EQ(2.0, x.xp.storage.base.data.real_double[1]);
             TEST_ASSERT_EQ(1.0, x.xp.storage.base.data.real_double[2]);
@@ -1180,11 +1178,11 @@ int test_mtxvector_dist_swap(void)
         TEST_ASSERT_EQ(mtx_field_real, y.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_double, y.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(1.0, y.xp.storage.base.data.real_double[0]);
             TEST_ASSERT_EQ(1.0, y.xp.storage.base.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(1.0, y.xp.storage.base.data.real_double[0]);
             TEST_ASSERT_EQ(2.0, y.xp.storage.base.data.real_double[1]);
             TEST_ASSERT_EQ(3.0, y.xp.storage.base.data.real_double[2]);
@@ -1244,13 +1242,13 @@ int test_mtxvector_dist_swap(void)
         TEST_ASSERT_EQ(mtx_field_complex, x.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_single, x.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, x.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, x.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 2.0f, x.xp.storage.base.data.complex_single[0][0]);
             TEST_ASSERT_EQ(-2.0f, x.xp.storage.base.data.complex_single[0][1]);
             TEST_ASSERT_EQ( 1.0f, x.xp.storage.base.data.complex_single[1][0]);
             TEST_ASSERT_EQ(-1.0f, x.xp.storage.base.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, x.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, x.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 0.0f, x.xp.storage.base.data.complex_single[0][0]);
             TEST_ASSERT_EQ( 0.0f, x.xp.storage.base.data.complex_single[0][1]);
             TEST_ASSERT_EQ( 2.0f, x.xp.storage.base.data.complex_single[1][0]);
@@ -1262,13 +1260,13 @@ int test_mtxvector_dist_swap(void)
         TEST_ASSERT_EQ(mtx_field_complex, y.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_single, y.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 1.0f, y.xp.storage.base.data.complex_single[0][0]);
             TEST_ASSERT_EQ(-1.0f, y.xp.storage.base.data.complex_single[0][1]);
             TEST_ASSERT_EQ( 1.0f, y.xp.storage.base.data.complex_single[1][0]);
             TEST_ASSERT_EQ(-1.0f, y.xp.storage.base.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 1.0f, y.xp.storage.base.data.complex_single[0][0]);
             TEST_ASSERT_EQ(-1.0f, y.xp.storage.base.data.complex_single[0][1]);
             TEST_ASSERT_EQ( 2.0f, y.xp.storage.base.data.complex_single[1][0]);
@@ -1331,13 +1329,13 @@ int test_mtxvector_dist_swap(void)
         TEST_ASSERT_EQ(mtx_field_complex, x.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_double, x.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, x.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, x.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 2.0f, x.xp.storage.base.data.complex_double[0][0]);
             TEST_ASSERT_EQ(-2.0f, x.xp.storage.base.data.complex_double[0][1]);
             TEST_ASSERT_EQ( 1.0f, x.xp.storage.base.data.complex_double[1][0]);
             TEST_ASSERT_EQ(-1.0f, x.xp.storage.base.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, x.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, x.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 0.0f, x.xp.storage.base.data.complex_double[0][0]);
             TEST_ASSERT_EQ( 0.0f, x.xp.storage.base.data.complex_double[0][1]);
             TEST_ASSERT_EQ( 2.0f, x.xp.storage.base.data.complex_double[1][0]);
@@ -1349,13 +1347,13 @@ int test_mtxvector_dist_swap(void)
         TEST_ASSERT_EQ(mtx_field_complex, y.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_double, y.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 1.0f, y.xp.storage.base.data.complex_double[0][0]);
             TEST_ASSERT_EQ(-1.0f, y.xp.storage.base.data.complex_double[0][1]);
             TEST_ASSERT_EQ( 1.0f, y.xp.storage.base.data.complex_double[1][0]);
             TEST_ASSERT_EQ(-1.0f, y.xp.storage.base.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 1.0f, y.xp.storage.base.data.complex_double[0][0]);
             TEST_ASSERT_EQ(-1.0f, y.xp.storage.base.data.complex_double[0][1]);
             TEST_ASSERT_EQ( 2.0f, y.xp.storage.base.data.complex_double[1][0]);
@@ -1435,11 +1433,11 @@ int test_mtxvector_dist_copy(void)
         TEST_ASSERT_EQ(mtx_field_real, y.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_single, y.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(1.0f, y.xp.storage.base.data.real_single[0]);
             TEST_ASSERT_EQ(1.0f, y.xp.storage.base.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(1.0f, y.xp.storage.base.data.real_single[0]);
             TEST_ASSERT_EQ(2.0f, y.xp.storage.base.data.real_single[1]);
             TEST_ASSERT_EQ(3.0f, y.xp.storage.base.data.real_single[2]);
@@ -1482,11 +1480,11 @@ int test_mtxvector_dist_copy(void)
         TEST_ASSERT_EQ(mtx_field_real, y.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_double, y.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(1.0, y.xp.storage.base.data.real_double[0]);
             TEST_ASSERT_EQ(1.0, y.xp.storage.base.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(1.0, y.xp.storage.base.data.real_double[0]);
             TEST_ASSERT_EQ(2.0, y.xp.storage.base.data.real_double[1]);
             TEST_ASSERT_EQ(3.0, y.xp.storage.base.data.real_double[2]);
@@ -1533,13 +1531,13 @@ int test_mtxvector_dist_copy(void)
         TEST_ASSERT_EQ(mtx_field_complex, y.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_single, y.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 1.0f, y.xp.storage.base.data.complex_single[0][0]);
             TEST_ASSERT_EQ(-1.0f, y.xp.storage.base.data.complex_single[0][1]);
             TEST_ASSERT_EQ( 1.0f, y.xp.storage.base.data.complex_single[1][0]);
             TEST_ASSERT_EQ(-1.0f, y.xp.storage.base.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 1.0f, y.xp.storage.base.data.complex_single[0][0]);
             TEST_ASSERT_EQ(-1.0f, y.xp.storage.base.data.complex_single[0][1]);
             TEST_ASSERT_EQ( 2.0f, y.xp.storage.base.data.complex_single[1][0]);
@@ -1589,13 +1587,13 @@ int test_mtxvector_dist_copy(void)
         TEST_ASSERT_EQ(mtx_field_complex, y.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_double, y.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(2, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 1.0f, y.xp.storage.base.data.complex_double[0][0]);
             TEST_ASSERT_EQ(-1.0f, y.xp.storage.base.data.complex_double[0][1]);
             TEST_ASSERT_EQ( 1.0f, y.xp.storage.base.data.complex_double[1][0]);
             TEST_ASSERT_EQ(-1.0f, y.xp.storage.base.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, y.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 1.0f, y.xp.storage.base.data.complex_double[0][0]);
             TEST_ASSERT_EQ(-1.0f, y.xp.storage.base.data.complex_double[0][1]);
             TEST_ASSERT_EQ( 2.0f, y.xp.storage.base.data.complex_double[1][0]);
@@ -2572,14 +2570,14 @@ int test_mtxvector_dist_usscga(void)
         TEST_ASSERT_EQ(mtx_field_real, z.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_single, z.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(5, z.xp.storage.base.size);
+            TEST_ASSERT_EQ(5, z.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ(10.0f, z.xp.storage.base.data.real_single[0]);
             TEST_ASSERT_EQ( 1.0f, z.xp.storage.base.data.real_single[1]);
             TEST_ASSERT_EQ( 0.0f, z.xp.storage.base.data.real_single[2]);
             TEST_ASSERT_EQ( 7.0f, z.xp.storage.base.data.real_single[3]);
             TEST_ASSERT_EQ( 0.0f, z.xp.storage.base.data.real_single[4]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, z.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, z.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 4.0f, z.xp.storage.base.data.real_single[0]);
             TEST_ASSERT_EQ( 0.0f, z.xp.storage.base.data.real_single[1]);
             TEST_ASSERT_EQ( 6.0f, z.xp.storage.base.data.real_single[2]);
@@ -2609,14 +2607,14 @@ int test_mtxvector_dist_usscga(void)
         TEST_ASSERT_EQ(mtx_field_real, z.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_double, z.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(5, z.xp.storage.base.size);
+            TEST_ASSERT_EQ(5, z.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 1.0, z.xp.storage.base.data.real_double[0]);
             TEST_ASSERT_EQ( 0.0, z.xp.storage.base.data.real_double[1]);
             TEST_ASSERT_EQ( 7.0, z.xp.storage.base.data.real_double[2]);
             TEST_ASSERT_EQ( 0.0, z.xp.storage.base.data.real_double[3]);
             TEST_ASSERT_EQ(10.0, z.xp.storage.base.data.real_double[4]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, z.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, z.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 4.0, z.xp.storage.base.data.real_double[0]);
             TEST_ASSERT_EQ( 0.0, z.xp.storage.base.data.real_double[1]);
             TEST_ASSERT_EQ( 6.0, z.xp.storage.base.data.real_double[2]);
@@ -2646,7 +2644,7 @@ int test_mtxvector_dist_usscga(void)
         TEST_ASSERT_EQ(mtx_field_complex, z.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_single, z.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(5, z.xp.storage.base.size);
+            TEST_ASSERT_EQ(5, z.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 10.0f, z.xp.storage.base.data.complex_single[0][0]);
             TEST_ASSERT_EQ(-10.0f, z.xp.storage.base.data.complex_single[0][1]);
             TEST_ASSERT_EQ(  1.0f, z.xp.storage.base.data.complex_single[1][0]);
@@ -2658,7 +2656,7 @@ int test_mtxvector_dist_usscga(void)
             TEST_ASSERT_EQ(  0.0f, z.xp.storage.base.data.complex_single[4][0]);
             TEST_ASSERT_EQ(  0.0f, z.xp.storage.base.data.complex_single[4][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, z.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, z.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 4.0f, z.xp.storage.base.data.complex_single[0][0]);
             TEST_ASSERT_EQ(-4.0f, z.xp.storage.base.data.complex_single[0][1]);
             TEST_ASSERT_EQ( 0.0f, z.xp.storage.base.data.complex_single[1][0]);
@@ -2691,7 +2689,7 @@ int test_mtxvector_dist_usscga(void)
         TEST_ASSERT_EQ(mtx_field_complex, z.xp.storage.base.field);
         TEST_ASSERT_EQ(mtx_double, z.xp.storage.base.precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(5, z.xp.storage.base.size);
+            TEST_ASSERT_EQ(5, z.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 10.0, z.xp.storage.base.data.complex_double[0][0]);
             TEST_ASSERT_EQ(-10.0, z.xp.storage.base.data.complex_double[0][1]);
             TEST_ASSERT_EQ(  1.0, z.xp.storage.base.data.complex_double[1][0]);
@@ -2703,7 +2701,7 @@ int test_mtxvector_dist_usscga(void)
             TEST_ASSERT_EQ(  0.0, z.xp.storage.base.data.complex_double[4][0]);
             TEST_ASSERT_EQ(  0.0, z.xp.storage.base.data.complex_double[4][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, z.xp.storage.base.size);
+            TEST_ASSERT_EQ(3, z.xp.storage.base.num_nonzeros);
             TEST_ASSERT_EQ( 4.0, z.xp.storage.base.data.complex_double[0][0]);
             TEST_ASSERT_EQ(-4.0, z.xp.storage.base.data.complex_double[0][1]);
             TEST_ASSERT_EQ( 0.0, z.xp.storage.base.data.complex_double[1][0]);

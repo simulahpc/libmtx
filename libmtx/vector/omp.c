@@ -2141,6 +2141,7 @@ int mtxvector_omp_swap(
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->idx && !y->idx || !x->idx && y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             float * xdata = x->data.real_single;
@@ -2254,6 +2255,24 @@ int mtxvector_omp_swap(
             }
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else { return MTX_ERR_INVALID_FIELD; }
+    if (x->idx && y->idx) {
+        int64_t * xidx = x->idx;
+        int64_t * yidx = y->idx;
+        if (yomp->offsets) {
+            #pragma omp parallel num_threads(yomp->num_threads)
+            {
+                int t = omp_get_thread_num();
+                for (int64_t k = yomp->offsets[t]; k < yomp->offsets[t+1]; k++) {
+                    int64_t z = yidx[k]; yidx[k] = xidx[k]; xidx[k] = z;
+                }
+            }
+        } else {
+            #pragma omp parallel for
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                int64_t z = yidx[k]; yidx[k] = xidx[k]; xidx[k] = z;
+            }
+        }
+    }
     return MTX_SUCCESS;
 }
 
@@ -2273,6 +2292,7 @@ int mtxvector_omp_copy(
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->idx && !y->idx || !x->idx && y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             const float * xdata = x->data.real_single;
@@ -2374,6 +2394,22 @@ int mtxvector_omp_copy(
             }
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else { return MTX_ERR_INVALID_FIELD; }
+    if (x->idx && y->idx) {
+        const int64_t * xidx = x->idx;
+        int64_t * yidx = y->idx;
+        if (yomp->offsets) {
+            #pragma omp parallel num_threads(yomp->num_threads)
+            {
+                int t = omp_get_thread_num();
+                for (int64_t k = yomp->offsets[t]; k < yomp->offsets[t+1]; k++)
+                        yidx[k] = xidx[k];
+            }
+        } else {
+            #pragma omp parallel for
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                yidx[k] = xidx[k];
+        }
+    }
     return MTX_SUCCESS;
 }
 
@@ -5407,7 +5443,8 @@ int mtxvector_omp_ussc(
 {
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
-    if (!x->idx || y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
+    if (!x->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
+    /* if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE; */
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;

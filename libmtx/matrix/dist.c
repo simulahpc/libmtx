@@ -1818,7 +1818,7 @@ int mtxmatrix_dist_split(
             dsts[p], type, field, precision, symmetry,
             num_rows, num_columns, dstsize, sizeof(*globalrowidx), 0,
             globalrowidx, globalcolidx, comm, disterr);
-        if (mtxdisterror_allreduce(disterr, err)) {
+        if (err) {
             free(globalcolidx); free(globalrowidx);
             for (int q = p-1; q >= 0; q--) mtxmatrix_free(&dsts[q]->Ap);
             for (int q = p; q < num_parts; q++) mtxmatrix_free(&matrices[q]);
@@ -1830,7 +1830,6 @@ int mtxmatrix_dist_split(
         /* copy data from the existing matrix */
         err = mtxmatrix_copy(&dsts[p]->Ap, &matrices[p]);
         if (mtxdisterror_allreduce(disterr, err)) {
-            free(globalcolidx); free(globalrowidx);
             for (int q = p-1; q >= 0; q--) mtxmatrix_free(&dsts[q]->Ap);
             for (int q = p; q < num_parts; q++) mtxmatrix_free(&matrices[q]);
             free(matrices);
@@ -2543,6 +2542,9 @@ static int mtxmatrix_dist_gemv_rowparts(
     int64_t num_nonzeros;
     int err = mtxvector_num_nonzeros(&x->xp, &num_nonzeros);
     if (err) return err;
+    const int64_t * idx;
+    err = mtxvector_idx(&x->xp, (int64_t **) &idx);
+    if (err) return err;
 
     /* Make temporary copies of the row map (i.e., nonzero matrix rows
      * on the current process) and range map (i.e., the elements of
@@ -2554,7 +2556,7 @@ static int mtxmatrix_dist_gemv_rowparts(
     for (int64_t j = 0; j < A->rowmapsize; j++) rowmap[j] = A->rowmap[j];
     int64_t * rangemap = malloc(num_nonzeros * sizeof(int64_t));
     if (!rangemap) { free(rowmap); return MTX_ERR_ERRNO; }
-    for (int64_t j = 0; j < num_nonzeros; j++) rangemap[j] = x->idx[j];
+    for (int64_t j = 0; j < num_nonzeros; j++) rangemap[j] = idx[j];
     int64_t * rowmapperm = malloc(A->rowmapsize * sizeof(int64_t));
     if (!rowmapperm) { free(rangemap); free(rowmap); return MTX_ERR_ERRNO; }
     int64_t * rangemapperm = malloc(num_nonzeros * sizeof(int64_t));
@@ -2606,6 +2608,9 @@ static int mtxmatrix_dist_gemv_colparts(
     int64_t num_nonzeros;
     int err = mtxvector_num_nonzeros(&x->xp, &num_nonzeros);
     if (err) return err;
+    const int64_t * idx;
+    err = mtxvector_idx(&x->xp, (int64_t **) &idx);
+    if (err) return err;
 
     /* Make temporary copies of the column map (i.e., nonzero matrix
      * columns on the current process) and domain map (i.e., the
@@ -2617,7 +2622,7 @@ static int mtxmatrix_dist_gemv_colparts(
     for (int64_t j = 0; j < A->colmapsize; j++) colmap[j] = A->colmap[j];
     int64_t * domainmap = malloc(num_nonzeros * sizeof(int64_t));
     if (!domainmap) { free(colmap); return MTX_ERR_ERRNO; }
-    for (int64_t j = 0; j < num_nonzeros; j++) domainmap[j] = x->idx[j];
+    for (int64_t j = 0; j < num_nonzeros; j++) domainmap[j] = idx[j];
     int64_t * colmapperm = malloc(A->colmapsize * sizeof(int64_t));
     if (!colmapperm) { free(domainmap); free(colmap); return MTX_ERR_ERRNO; }
     int64_t * domainmapperm = malloc(num_nonzeros * sizeof(int64_t));

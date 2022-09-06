@@ -1620,6 +1620,7 @@ int mtxvector_base_swap(
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->idx && !y->idx || !x->idx && y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             float * xdata = x->data.real_single;
@@ -1679,6 +1680,15 @@ int mtxvector_base_swap(
             }
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else { return MTX_ERR_INVALID_FIELD; }
+    if (x->idx && y->idx) {
+        int64_t * xidx = x->idx;
+        int64_t * yidx = y->idx;
+        for (int64_t k = 0; k < x->num_nonzeros; k++) {
+            int64_t z = yidx[k];
+            yidx[k] = xidx[k];
+            xidx[k] = z;
+        }
+    }
     return MTX_SUCCESS;
 }
 
@@ -1694,8 +1704,9 @@ int mtxvector_base_copy(
 {
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (y->precision != x->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (y->size != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (y->size != x->size) { fprintf(stderr, "y->size=%d, x->size=%d\n", y->size, x->size); return MTX_ERR_INCOMPATIBLE_SIZE; }
+    if (x->num_nonzeros != y->num_nonzeros) { fprintf(stderr, "y->num_nonzeros=%d, x->num_nonzeros=%d\n", y->num_nonzeros, x->num_nonzeros); return MTX_ERR_INCOMPATIBLE_SIZE; }
+    /* if (x->idx && !y->idx || !x->idx && y->idx) return MTX_ERR_INVALID_VECTOR_TYPE; */
     if (y->field == mtx_field_real) {
         if (y->precision == mtx_single) {
             const float * xdata = x->data.real_single;
@@ -1737,6 +1748,12 @@ int mtxvector_base_copy(
                 ydata[k] = xdata[k];
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else { return MTX_ERR_INVALID_FIELD; }
+    if (x->idx && y->idx) {
+        const int64_t * xidx = x->idx;
+        int64_t * yidx = y->idx;
+        for (int64_t k = 0; k < x->num_nonzeros; k++)
+            yidx[k] = xidx[k];
+    }
     return MTX_SUCCESS;
 }
 
@@ -3548,7 +3565,8 @@ int mtxvector_base_ussc(
     struct mtxvector_base * y,
     const struct mtxvector_base * x)
 {
-    if (!x->idx || y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
+    if (!x->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
+    /* if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE; */
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;

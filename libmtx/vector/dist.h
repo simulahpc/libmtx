@@ -92,19 +92,6 @@ struct mtxvector_dist
      * form belonging to the current process.
      */
     struct mtxvector xp;
-
-    /**
-     * ‘idx’ is an array of length ‘num_nonzeros’, containing the
-     * offset of each nonzero vector entry. Note that offsets are
-     * 0-based, unlike the Matrix Market format, where indices are
-     * 1-based.
-     *
-     * Note that ‘idx’ is set to ‘NULL’ for vectors in full storage
-     * format. In this case, ‘size’ and ‘num_nonzeros’ must be equal,
-     * and elements of the vector are implicitly numbered from ‘0’ up
-     * to ‘size-1’.
-     */
-    const int64_t * idx;
 };
 
 /*
