@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-22
+ * Last modified: 2022-09-06
  *
  * Matrix Market files.
  */
@@ -1136,6 +1136,7 @@ enum mtxfileordering
     mtxfile_default_order, /* default ordering of the Matrix Market file */
     mtxfile_custom_order,  /* general, user-defined ordering */
     mtxfile_rcm,           /* Reverse Cuthill-McKee ordering */
+    mtxfile_nd,            /* nested dissection ordering */
 };
 
 /**
@@ -1172,6 +1173,44 @@ int mtxfileordering_parse(
     const char ** endptr,
     const char * s,
     const char * valid_delimiters);
+
+/**
+ * ‘mtxfile_reorder_nd()’ reorders the rows of a sparse matrix
+ * according to the nested dissection algorithm.
+ *
+ * For a square matrix, the reordering algorithm is carried out on the
+ * adjacency matrix of the symmetrisation ‘A+A'’, where ‘A'’ denotes
+ * the transpose of ‘A’. For a rectangular matrix, the reordering is
+ * carried out on a bipartite graph formed by the matrix rows and
+ * columns. The adjacency matrix ‘B’ of the bipartite graph is square
+ * and symmetric and takes the form of a 2-by-2 block matrix where ‘A’
+ * is placed in the upper right corner and ‘A'’ is placed in the lower
+ * left corner:
+ *
+ *     ⎡  0   A ⎤
+ * B = ⎢        ⎥.
+ *     ⎣  A'  0 ⎦
+ *
+ * The reordering is symmetric if the matrix is square, and
+ * unsymmetric otherwise.
+ *
+ * If successful, this function returns ‘MTX_SUCCESS’, and the rows
+ * and columns of ‘mtxfile’ have been reordered. If ‘rowperm’ is not
+ * ‘NULL’, then it must point to an array that is large enough to hold
+ * one ‘int’ for each row of the matrix. In this case, the array is
+ * used to store the permutation for reordering the matrix
+ * rows. Similarly, ‘colperm’ is used to store the permutation for
+ * reordering the matrix columns.
+ */
+int mtxfile_reorder_nd(
+    struct mtxfile * mtxfile,
+    int * rowperm,
+    int * rowperminv,
+    int * colperm,
+    int * colperminv,
+    bool permute,
+    bool * symmetric,
+    int verbose);
 
 /**
  * ‘mtxfile_reorder_rcm()’ reorders the rows of a sparse matrix
@@ -1230,11 +1269,13 @@ int mtxfile_reorder_rcm(
  *
  * If successful, this function returns ‘MTX_SUCCESS’, and the rows
  * and columns of ‘mtxfile’ have been reordered according to the
- * specified method. If ‘rowperm’ is not ‘NULL’, then it must point to
- * an array that is large enough to hold one ‘int’ for each row of the
- * matrix. In this case, the array is used to store the permutation
- * for reordering the matrix rows. Similarly, ‘colperm’ is used to
- * store the permutation for reordering the matrix columns.
+ * specified method. If ‘rowperm’ and ‘rowperminv’ are not ‘NULL’,
+ * then they must point to arrays large enough to hold one ‘int’ for
+ * each row of the matrix. In this case, the arrays are used to store
+ * the permutation and inverse permutation, respectively, for
+ * reordering the matrix rows. Similarly, ‘colperm’ and ‘colperminv’
+ * are used to store the permutation and inverse permutation for
+ * reordering the matrix columns.
  *
  * If ‘symmetric’ is not ‘NULL’, then it is used to return whether or
  * not the reordering is symmetric. That is, if the value returned in
@@ -1245,7 +1286,9 @@ int mtxfile_reorder(
     struct mtxfile * mtxfile,
     enum mtxfileordering ordering,
     int * rowperm,
+    int * rowperminv,
     int * colperm,
+    int * colperminv,
     bool permute,
     bool * symmetric,
     int * rcm_starting_vertex);
