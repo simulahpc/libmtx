@@ -4752,6 +4752,288 @@ int test_mtxfile_reorder_rcm(void)
 }
 
 /**
+ * ‘test_mtxfile_reorder_nd()’ tests reordering a matrix in
+ * coordinate format using the Reverse Cuthill-McKee algorithm.
+ */
+int test_mtxfile_reorder_nd(void)
+{
+    {
+        /* Symmetric matrix */
+
+        /* 1--3--5        2--5--4 */
+        /* |  |     -->   |  |    */
+        /* 2--4           3--1    */
+
+        int err;
+        struct mtxfile mtxfile;
+        int num_rows = 5;
+        int num_columns = 5;
+        const struct mtxfile_matrix_coordinate_real_single srcdata[] = {
+            {1,2, 1.0f},
+            {1,3, 2.0f},
+            {2,1, 3.0f},
+            {2,4, 4.0f},
+            {3,1, 5.0f},
+            {3,4, 6.0f},
+            {3,5, 7.0f},
+            {4,2, 8.0f},
+            {4,3, 9.0f},
+            {5,3,10.0f}};
+        size_t size = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxfile_init_matrix_coordinate_real_single(
+            &mtxfile, mtxfile_general, num_rows, num_columns, size, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        bool symmetric;
+        int rowperm[5] = {};
+        int rowperminv[5] = {};
+        int colperm[5] = {};
+        int colperminv[5] = {};
+        int verbose = 0;
+        err = mtxfile_reorder_nd(
+            &mtxfile, rowperm, rowperminv, colperm, colperminv,
+            true, &symmetric, verbose);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(true, symmetric);
+        TEST_ASSERT_EQ(2, rowperm[0]);
+        TEST_ASSERT_EQ(3, rowperm[1]);
+        TEST_ASSERT_EQ(5, rowperm[2]);
+        TEST_ASSERT_EQ(1, rowperm[3]);
+        TEST_ASSERT_EQ(4, rowperm[4]);
+        TEST_ASSERT_EQ(4, rowperminv[0]);
+        TEST_ASSERT_EQ(1, rowperminv[1]);
+        TEST_ASSERT_EQ(2, rowperminv[2]);
+        TEST_ASSERT_EQ(5, rowperminv[3]);
+        TEST_ASSERT_EQ(3, rowperminv[4]);
+
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxfile.header.symmetry);
+        TEST_ASSERT_EQ(mtx_single, mtxfile.precision);
+        TEST_ASSERT_EQ(5, mtxfile.size.num_rows);
+        TEST_ASSERT_EQ(5, mtxfile.size.num_columns);
+        TEST_ASSERT_EQ(10, mtxfile.size.num_nonzeros);
+        const struct mtxfile_matrix_coordinate_real_single * data =
+            mtxfile.data.matrix_coordinate_real_single;
+        TEST_ASSERT_EQ(    2, data[0].i); TEST_ASSERT_EQ(3, data[0].j);
+        TEST_ASSERT_EQ( 1.0f, data[0].a);
+        TEST_ASSERT_EQ(    2, data[1].i); TEST_ASSERT_EQ(5, data[1].j);
+        TEST_ASSERT_EQ( 2.0f, data[1].a);
+        TEST_ASSERT_EQ(    3, data[2].i); TEST_ASSERT_EQ(2, data[2].j);
+        TEST_ASSERT_EQ( 3.0f, data[2].a);
+        TEST_ASSERT_EQ(    3, data[3].i); TEST_ASSERT_EQ(1, data[3].j);
+        TEST_ASSERT_EQ( 4.0f, data[3].a);
+        TEST_ASSERT_EQ(    5, data[4].i); TEST_ASSERT_EQ(2, data[4].j);
+        TEST_ASSERT_EQ( 5.0f, data[4].a);
+        TEST_ASSERT_EQ(    5, data[5].i); TEST_ASSERT_EQ(1, data[5].j);
+        TEST_ASSERT_EQ( 6.0f, data[5].a);
+        TEST_ASSERT_EQ(    5, data[6].i); TEST_ASSERT_EQ(4, data[6].j);
+        TEST_ASSERT_EQ( 7.0f, data[6].a);
+        TEST_ASSERT_EQ(    1, data[7].i); TEST_ASSERT_EQ(3, data[7].j);
+        TEST_ASSERT_EQ( 8.0f, data[7].a);
+        TEST_ASSERT_EQ(    1, data[8].i); TEST_ASSERT_EQ(5, data[8].j);
+        TEST_ASSERT_EQ( 9.0f, data[8].a);
+        TEST_ASSERT_EQ(    4, data[9].i); TEST_ASSERT_EQ(5, data[9].j);
+        TEST_ASSERT_EQ(10.0f, data[9].a);
+        mtxfile_free(&mtxfile);
+    }
+
+    {
+        /* Unsymmetric matrix */
+
+        /* 1<-3<-5        2<-5<-4 */
+        /* ↑  ↑     ==>   ↑  ↑    */
+        /* 2<-4           3<-1    */
+
+        int err;
+        struct mtxfile mtxfile;
+        int num_rows = 5;
+        int num_columns = 5;
+        const struct mtxfile_matrix_coordinate_real_single srcdata[] = {
+            {2,1, 1.0f},
+            {3,1, 2.0f},
+            {4,2, 4.0f},
+            {4,3, 6.0f},
+            {5,3, 7.0f}};
+        size_t size = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxfile_init_matrix_coordinate_real_single(
+            &mtxfile, mtxfile_general, num_rows, num_columns, size, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        bool symmetric;
+        int rowperm[5] = {};
+        int rowperminv[5] = {};
+        int colperm[5] = {};
+        int colperminv[5] = {};
+        int verbose = 0;
+        err = mtxfile_reorder_nd(
+            &mtxfile, rowperm, rowperminv, colperm, colperminv,
+            true, &symmetric, verbose);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(true, symmetric);
+        TEST_ASSERT_EQ(2, rowperm[0]);
+        TEST_ASSERT_EQ(3, rowperm[1]);
+        TEST_ASSERT_EQ(5, rowperm[2]);
+        TEST_ASSERT_EQ(1, rowperm[3]);
+        TEST_ASSERT_EQ(4, rowperm[4]);
+        TEST_ASSERT_EQ(4, rowperminv[0]);
+        TEST_ASSERT_EQ(1, rowperminv[1]);
+        TEST_ASSERT_EQ(2, rowperminv[2]);
+        TEST_ASSERT_EQ(5, rowperminv[3]);
+        TEST_ASSERT_EQ(3, rowperminv[4]);
+
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxfile.header.symmetry);
+        TEST_ASSERT_EQ(mtx_single, mtxfile.precision);
+        TEST_ASSERT_EQ(5, mtxfile.size.num_rows);
+        TEST_ASSERT_EQ(5, mtxfile.size.num_columns);
+        TEST_ASSERT_EQ(5, mtxfile.size.num_nonzeros);
+        const struct mtxfile_matrix_coordinate_real_single * data =
+            mtxfile.data.matrix_coordinate_real_single;
+        TEST_ASSERT_EQ(    3, data[0].i); TEST_ASSERT_EQ(2, data[0].j);
+        TEST_ASSERT_EQ( 1.0f, data[0].a);
+        TEST_ASSERT_EQ(    5, data[1].i); TEST_ASSERT_EQ(2, data[1].j);
+        TEST_ASSERT_EQ( 2.0f, data[1].a);
+        TEST_ASSERT_EQ(    1, data[2].i); TEST_ASSERT_EQ(3, data[2].j);
+        TEST_ASSERT_EQ( 4.0f, data[2].a);
+        TEST_ASSERT_EQ(    1, data[3].i); TEST_ASSERT_EQ(5, data[3].j);
+        TEST_ASSERT_EQ( 6.0f, data[3].a);
+        TEST_ASSERT_EQ(    4, data[4].i); TEST_ASSERT_EQ(5, data[4].j);
+        TEST_ASSERT_EQ( 7.0f, data[4].a);
+        mtxfile_free(&mtxfile);
+    }
+
+    {
+        /* Disconnected graph: */
+
+        /* 1  3<-5        1  5<-3 */
+        /* ↑  ↑     ==>   ↑  ↑    */
+        /* 2  4           2  4    */
+
+        int err;
+        struct mtxfile mtxfile;
+        int num_rows = 5;
+        int num_columns = 5;
+        const struct mtxfile_matrix_coordinate_real_single srcdata[] = {
+            {2,1, 1.0f},
+            {4,3, 6.0f},
+            {5,3, 7.0f}};
+        size_t size = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxfile_init_matrix_coordinate_real_single(
+            &mtxfile, mtxfile_general, num_rows, num_columns, size, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        bool symmetric;
+        int rowperm[5] = {};
+        int rowperminv[5] = {};
+        int colperm[5] = {};
+        int colperminv[5] = {};
+        int verbose = 0;
+        err = mtxfile_reorder_nd(
+            &mtxfile, rowperm, rowperminv, colperm, colperminv,
+            true, &symmetric, verbose);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(true, symmetric);
+        TEST_ASSERT_EQ(1, rowperm[0]);
+        TEST_ASSERT_EQ(2, rowperm[1]);
+        TEST_ASSERT_EQ(5, rowperm[2]);
+        TEST_ASSERT_EQ(4, rowperm[3]);
+        TEST_ASSERT_EQ(3, rowperm[4]);
+        TEST_ASSERT_EQ(1, rowperminv[0]);
+        TEST_ASSERT_EQ(2, rowperminv[1]);
+        TEST_ASSERT_EQ(5, rowperminv[2]);
+        TEST_ASSERT_EQ(4, rowperminv[3]);
+        TEST_ASSERT_EQ(3, rowperminv[4]);
+
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxfile.header.symmetry);
+        TEST_ASSERT_EQ(mtx_single, mtxfile.precision);
+        TEST_ASSERT_EQ(5, mtxfile.size.num_rows);
+        TEST_ASSERT_EQ(5, mtxfile.size.num_columns);
+        TEST_ASSERT_EQ(3, mtxfile.size.num_nonzeros);
+        const struct mtxfile_matrix_coordinate_real_single * data =
+            mtxfile.data.matrix_coordinate_real_single;
+        TEST_ASSERT_EQ(    2, data[0].i); TEST_ASSERT_EQ(1, data[0].j);
+        TEST_ASSERT_EQ( 1.0f, data[0].a);
+        TEST_ASSERT_EQ(    4, data[1].i); TEST_ASSERT_EQ(5, data[1].j);
+        TEST_ASSERT_EQ( 6.0f, data[1].a);
+        TEST_ASSERT_EQ(    3, data[2].i); TEST_ASSERT_EQ(5, data[2].j);
+        TEST_ASSERT_EQ( 7.0f, data[2].a);
+        mtxfile_free(&mtxfile);
+    }
+
+    {
+        /* Rectangular matrix: */
+
+        /* Rows:      3 2 1      1 2 3 */
+        /*            |/|/   ==> |/|/  */
+        /* Columns:   2 1        2 1   */
+
+        int err;
+        struct mtxfile mtxfile;
+        int num_rows = 3;
+        int num_columns = 2;
+        const struct mtxfile_matrix_coordinate_real_single srcdata[] = {
+            {1,1, 1.0f},
+            {2,1, 2.0f},
+            {2,2, 3.0f},
+            {3,2, 4.0f}};
+        size_t size = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxfile_init_matrix_coordinate_real_single(
+            &mtxfile, mtxfile_general, num_rows, num_columns, size, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        bool symmetric;
+        int rowperm[3] = {};
+        int rowperminv[3] = {};
+        int colperm[2] = {};
+        int colperminv[2] = {};
+        int verbose = 0;
+        err = mtxfile_reorder_nd(
+            &mtxfile, rowperm, rowperminv, colperm, colperminv,
+            true, &symmetric, verbose);
+        TEST_ASSERT_EQ(false, symmetric);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(3, rowperm[0]);
+        TEST_ASSERT_EQ(2, rowperm[1]);
+        TEST_ASSERT_EQ(1, rowperm[2]);
+        TEST_ASSERT_EQ(1, colperm[0]);
+        TEST_ASSERT_EQ(2, colperm[1]);
+        TEST_ASSERT_EQ(3, rowperminv[0]);
+        TEST_ASSERT_EQ(2, rowperminv[1]);
+        TEST_ASSERT_EQ(1, rowperminv[2]);
+        TEST_ASSERT_EQ(1, colperminv[0]);
+        TEST_ASSERT_EQ(2, colperminv[1]);
+
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxfile.header.symmetry);
+        TEST_ASSERT_EQ(mtx_single, mtxfile.precision);
+        TEST_ASSERT_EQ(3, mtxfile.size.num_rows);
+        TEST_ASSERT_EQ(2, mtxfile.size.num_columns);
+        TEST_ASSERT_EQ(4, mtxfile.size.num_nonzeros);
+        const struct mtxfile_matrix_coordinate_real_single * data =
+            mtxfile.data.matrix_coordinate_real_single;
+        TEST_ASSERT_EQ(    3, data[0].i); TEST_ASSERT_EQ(1, data[0].j);
+        TEST_ASSERT_EQ( 1.0f, data[0].a);
+        TEST_ASSERT_EQ(    2, data[1].i); TEST_ASSERT_EQ(1, data[1].j);
+        TEST_ASSERT_EQ( 2.0f, data[1].a);
+        TEST_ASSERT_EQ(    2, data[2].i); TEST_ASSERT_EQ(2, data[2].j);
+        TEST_ASSERT_EQ( 3.0f, data[2].a);
+        TEST_ASSERT_EQ(    1, data[3].i); TEST_ASSERT_EQ(2, data[3].j);
+        TEST_ASSERT_EQ( 4.0f, data[3].a);
+        mtxfile_free(&mtxfile);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * ‘main()’ entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -4781,6 +5063,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxfile_split);
     TEST_RUN(test_mtxfile_permute);
     TEST_RUN(test_mtxfile_reorder_rcm);
+    TEST_RUN(test_mtxfile_reorder_nd);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-23
+ * Last modified: 2022-09-06
  *
  * METIS graph partitioning and sparse matrix reordering algorithms.
  */
@@ -415,12 +415,376 @@ int metis_partgraph(
         int * dstpart = malloc(N * sizeof(int));
         if (!dstpart) return MTX_ERR_ERRNO;
         int err = metis_partgraphsym(
-            num_parts, N, num_nonzeros, sizeof(*rowidx), rowidxbase, rowidx,
-            sizeof(*colidx), colidxbase, colidx, dstpart, verbose);
+            num_parts, N, num_nonzeros, rowidxstride, rowidxbase, rowidx,
+            colidxstride, colidxbase, colidx, dstpart, verbose);
         if (err) { free(dstpart); return err; }
         for (int64_t i = 0; i < num_rows; i++) dstrowpart[i] = dstpart[i];
         for (int64_t j = 0; j < num_columns; j++) dstcolpart[j] = dstpart[num_rows+j];
         free(dstpart);
+    }
+    return MTX_SUCCESS;
+#endif
+}
+
+/**
+ * ‘metis_ndsym()’ uses METIS to compute a multilevel nested
+ * dissection ordering of an undirected graph given as a square,
+ * symmetric matrix in coordinate format.
+ *
+ * The undirected graph is described in terms of a symmetric adjacency
+ * matrix in coordinate (COO) format with ‘N’ rows and columns. There
+ * are ‘num_nonzeros’ nonzero matrix entries. The locations of the
+ * matrix nonzeros are specified by the arrays ‘rowidx’ and ‘colidx’,
+ * both of which are of length ‘num_nonzeros’, and contain offsets in
+ * the range ‘[0,N)’. Note that there should not be any duplicate
+ * nonzero entries. The nonzeros may be located in the upper or lower
+ * triangle of the adjacency matrix. However, if there is a nonzero
+ * entry at row ‘i’ and column ‘j’, then there should not be a nonzero
+ * entry row ‘j’ and column ‘i’.
+ *
+ * The values ‘rowidxstride’ and ‘colidxstride’ may be used to specify
+ * strides (in bytes) that are used when accessing the row and column
+ * offsets in ‘rowidx’ and ‘colidx’, respectively. This is useful for
+ * cases where the row and column offsets are not necessarily stored
+ * contiguously in memory.
+ *
+ * On success, the arrays ‘perm’ and ‘perminv’ contain the permutation
+ * and inverse permutation of the graph vertices. Therefore, ‘perm’
+ * and ‘perminv’ must be arrays of length ‘N’.
+ */
+int metis_ndsym(
+    int64_t N,
+    int64_t size,
+    int rowidxstride,
+    int rowidxbase,
+    const int64_t * rowidx,
+    int colidxstride,
+    int colidxbase,
+    const int64_t * colidx,
+    int * dstperm,
+    int * dstperminv,
+    int verbose)
+{
+#ifndef LIBMTX_HAVE_METIS
+    return MTX_ERR_METIS_NOT_SUPPORTED;
+#else
+    if (N > IDX_MAX-1) return MTX_ERR_METIS_EOVERFLOW;
+    if (size > IDX_MAX) return MTX_ERR_METIS_EOVERFLOW;
+
+    /* perform some bounds checking on the input graph */
+    for (int64_t k = 0; k < size; k++) {
+        int64_t i = *(const int64_t *) ((const char *) rowidx + k*rowidxstride)-rowidxbase;
+        int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
+        if (i < 0 || i >= N || j < 0 || j >= N) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+
+    /* configure reordering options */
+    idx_t options[METIS_NOPTIONS]; /* array of options */
+    int err = METIS_SetDefaultOptions(options);
+    if (err == METIS_ERROR_INPUT) { return MTX_ERR_METIS_INPUT; }
+    else if (err == METIS_ERROR_MEMORY) { return MTX_ERR_METIS_MEMORY; }
+    else if (err == METIS_ERROR) { return MTX_ERR_METIS; }
+
+    /* METIS_OBJTYPE_CUT for edge-cut minimization (default) or
+     * METIS_OBJTYPE_VOL for total communication volume
+     * minimization */
+    // options[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_CUT;
+
+    /* METIS_CTYPE_RM for random matching or METIS_CTYPE_SHEM for
+     * sorted heavy-edge matching (default) */
+    // options[METIS_OPTION_CTYPE] = METIS_CTYPE_SHEM;
+
+    /*
+     * METIS_IPTYPE_GROW - grows a bisection using a greedy strategy (default)
+     * METIS_IPTYPE_RANDOM - computes a bisection at random followed
+     *                       by a refinement
+     * METIS_IPTYPE_EDGE - derives a separator from an edge cut
+     * METIS_IPTYPE_NODE - grow a bisection using a greedy node-based
+     *                     strategy
+     */
+    // options[METIS_OPTION_IPTYPE] = METIS_IPTYPE_GROW;
+
+    /*
+     * METIS_RTYPE_FM - FM-based cut refinement
+     * METIS_RTYPE_GREEDY - greedy-based cut and volume refinement
+     * METIS_RTYPE_SEP2SIDED - two-sided node FM refinement
+     * METIS_RTYPE_SEP1SIDED - One-sided node FM refinement (default)
+     */
+    // options[METIS_OPTION_RTYPE] = METIS_RTYPE_SEP1SIDED;
+
+    /* 0 (default) performs a 2–hop matching or 1 does not */
+    // options[METIS_OPTION_NO2HOP] = 0;
+
+    /* The number of different partitionings to compute. The final
+     * partitioning is the one that achieves the best edgecut or
+     * communication volume. Default is 1. */
+    // options[METIS_OPTION_NCUTS] = 1;
+
+    /* The number of iterations for the refinement algorithms at each
+     * stage of the uncoarsening process. Default is 10. */
+    // options[METIS_OPTION_NITER] = 10;
+
+    /* Specifies the maximum allowed load imbalance among the
+     * partitions. A value of x indicates that the allowed load
+     * imbalance is (1 + x)/1000. The load imbalance for the jth
+     * constraint is defined to be max_i(w[j,i])/t[j,i]), where w[j,i]
+     * is the fraction of the overall weight of the jth constraint
+     * that is assigned to the ith partition and t[j, i] is the
+     * desired target weight of the jth constraint for the ith
+     * partition (i.e., that specified via -tpwgts). For -ptype=rb,
+     * the default value is 1 (i.e., load imbalance of 1.001) and for
+     * -ptype=kway, the default value is 30 (i.e., load imbalance of
+     * 1.03). */
+    // options[METIS_OPTION_UFACTOR] = 30;
+
+    /* 0 does not explicitly minimize maximum connectivity (default),
+     * or 1 explicitly minimizes maximum connectivity. */
+    // options[METIS_OPTION_MINCONN] = 0;
+
+    /* 0 does not force contiguous partitions (default), or 1 forces
+     * contiguous partitions. */
+    // options[METIS_OPTION_CONTIG] = 0;
+
+    /* seed for the random number generator */
+    // options[METIS_OPTION_SEED] = 0;
+
+    /* 0 for C-style numbering that starts from 0 (default), or 1 for
+     * Fortran-style numbering that starts from 1 */
+    // options[METIS_OPTION_NUMBERING] = 0;
+
+    /*
+     * METIS_DBG_INFO (1)
+     * METIS_DBG_TIME (2)
+     * METIS_DBG_COARSEN (4)
+     * METIS_DBG_REFINE (8)
+     * METIS_DBG_IPART (16)
+     * METIS_DBG_MOVEINFO (32)
+     * METIS_DBG_SEPINFO (64)
+     * METIS_DBG_CONNINFO (128)
+     * METIS_DBG_CONTIGINFO (256)
+     */
+    options[METIS_OPTION_DBGLVL] = verbose ? 1 : 0;
+
+    /* the number of vertices in the graph */
+    idx_t nvtxs = N;
+
+    /* adjacency structure of the graph (row pointers) */
+    idx_t * xadj = malloc((nvtxs+1) * sizeof(idx_t));
+    if (!xadj) return MTX_ERR_ERRNO;
+    for (idx_t i = 0; i <= nvtxs; i++) xadj[i] = 0;
+    for (int64_t k = 0; k < size; k++) {
+        int64_t i = *(const int64_t *) ((const char *) rowidx + k*rowidxstride)-rowidxbase;
+        int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
+        if (i != j) { xadj[i+1]++; xadj[j+1]++; }
+    }
+    for (idx_t i = 1; i <= nvtxs; i++) {
+        if (xadj[i] > IDX_MAX - xadj[i-1]) { free(xadj); return MTX_ERR_METIS_EOVERFLOW; }
+        xadj[i] += xadj[i-1];
+    }
+
+    /* adjacency structure of the graph (column offsets) */
+    idx_t * adjncy = malloc(xadj[nvtxs] * sizeof(idx_t));
+    if (!adjncy) { free(xadj); return MTX_ERR_ERRNO; }
+
+    for (int64_t k = 0; k < size; k++) {
+        int64_t i = *(const int64_t *) ((const char *) rowidx + k*rowidxstride)-rowidxbase;
+        int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
+        if (i != j) { adjncy[xadj[i]++] = j; adjncy[xadj[j]++] = i; }
+    }
+    for (idx_t i = nvtxs; i > 0; i--) xadj[i] = xadj[i-1];
+    xadj[0] = 0;
+
+#ifdef DEBUG_METIS
+    fprintf(stderr, "nvtxs=%"PRIDX", xadj=[", nvtxs);
+    for (idx_t i = 0; i <= nvtxs; i++) fprintf(stderr, " %"PRIDX, xadj[i]);
+    fprintf(stderr, "]\n");
+    fprintf(stderr, "adjncy=[");
+    for (idx_t i = 0; i < nvtxs; i++) {
+        fprintf(stderr, " (%"PRIDX")", i);
+        for (idx_t k = xadj[i]; k < xadj[i+1]; k++)
+            fprintf(stderr, " %"PRIDX, adjncy[k]);
+    }
+    fprintf(stderr, "]\n");
+#endif
+
+    idx_t * vwgt = NULL;    /* the weights of the vertices */
+
+    /* These are vectors, each of size nvtxs that upon successful
+     * completion store the permutation and inverse permutation
+     * vectors of the fill-reducing graph ordering. The numbering of
+     * this vector starts from either 0 or 1, depending on the value
+     * of options[METIS OPTION NUMBERING]. */
+    idx_t * perm = NULL;
+    idx_t * perminv = NULL;
+    bool free_perm = false;
+    if (sizeof(*dstperm) == sizeof(*perm)) {
+        perm = (idx_t *) dstperm;
+        perminv = (idx_t *) dstperminv;
+    } else {
+        perm = malloc(nvtxs * sizeof(idx_t));
+        if (!perm) { free(adjncy); free(xadj); return MTX_ERR_ERRNO; }
+        perminv = malloc(nvtxs * sizeof(idx_t));
+        if (!perminv) { free(perm); free(adjncy); free(xadj); return MTX_ERR_ERRNO; }
+        free_perm = true;
+    }
+
+    /* temporarily redirect stdandard output to standard error, so
+     * that METIS prints its output to the standard error stream */
+    int tmpfd = -1;
+    if (verbose) {
+        tmpfd = dup(STDOUT_FILENO);
+        if (tmpfd != -1) dup2(STDERR_FILENO, STDOUT_FILENO);
+    }
+
+    // int METIS_NodeND(
+    //     idx_t *nvtxs, idx_t *xadj, idx_t *adjncy,
+    //     idx_t *vwgt, idx_t *options, idx_t *perm, idx_t *iperm);
+
+    /* note that the meaning of METIS's perm and iperm are reversed
+     * compared to the terminology we use for permutation and inverse
+     * permutation of graph vertices */
+    err = METIS_NodeND(
+        &nvtxs, xadj, adjncy, vwgt, options, perminv, perm);
+
+    if (tmpfd != -1) dup2(tmpfd, STDOUT_FILENO);
+
+    if (err == METIS_ERROR_INPUT) { err = MTX_ERR_METIS_INPUT; }
+    else if (err == METIS_ERROR_MEMORY) { err = MTX_ERR_METIS_MEMORY; }
+    else if (err == METIS_ERROR) { err = MTX_ERR_METIS; }
+    else { err = MTX_SUCCESS; }
+
+    if (err) {
+        if (free_perm) { free(perminv); free(perm); }
+        free(adjncy); free(xadj);
+        return err;
+    }
+
+    if (sizeof(*dstperm) != sizeof(*perm)) {
+        for (idx_t i = 0; i < N; i++) {
+            if (perm[i] > INT_MAX) {
+                free(perminv); free(perm); free(adjncy); free(xadj);
+                errno = ERANGE;
+                return MTX_ERR_ERRNO;
+            }
+            dstperm[i] = perm[i];
+            dstperminv[i] = perminv[i];
+        }
+        free(perminv); free(perm);
+    }
+    free(adjncy); free(xadj);
+    return MTX_SUCCESS;
+#endif
+}
+
+/**
+ * ‘metis_nd()’ uses METIS to compute a multilevel nested dissection
+ * ordering of an undirected graph derived from a sparse matrix.
+ *
+ * The sparse matrix is provided in coordinate (COO) format with
+ * dimensions given by ‘num_rows’ and ‘num_columns’. Furthermore,
+ * there are ‘num_nonzeros’ nonzero matrix entries, whose locations
+ * are specified by the arrays ‘rowidx’ and ‘colidx’ (of length
+ * ‘num_nonzeros’). The row offsets are in the range ‘[0,num_rows)’,
+ * whereas the column offsets are given in the range are in the range
+ * ‘[0,num_columns)’.
+ *
+ * The matrix may be unsymmetric or even non-square. Furthermore,
+ * duplicate nonzero matrix entries are allowed, though they will be
+ * removed when forming the undirected graph that is passed to METIS.
+ *
+ * If the matrix is square, then the graph to be reordered is obtained
+ * from the symmetrisation ‘A+A'’ of the matrix ‘A’ , where ‘A'’
+ * denotes the transpose of ‘A’.
+ *
+ * If the matrix is non-square, the reordering algorithm is carried
+ * out on a bipartite graph formed by the matrix rows and columns.
+ * The adjacency matrix ‘B’ of the bipartite graph is square and
+ * symmetric and takes the form of a 2-by-2 block matrix where ‘A’ is
+ * placed in the upper right corner and ‘A'’ is placed in the lower
+ * left corner:
+ *
+ *     ⎡  0   A ⎤
+ * B = ⎢        ⎥.
+ *     ⎣  A'  0 ⎦
+ *
+ * As a result, the number of vertices in the graph is equal to
+ * ‘num_rows’ (and ‘num_columns’) if the matrix is square. Otherwise,
+ * if the matrix is non-square, then there are ‘num_rows+num_columns’
+ * vertices.
+ *
+ * The arrays ‘rowperm’ and ‘rowperminv’ must be of length
+ * ‘num_rows’. These arrays are used to store the permutation and
+ * inverse permutation of the matrix rows. If the matrix is
+ * non-square, then ‘colperm’ and ‘colperminv’ must be arrays of
+ * length ‘num_columns’, which are then similarly used to store the
+ * permutation and inverse permutation of the matrix columns.
+ */
+int metis_nd(
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    int rowidxstride,
+    int rowidxbase,
+    const int64_t * rowidx,
+    int colidxstride,
+    int colidxbase,
+    const int64_t * colidx,
+    int * rowperm,
+    int * rowperminv,
+    int * colperm,
+    int * colperminv,
+    int verbose)
+{
+#ifndef LIBMTX_HAVE_METIS
+    return MTX_ERR_METIS_NOT_SUPPORTED;
+#else
+    bool square = num_rows == num_columns;
+    int64_t N = square ? num_rows : num_rows + num_columns;
+
+    if (square) {
+        /*
+         * Handle unsymmetric matrices via symmetrisation: add all
+         * nonzeros and their symmetric counterparts, then compact,
+         * (i.e., sort and remove duplicates).
+         */
+        int64_t (* idx)[2] = malloc(num_nonzeros * sizeof(int64_t[2]));
+        if (!idx) return MTX_ERR_ERRNO;
+        for (int64_t k = 0; k < num_nonzeros; k++) {
+            int64_t i = *(const int64_t *) ((const char *) rowidx + k*rowidxstride)-rowidxbase;
+            int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
+            if (i <= j) { idx[k][0] = i; idx[k][1] = j; }
+            else        { idx[k][0] = j; idx[k][1] = i; }
+        }
+        int err = compact_unsorted_int64_pair(
+            &num_nonzeros, idx, num_nonzeros, idx, NULL, NULL);
+        if (err) { free(idx); return err; }
+        err = metis_ndsym(
+            N, num_nonzeros, sizeof(*idx), 0, &idx[0][0],
+            sizeof(*idx), 0, &idx[0][1], rowperm, rowperminv, verbose);
+        if (err) { free(idx); return err; }
+        free(idx);
+    } else {
+        /*
+         * Handle non-square matrices by partitioning the bipartite
+         * graph whose vertices are the rows and columns of the
+         * matrix.
+         */
+        int * perm = malloc(N * sizeof(int));
+        if (!perm) return MTX_ERR_ERRNO;
+        int * perminv = malloc(N * sizeof(int));
+        if (!perminv) { free(perm); return MTX_ERR_ERRNO; }
+        int err = metis_ndsym(
+            N, num_nonzeros, rowidxstride, rowidxbase, rowidx,
+            colidxstride, colidxbase, colidx, perm, perminv, verbose);
+        if (err) { free(perminv); free(perm); return err; }
+        int k = 0, l = 0;
+        for (int64_t i = 0; i < N; i++) {
+            if (perm[i] < num_rows) { rowperm[k++] = perm[i]; }
+            else { colperm[l++] = perm[i]-num_rows; }
+        }
+        for (int64_t i = 0; i < num_rows; i++) rowperminv[rowperm[i]] = i;
+        for (int64_t j = 0; j < num_columns; j++) colperminv[colperm[j]] = j;
+        free(perminv); free(perm);
     }
     return MTX_SUCCESS;
 #endif

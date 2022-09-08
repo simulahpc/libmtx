@@ -1,3 +1,8 @@
+2022-09-08 James D. Trotter <james@simula.no>
+
+	Implement matrix reordering based on METIS's nested dissection
+	algorithm.
+
 2022-04-08 James D. Trotter <james@simula.no>
 
 	Refactor dense vector implementations to have a serial base
