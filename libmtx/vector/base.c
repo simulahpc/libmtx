@@ -1704,8 +1704,8 @@ int mtxvector_base_copy(
 {
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (y->precision != x->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (y->size != x->size) { fprintf(stderr, "y->size=%d, x->size=%d\n", y->size, x->size); return MTX_ERR_INCOMPATIBLE_SIZE; }
-    if (x->num_nonzeros != y->num_nonzeros) { fprintf(stderr, "y->num_nonzeros=%d, x->num_nonzeros=%d\n", y->num_nonzeros, x->num_nonzeros); return MTX_ERR_INCOMPATIBLE_SIZE; }
+    if (y->size != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
     /* if (x->idx && !y->idx || !x->idx && y->idx) return MTX_ERR_INVALID_VECTOR_TYPE; */
     if (y->field == mtx_field_real) {
         if (y->precision == mtx_single) {
