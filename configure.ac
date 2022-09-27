@@ -79,20 +79,6 @@ libmtx_CPPFLAGS="$libmtx_CPPFLAGS $X86_FEATURE_CFLAGS"
 dnl Check for C math library
 AC_SEARCH_LIBS([floor], [m])
 
-dnl Check for BLAS
-AX_BLAS()
-AC_MSG_CHECKING([for BLAS])
-if test x"$with_blas" = xno; then
-AC_MSG_RESULT([$with_blas])
-else
-AC_MSG_RESULT([$ax_blas_ok])
-if test x"$ax_blas_ok" = xyes; then
-AC_DEFINE(LIBMTX_HAVE_BLAS,1,[Define to 1 if you have a BLAS library.])
-AC_SUBST(LIBMTX_HAVE_BLAS)
-fi
-fi
-AM_CONDITIONAL([HAVE_BLAS], [test x"$ax_blas_ok" = xyes])
-
 dnl Check for MPI
 AC_ARG_WITH(mpi,
   [AS_HELP_STRING(
@@ -196,6 +182,38 @@ AX_LIB_METIS([
 AC_MSG_WARN([either specify a valid METIS installation with --with-metis=DIR or disable METIS usage with --without-metis]))
 AM_CONDITIONAL([HAVE_METIS],
   [test x"$with_metis" != xno -a x"$metis_found" != xno])
+
+dnl check for BLAS libraries
+blas_found=no
+blas=
+
+dnl Check for OpenBLAS
+if test x"$blas_found" == x"no"; then
+  AX_OPENBLAS(
+    [BLAS_CPPFLAGS="-I${OPENBLAS_HOME}/include"
+     BLAS_LDFLAGS="-L${OPENBLAS_HOME}/lib"
+     BLAS_LIBS="-lopenblas"
+     AC_DEFINE([LIBMTX_HAVE_OPENBLAS], [1], [Define to 1 if you have OpenBLAS])
+     AC_SUBST(LIBMTX_HAVE_OPENBLAS)
+     blas_found=yes
+     blas=OpenBLAS], [])
+fi
+AM_CONDITIONAL([HAVE_OPENBLAS],
+  [test x"$with_openblas" != xno -a x"$openblas_found" != xno])
+
+dnl check if any BLAS library was found
+AC_MSG_CHECKING([for BLAS])
+if test x"$blas_found" != x"no"; then
+  AC_MSG_RESULT([$blas_found ($blas)])
+  AC_SUBST(BLAS_CPPFLAGS)
+  AC_SUBST(BLAS_LDFLAGS)
+  AC_SUBST(BLAS_LIBS)
+  AC_DEFINE([LIBMTX_HAVE_BLAS], [1], [Define to 1 if you have a BLAS library])
+  AC_SUBST(LIBMTX_HAVE_BLAS)
+else
+  AC_MSG_RESULT([$blas_found])
+fi
+AM_CONDITIONAL([HAVE_BLAS], [test x"$blas_found" != xno])
 
 AC_SUBST(libmtx_CPPFLAGS)
 

@@ -17,9 +17,9 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-23
+ * Last modified: 2022-09-27
  *
- * Configuration information.
+ * Build configuration
  */
 
 #ifndef LIBMTX_LIBMTX_CONFIG_H
@@ -31,9 +31,6 @@
 /* Define if you have an MPI library. */
 #undef LIBMTX_HAVE_MPI
 
-/* Define if you have OpenMP. */
-#undef LIBMTX_HAVE_OPENMP
-
 /* Define if you have `z' library (-lz) */
 #undef LIBMTX_HAVE_LIBZ
 
@@ -42,5 +39,11 @@
 
 /* Define if you have METIS */
 #undef LIBMTX_HAVE_METIS
+
+/* Define if you have OpenBLAS. */
+#undef LIBMTX_HAVE_OPENBLAS
+
+/* Define if you have OpenMP. */
+#undef LIBMTX_HAVE_OPENMP
 
 #endif
