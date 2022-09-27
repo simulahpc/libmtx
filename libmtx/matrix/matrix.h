@@ -125,12 +125,16 @@ struct mtxmatrix
      */
     union
     {
+#ifdef LIBMTX_HAVE_BLAS
         struct mtxmatrix_blas blas;
+#endif
         struct mtxmatrix_coo coo;
         struct mtxmatrix_csr csr;
         struct mtxmatrix_dense dense;
         struct mtxmatrix_nullcoo nullcoo;
+#ifdef LIBMTX_HAVE_OPENMP
         struct mtxmatrix_ompcsr ompcsr;
+#endif
     } storage;
 };
 

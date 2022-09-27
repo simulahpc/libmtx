@@ -23,6 +23,7 @@
 
 #include <libmtx/libmtx-config.h>
 
+#ifdef LIBMTX_HAVE_BLAS
 #include <libmtx/error.h>
 #include <libmtx/vector/field.h>
 #include <libmtx/vector/precision.h>
@@ -2931,3 +2932,4 @@ int mtxmatrix_blas_zgemv(
     } else { return MTX_ERR_INVALID_SYMMETRY; }
     return MTX_SUCCESS;
 }
+#endif
