@@ -67,9 +67,9 @@ AC_DEFUN([AX_LIBPNG],
 [AC_MSG_CHECKING(if libpng is wanted)
 libpng_places="/usr/local /usr /opt/local /sw"
 AC_ARG_WITH([libpng],
-[  --with-libpng=DIR         path to libpng installation @<:@defaults to
+[  --with-libpng=DIR       path to libpng installation @<:@defaults to
                           /usr/local or /usr if not found in /usr/local@:>@
-  --without-libpng          disable libpng usage completely],
+  --without-libpng        disable libpng usage completely],
 [if test "$withval" != no ; then
   with_libpng="$withval"
   AC_MSG_RESULT(yes)
