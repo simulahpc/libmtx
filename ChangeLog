@@ -1,3 +1,7 @@
+2022-09-28  James D. Trotter  <james@simula.no>
+
+	* configure.ac: make it easier to select user-defined BLAS library
+
 2022-09-08 James D. Trotter <james@simula.no>
 
 	Implement matrix reordering based on METIS's nested dissection

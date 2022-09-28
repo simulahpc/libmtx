@@ -4,6 +4,7 @@
   the nested dissection algorithm as implemented by the METIS graph
   partitioner.
 
+  It is also easier to build with a user-defined BLAS library.
 
 * Noteworthy changes in release 0.2.0 (2022-06-28)
 
