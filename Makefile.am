@@ -258,19 +258,19 @@ tests/test_mtxdistfile_parallel:  tests/test_mtxdistfile
 endif
 
 # vector
-tests_test_mtxvector_base_CPPFLAGS =
+tests_test_mtxvector_base_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxvector_base_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxvector_base_SOURCES = tests/test_mtxvector_base.c tests/test.h
 check_PROGRAMS += tests/test_mtxvector_base
 TESTS += tests/test_mtxvector_base
-tests_test_mtxvector_packed_CPPFLAGS =
+tests_test_mtxvector_packed_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxvector_packed_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxvector_packed_SOURCES = tests/test_mtxvector_packed.c tests/test.h
 check_PROGRAMS += tests/test_mtxvector_packed
 TESTS += tests/test_mtxvector_packed
 
 if HAVE_BLAS
-tests_test_mtxvector_blas_CPPFLAGS =
+tests_test_mtxvector_blas_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxvector_blas_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxvector_blas_SOURCES = tests/test_mtxvector_blas.c tests/test.h
 check_PROGRAMS += tests/test_mtxvector_blas
@@ -278,7 +278,7 @@ TESTS += tests/test_mtxvector_blas
 endif
 
 if HAVE_OPENMP
-tests_test_mtxvector_omp_CPPFLAGS =
+tests_test_mtxvector_omp_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxvector_omp_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxvector_omp_SOURCES = tests/test_mtxvector_omp.c tests/test.h
 check_PROGRAMS += tests/test_mtxvector_omp
@@ -295,30 +295,30 @@ tests/test_mtxvector_dist_parallel:  tests/test_mtxvector_dist
 endif
 
 # matrix
-tests_test_mtxmatrix_base_coo_CPPFLAGS =
+tests_test_mtxmatrix_base_coo_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxmatrix_base_coo_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxmatrix_base_coo_SOURCES = tests/test_mtxmatrix_base_coo.c tests/test.h
 check_PROGRAMS += tests/test_mtxmatrix_base_coo
 TESTS += tests/test_mtxmatrix_base_coo
-tests_test_mtxmatrix_base_csr_CPPFLAGS =
+tests_test_mtxmatrix_base_csr_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxmatrix_base_csr_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxmatrix_base_csr_SOURCES = tests/test_mtxmatrix_base_csr.c tests/test.h
 check_PROGRAMS += tests/test_mtxmatrix_base_csr
 TESTS += tests/test_mtxmatrix_base_csr
-tests_test_mtxmatrix_base_dense_CPPFLAGS =
+tests_test_mtxmatrix_base_dense_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxmatrix_base_dense_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxmatrix_base_dense_SOURCES = tests/test_mtxmatrix_base_dense.c tests/test.h
 check_PROGRAMS += tests/test_mtxmatrix_base_dense
 TESTS += tests/test_mtxmatrix_base_dense
 if HAVE_BLAS
-tests_test_mtxmatrix_blas_dense_CPPFLAGS =
+tests_test_mtxmatrix_blas_dense_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxmatrix_blas_dense_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxmatrix_blas_dense_SOURCES = tests/test_mtxmatrix_blas_dense.c tests/test.h
 check_PROGRAMS += tests/test_mtxmatrix_blas_dense
 TESTS += tests/test_mtxmatrix_blas_dense
 endif
 if HAVE_OPENMP
-tests_test_mtxmatrix_ompcsr_CPPFLAGS =
+tests_test_mtxmatrix_ompcsr_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxmatrix_ompcsr_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxmatrix_ompcsr_SOURCES = tests/test_mtxmatrix_ompcsr.c tests/test.h
 check_PROGRAMS += tests/test_mtxmatrix_ompcsr
@@ -334,7 +334,7 @@ tests/test_mtxmatrix_dist_parallel:  tests/test_mtxmatrix_dist
 endif
 
 # solver
-tests_test_mtxcg_CPPFLAGS =
+tests_test_mtxcg_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxcg_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxcg_SOURCES = tests/test_mtxcg.c tests/test.h
 check_PROGRAMS += tests/test_mtxcg
@@ -361,7 +361,7 @@ tests_test_parse_LDADD = $(top_builddir)/libmtx.la
 tests_test_parse_SOURCES = tests/test_parse.c tests/test.h
 check_PROGRAMS += tests/test_parse
 TESTS += tests/test_parse
-tests_test_partition_CPPFLAGS =
+tests_test_partition_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_partition_LDADD = $(top_builddir)/libmtx.la
 tests_test_partition_SOURCES = tests/test_partition.c tests/test.h
 check_PROGRAMS += tests/test_partition
@@ -371,7 +371,7 @@ tests_test_permute_LDADD = $(top_builddir)/libmtx.la
 tests_test_permute_SOURCES = tests/test_permute.c tests/test.h
 check_PROGRAMS += tests/test_permute
 TESTS += tests/test_permute
-tests_test_sort_CPPFLAGS =
+tests_test_sort_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_sort_LDADD = $(top_builddir)/libmtx.la
 tests_test_sort_SOURCES = tests/test_sort.c tests/test.h
 check_PROGRAMS += tests/test_sort
