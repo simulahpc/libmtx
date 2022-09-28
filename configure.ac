@@ -185,34 +185,61 @@ AM_CONDITIONAL([HAVE_METIS],
 
 dnl check for BLAS libraries
 blas_found=no
-blas=
 
-dnl Check for OpenBLAS
-if test x"$blas_found" == x"no"; then
-  AX_OPENBLAS(
-    [BLAS_CPPFLAGS="-I${OPENBLAS_HOME}/include"
+dnl check for user-defined BLAS library
+AC_MSG_CHECKING(for user-defined BLAS library)
+AC_ARG_WITH([blas], [
+  --with-blas=LIB              base name of user-defined BLAS library (e.g., blas, openblas)
+  --with-blas-libdir=DIR       location of user-defined BLAS library
+  --with-blas-includedir=DIR   include directory for cblas.h
+  --with-blas-ldflags=LDFLAGS  linker flags for user-defined BLAS library
+  --without-blas               disable BLAS usage completely])
+AC_ARG_WITH([blas-libdir], [])
+AC_ARG_WITH([blas-includedir], [])
+AC_ARG_WITH([blas-ldflags], [])
+AS_IF(
+  [test x"$with_blas" == xno -o x"$with_blas" == x], [AC_MSG_RESULT([no])],
+  [AC_MSG_RESULT(yes)
+   OLD_LDFLAGS="$LDFLAGS"
+   OLD_CPPFLAGS="$CPPFLAGS"
+   AS_IF([test -n "$with_blas_libdir"], [LDFLAGS="$LDFLAGS -L$with_blas_libdir"])
+   AS_IF([test -n "$with_blas_includedir"], [CPPFLAGS="$CPPFLAGS -I$with_blas_includedir"])
+   AC_LANG_PUSH([C])
+   AC_CHECK_LIB([$with_blas], [cblas_dgemm], [ac_cv_lib_cblas_dgemm=yes], [ac_cv_lib_cblas_dgemm=no], [$with_blas_ldflags])
+   AC_CHECK_HEADER([cblas.h], [ac_cv_header_cblas_h=yes], [ac_cv_header_cblas_h=no])
+   AC_LANG_POP([C])
+   AS_IF([test x"$ac_cv_lib_cblas_dgemm" = x"yes" -a x"$ac_cv_header_cblas_h" = x"yes"],
+     [AS_IF([test x"$with_blas_includedir" != x], [BLAS_CPPFLAGS="-I$with_blas_includedir"])
+      AS_IF([test x"$with_blas_libdir" != x], [BLAS_LDFLAGS="-L$with_blas_libdir"])
+      AS_IF([test x"$with_blas_ldflags" != x], [BLAS_LDFLAGS="$BLAS_LDFLAGS $with_blas_ldflags"])
+      BLAS_LIBS="-l$with_blas"
+      blas_found=yes])
+   LDFLAGS="$OLD_LDFLAGS"
+   CPPFLAGS="$OLD_CPPFLAGS"])
+
+dnl check for OpenBLAS
+AS_IF([test x"$with_blas" != xno -a x"$blas_found" == xno],
+  [AX_OPENBLAS(
+    [AC_DEFINE([LIBMTX_HAVE_OPENBLAS], [1], [Define to 1 if you have OpenBLAS])
+     AC_SUBST(LIBMTX_HAVE_OPENBLAS)
+     BLAS_CPPFLAGS="-I${OPENBLAS_HOME}/include"
      BLAS_LDFLAGS="-L${OPENBLAS_HOME}/lib"
      BLAS_LIBS="-lopenblas"
-     AC_DEFINE([LIBMTX_HAVE_OPENBLAS], [1], [Define to 1 if you have OpenBLAS])
-     AC_SUBST(LIBMTX_HAVE_OPENBLAS)
-     blas_found=yes
-     blas=OpenBLAS], [])
-fi
+     with_blas=openblas
+     blas_found=yes], [])])
 AM_CONDITIONAL([HAVE_OPENBLAS],
   [test x"$with_openblas" != xno -a x"$openblas_found" != xno])
 
 dnl check if any BLAS library was found
 AC_MSG_CHECKING([for BLAS])
-if test x"$blas_found" != x"no"; then
-  AC_MSG_RESULT([$blas_found ($blas)])
-  AC_SUBST(BLAS_CPPFLAGS)
-  AC_SUBST(BLAS_LDFLAGS)
-  AC_SUBST(BLAS_LIBS)
-  AC_DEFINE([LIBMTX_HAVE_BLAS], [1], [Define to 1 if you have a BLAS library])
-  AC_SUBST(LIBMTX_HAVE_BLAS)
-else
-  AC_MSG_RESULT([$blas_found])
-fi
+AS_IF([test x"$with_blas" != xno -a x"$blas_found" != xno],
+  [AC_MSG_RESULT([$with_blas])
+   AC_SUBST(BLAS_CPPFLAGS)
+   AC_SUBST(BLAS_LDFLAGS)
+   AC_SUBST(BLAS_LIBS)
+   AC_DEFINE([LIBMTX_HAVE_BLAS], [1], [Define to 1 if you have a BLAS library])
+   AC_SUBST(LIBMTX_HAVE_BLAS)],
+  [AC_MSG_RESULT([no])])
 AM_CONDITIONAL([HAVE_BLAS], [test x"$blas_found" != xno])
 
 AC_SUBST(libmtx_CPPFLAGS)
