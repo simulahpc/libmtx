@@ -16,13 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-06-06
+ * Last modified: 2022-10-03
  *
  * Data structures for matrices in coordinate format.
  */
 
-#ifndef LIBMTX_MATRIX_BASE_COO_H
-#define LIBMTX_MATRIX_BASE_COO_H
+#ifndef LIBMTX_LINALG_BASE_COO_H
+#define LIBMTX_LINALG_BASE_COO_H
 
 #include <libmtx/libmtx-config.h>
 
@@ -30,7 +30,7 @@
 #include <libmtx/vector/field.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
-#include <libmtx/vector/base.h>
+#include <libmtx/linalg/base/vector.h>
 #include <libmtx/vector/vector.h>
 #include <libmtx/util/partition.h>
 

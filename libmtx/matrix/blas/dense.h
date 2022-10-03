@@ -29,7 +29,7 @@
 #ifdef LIBMTX_HAVE_BLAS
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
-#include <libmtx/vector/base.h>
+#include <libmtx/linalg/base/vector.h>
 #include <libmtx/vector/field.h>
 #include <libmtx/vector/precision.h>
 #include <libmtx/vector/vector.h>

@@ -29,7 +29,7 @@
 
 #ifdef LIBMTX_HAVE_OPENMP
 #include <libmtx/mtxfile/header.h>
-#include <libmtx/vector/base.h>
+#include <libmtx/linalg/base/vector.h>
 #include <libmtx/vector/field.h>
 #include <libmtx/vector/precision.h>
 

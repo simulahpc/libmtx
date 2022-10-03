@@ -27,9 +27,10 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/matrix/base/coo.h>
-#include <libmtx/matrix/base/csr.h>
-#include <libmtx/matrix/base/dense.h>
+#include <libmtx/linalg/base/coo.h>
+#include <libmtx/linalg/base/csr.h>
+#include <libmtx/linalg/base/dense.h>
+#include <libmtx/linalg/base/vector.h>
 #include <libmtx/matrix/blas/dense.h>
 #include <libmtx/matrix/dist.h>
 #include <libmtx/matrix/gemvoverlap.h>
@@ -42,7 +43,6 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/solver/cg.h>
 #include <libmtx/util/partition.h>
-#include <libmtx/vector/base.h>
 #include <libmtx/vector/blas.h>
 #include <libmtx/vector/dist.h>
 #include <libmtx/vector/field.h>

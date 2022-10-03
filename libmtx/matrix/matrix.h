@@ -26,9 +26,9 @@
 
 #include <libmtx/libmtx-config.h>
 
-#include <libmtx/matrix/base/coo.h>
-#include <libmtx/matrix/base/csr.h>
-#include <libmtx/matrix/base/dense.h>
+#include <libmtx/linalg/base/coo.h>
+#include <libmtx/linalg/base/csr.h>
+#include <libmtx/linalg/base/dense.h>
 #include <libmtx/matrix/blas/dense.h>
 #include <libmtx/matrix/null/coo.h>
 #include <libmtx/matrix/omp/csr.h>

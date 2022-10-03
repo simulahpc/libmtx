@@ -29,7 +29,7 @@
 
 #include <libmtx/libmtx-config.h>
 
-#include <libmtx/matrix/base/coo.h>
+#include <libmtx/linalg/base/coo.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/vector/field.h>

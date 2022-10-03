@@ -24,7 +24,7 @@
 #include "test.h"
 
 #include <libmtx/error.h>
-#include <libmtx/matrix/base/dense.h>
+#include <libmtx/linalg/base/dense.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/vector/vector.h>

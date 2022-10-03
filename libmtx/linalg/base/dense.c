@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-06-06
+ * Last modified: 2022-10-03
  *
  * Data structures for dense matrices.
  */
@@ -27,7 +27,7 @@
 #include <libmtx/vector/field.h>
 #include <libmtx/vector/precision.h>
 
-#include <libmtx/matrix/base/dense.h>
+#include <libmtx/linalg/base/dense.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/vector/vector.h>

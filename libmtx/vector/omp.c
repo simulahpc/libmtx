@@ -32,7 +32,7 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/vector/omp.h>
-#include <libmtx/vector/base.h>
+#include <libmtx/linalg/base/vector.h>
 #include <libmtx/vector/vector.h>
 
 #include <math.h>

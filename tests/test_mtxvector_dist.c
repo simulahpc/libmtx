@@ -28,7 +28,7 @@
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/mtxdistfile.h>
-#include <libmtx/vector/base.h>
+#include <libmtx/linalg/base/vector.h>
 #include <libmtx/vector/dist.h>
 #include <libmtx/vector/vector.h>
 

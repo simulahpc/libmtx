@@ -28,7 +28,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/matrix/null/coo.h>
-#include <libmtx/matrix/base/coo.h>
+#include <libmtx/linalg/base/coo.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/vector/field.h>
 #include <libmtx/vector/precision.h>

@@ -57,9 +57,10 @@ libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
 # Source files
 libmtx_la_SOURCES = \
 	libmtx/error.c \
-	libmtx/matrix/base/coo.c \
-	libmtx/matrix/base/csr.c \
-	libmtx/matrix/base/dense.c \
+	libmtx/linalg/base/coo.c \
+	libmtx/linalg/base/csr.c \
+	libmtx/linalg/base/dense.c \
+	libmtx/linalg/base/vector.c \
 	libmtx/matrix/blas/dense.c \
 	libmtx/matrix/dist.c \
 	libmtx/matrix/gemvoverlap.c \
@@ -93,7 +94,6 @@ libmtx_la_SOURCES = \
 	libmtx/util/permute.h \
 	libmtx/util/sort.c \
 	libmtx/util/sort.h \
-	libmtx/vector/base.c \
 	libmtx/vector/blas.c \
 	libmtx/vector/dist.c \
 	libmtx/vector/field.c \
@@ -108,9 +108,10 @@ libmtx_la_SOURCES = \
 nobase_include_HEADERS = \
 	libmtx/error.h \
 	libmtx/libmtx.h \
-	libmtx/matrix/base/coo.h \
-	libmtx/matrix/base/csr.h \
-	libmtx/matrix/base/dense.h \
+	libmtx/linalg/base/coo.h \
+	libmtx/linalg/base/csr.h \
+	libmtx/linalg/base/dense.h \
+	libmtx/linalg/base/vector.h \
 	libmtx/matrix/blas/dense.h \
 	libmtx/matrix/dist.h \
 	libmtx/matrix/gemvoverlap.h \
@@ -128,7 +129,6 @@ nobase_include_HEADERS = \
 	libmtx/mtxfile/size.h \
 	libmtx/solver/cg.h \
 	libmtx/util/partition.h \
-	libmtx/vector/base.h \
 	libmtx/vector/blas.h \
 	libmtx/vector/dist.h \
 	libmtx/vector/field.h \

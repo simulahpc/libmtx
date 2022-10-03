@@ -33,7 +33,7 @@
 #include <libmtx/vector/precision.h>
 #include <libmtx/vector/field.h>
 #include <libmtx/mtxfile/header.h>
-#include <libmtx/vector/base.h>
+#include <libmtx/linalg/base/vector.h>
 
 #include <stdarg.h>
 #include <stdbool.h>

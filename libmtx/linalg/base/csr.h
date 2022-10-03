@@ -16,13 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-07-12
+ * Last modified: 2022-10-03
  *
  * Matrices in CSR format.
  */
 
-#ifndef LIBMTX_MATRIX_BASE_CSR_H
-#define LIBMTX_MATRIX_BASE_CSR_H
+#ifndef LIBMTX_LINALG_BASE_CSR_H
+#define LIBMTX_LINALG_BASE_CSR_H
 
 #include <libmtx/libmtx-config.h>
 
@@ -30,7 +30,7 @@
 #include <libmtx/vector/field.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
-#include <libmtx/vector/base.h>
+#include <libmtx/linalg/base/vector.h>
 #include <libmtx/vector/vector.h>
 
 #include <stdarg.h>
