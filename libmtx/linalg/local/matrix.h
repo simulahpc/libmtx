@@ -63,7 +63,7 @@ enum mtxmatrixtype
     mtxblasdense,         /* dense matrices with BLAS-accelerated operations */
     mtxmatrix_coo,        /* coordinate format */
     mtxmatrix_csr,        /* compressed sparse row */
-    mtxmatrix_dense,      /* dense matrices */
+    mtxbasedense,         /* dense matrices */
     mtxnullcoo,           /* coordinate format where matrix operations
                            * do nothing (for debugging purposes) */
     mtxompcsr,            /* compressed sparse row with OpenMP */
@@ -130,7 +130,7 @@ struct mtxmatrix
 #endif
         struct mtxmatrix_coo coo;
         struct mtxmatrix_csr csr;
-        struct mtxmatrix_dense dense;
+        struct mtxbasedense dense;
         struct mtxnullcoo nullcoo;
 #ifdef LIBMTX_HAVE_OPENMP
         struct mtxompcsr ompcsr;
