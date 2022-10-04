@@ -64,6 +64,7 @@ libmtx_la_SOURCES = \
 	libmtx/linalg/blas/dense.c \
 	libmtx/linalg/blas/vector.c \
 	libmtx/linalg/field.c \
+	libmtx/linalg/gemvoverlap.c \
 	libmtx/linalg/local/matrix.c \
 	libmtx/linalg/local/vector.c \
 	libmtx/linalg/mpi/matrix.c \
@@ -72,11 +73,10 @@ libmtx_la_SOURCES = \
 	libmtx/linalg/null/vector.c \
 	libmtx/linalg/omp/csr.c \
 	libmtx/linalg/omp/vector.c \
+	libmtx/linalg/partition.c \
 	libmtx/linalg/precision.c \
-	libmtx/matrix/gemvoverlap.c \
-	libmtx/matrix/partition.c \
-	libmtx/matrix/symmetry.c \
-	libmtx/matrix/transpose.c \
+	libmtx/linalg/symmetry.c \
+	libmtx/linalg/transpose.c \
 	libmtx/mtxfile/comments.c \
 	libmtx/mtxfile/data.c \
 	libmtx/mtxfile/header.c \
@@ -114,6 +114,7 @@ nobase_include_HEADERS = \
 	libmtx/linalg/blas/dense.h \
 	libmtx/linalg/blas/vector.h \
 	libmtx/linalg/field.h \
+	libmtx/linalg/gemvoverlap.h \
 	libmtx/linalg/local/matrix.h \
 	libmtx/linalg/local/vector.h \
 	libmtx/linalg/mpi/matrix.h \
@@ -122,11 +123,10 @@ nobase_include_HEADERS = \
 	libmtx/linalg/null/vector.h \
 	libmtx/linalg/omp/csr.h \
 	libmtx/linalg/omp/vector.h \
+	libmtx/linalg/partition.h \
 	libmtx/linalg/precision.h \
-	libmtx/matrix/gemvoverlap.h \
-	libmtx/matrix/partition.h \
-	libmtx/matrix/symmetry.h \
-	libmtx/matrix/transpose.h \
+	libmtx/linalg/symmetry.h \
+	libmtx/linalg/transpose.h \
 	libmtx/mtxfile/comments.h \
 	libmtx/mtxfile/data.h \
 	libmtx/mtxfile/header.h \

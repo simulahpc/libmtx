@@ -31,7 +31,7 @@
 #include <libmtx/mtxfile/data.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/size.h>
-#include <libmtx/matrix/partition.h>
+#include <libmtx/linalg/partition.h>
 #include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_MPI

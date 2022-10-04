@@ -28,8 +28,8 @@
 
 #ifdef LIBMTX_HAVE_MPI
 #include <libmtx/linalg/local/matrix.h>
-#include <libmtx/matrix/gemvoverlap.h>
-#include <libmtx/matrix/transpose.h>
+#include <libmtx/linalg/gemvoverlap.h>
+#include <libmtx/linalg/transpose.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/linalg/field.h>
 #include <libmtx/linalg/precision.h>

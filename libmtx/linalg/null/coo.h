@@ -30,8 +30,8 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/linalg/base/coo.h>
-#include <libmtx/matrix/symmetry.h>
-#include <libmtx/matrix/transpose.h>
+#include <libmtx/linalg/symmetry.h>
+#include <libmtx/linalg/transpose.h>
 #include <libmtx/linalg/field.h>
 #include <libmtx/linalg/precision.h>
 #include <libmtx/linalg/local/vector.h>

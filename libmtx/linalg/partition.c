@@ -22,7 +22,7 @@
  */
 
 #include <libmtx/error.h>
-#include <libmtx/matrix/partition.h>
+#include <libmtx/linalg/partition.h>
 
 #include <stdint.h>
 #include <string.h>
