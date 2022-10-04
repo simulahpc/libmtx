@@ -53,7 +53,7 @@ const char * mtxmatrixtype_str(
     switch (type) {
     case mtxblasdense: return "blas";
     case mtxbasecoo: return "coo";
-    case mtxmatrix_csr: return "csr";
+    case mtxbasecsr: return "csr";
     case mtxbasedense: return "dense";
     case mtxnullcoo: return "nullcoo";
     case mtxompcsr: return "ompcsr";
@@ -98,7 +98,7 @@ int mtxmatrixtype_parse(
         *matrix_type = mtxbasecoo;
     } else if (strncmp("csr", t, strlen("csr")) == 0) {
         t += strlen("csr");
-        *matrix_type = mtxmatrix_csr;
+        *matrix_type = mtxbasecsr;
     } else if (strncmp("dense", t, strlen("dense")) == 0) {
         t += strlen("dense");
         *matrix_type = mtxbasedense;
@@ -140,8 +140,8 @@ int mtxmatrix_field(
         *field = mtxbasecoo_field(&A->storage.coo);
     } else if (A->type == mtxbasedense) {
         *field = mtxbasedense_field(&A->storage.dense);
-    } else if (A->type == mtxmatrix_csr) {
-        *field = mtxmatrix_csr_field(&A->storage.csr);
+    } else if (A->type == mtxbasecsr) {
+        *field = mtxbasecsr_field(&A->storage.csr);
     } else if (A->type == mtxnullcoo) {
         *field = mtxnullcoo_field(&A->storage.nullcoo);
     } else if (A->type == mtxompcsr) {
@@ -171,8 +171,8 @@ int mtxmatrix_precision(
         *precision = mtxbasecoo_precision(&A->storage.coo);
     } else if (A->type == mtxbasedense) {
         *precision = mtxbasedense_precision(&A->storage.dense);
-    } else if (A->type == mtxmatrix_csr) {
-        *precision = mtxmatrix_csr_precision(&A->storage.csr);
+    } else if (A->type == mtxbasecsr) {
+        *precision = mtxbasecsr_precision(&A->storage.csr);
     } else if (A->type == mtxnullcoo) {
         *precision = mtxnullcoo_precision(&A->storage.nullcoo);
     } else if (A->type == mtxompcsr) {
@@ -198,8 +198,8 @@ int mtxmatrix_symmetry(
         *symmetry = mtxbasecoo_symmetry(&A->storage.coo);
     } else if (A->type == mtxbasedense) {
         *symmetry = mtxbasedense_symmetry(&A->storage.dense);
-    } else if (A->type == mtxmatrix_csr) {
-        *symmetry = mtxmatrix_csr_symmetry(&A->storage.csr);
+    } else if (A->type == mtxbasecsr) {
+        *symmetry = mtxbasecsr_symmetry(&A->storage.csr);
     } else if (A->type == mtxnullcoo) {
         *symmetry = mtxnullcoo_symmetry(&A->storage.nullcoo);
     } else if (A->type == mtxompcsr) {
@@ -227,8 +227,8 @@ int mtxmatrix_num_nonzeros(
         *num_nonzeros = mtxbasecoo_num_nonzeros(&A->storage.coo);
     } else if (A->type == mtxbasedense) {
         *num_nonzeros = mtxbasedense_num_nonzeros(&A->storage.dense);
-    } else if (A->type == mtxmatrix_csr) {
-        *num_nonzeros = mtxmatrix_csr_num_nonzeros(&A->storage.csr);
+    } else if (A->type == mtxbasecsr) {
+        *num_nonzeros = mtxbasecsr_num_nonzeros(&A->storage.csr);
     } else if (A->type == mtxnullcoo) {
         *num_nonzeros = mtxnullcoo_num_nonzeros(&A->storage.nullcoo);
     } else if (A->type == mtxompcsr) {
@@ -255,8 +255,8 @@ int mtxmatrix_size(
         *size = mtxbasecoo_size(&A->storage.coo);
     } else if (A->type == mtxbasedense) {
         *size = mtxbasedense_size(&A->storage.dense);
-    } else if (A->type == mtxmatrix_csr) {
-        *size = mtxmatrix_csr_size(&A->storage.csr);
+    } else if (A->type == mtxbasecsr) {
+        *size = mtxbasecsr_size(&A->storage.csr);
     } else if (A->type == mtxnullcoo) {
         *size = mtxnullcoo_size(&A->storage.nullcoo);
     } else if (A->type == mtxompcsr) {
@@ -286,8 +286,8 @@ int mtxmatrix_rowcolidx(
 #endif
     } else if (A->type == mtxbasecoo) {
         return mtxbasecoo_rowcolidx(&A->storage.coo, size, rowidx, colidx);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_rowcolidx(&A->storage.csr, size, rowidx, colidx);
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_rowcolidx(&A->storage.csr, size, rowidx, colidx);
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_rowcolidx(&A->storage.dense, size, rowidx, colidx);
     } else if (A->type == mtxnullcoo) {
@@ -313,8 +313,8 @@ void mtxmatrix_free(
 #endif
     } else if (matrix->type == mtxbasecoo) {
         mtxbasecoo_free(&matrix->storage.coo);
-    } else if (matrix->type == mtxmatrix_csr) {
-        mtxmatrix_csr_free(&matrix->storage.csr);
+    } else if (matrix->type == mtxbasecsr) {
+        mtxbasecsr_free(&matrix->storage.csr);
     } else if (matrix->type == mtxbasedense) {
         mtxbasedense_free(&matrix->storage.dense);
     } else if (matrix->type == mtxnullcoo) {
@@ -342,8 +342,8 @@ int mtxmatrix_alloc_copy(
     } else if (src->type == mtxbasecoo) {
         return mtxbasecoo_alloc_copy(
             &dst->storage.coo, &src->storage.coo);
-    } else if (src->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_alloc_copy(
+    } else if (src->type == mtxbasecsr) {
+        return mtxbasecsr_alloc_copy(
             &dst->storage.csr, &src->storage.csr);
     } else if (src->type == mtxbasedense) {
         return mtxbasedense_alloc_copy(
@@ -375,8 +375,8 @@ int mtxmatrix_init_copy(
     } else if (src->type == mtxbasecoo) {
         return mtxbasecoo_init_copy(
             &dst->storage.coo, &src->storage.coo);
-    } else if (src->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_init_copy(
+    } else if (src->type == mtxbasecsr) {
+        return mtxbasecsr_init_copy(
             &dst->storage.csr, &src->storage.csr);
     } else if (src->type == mtxbasedense) {
         return mtxbasedense_init_copy(
@@ -428,9 +428,9 @@ int mtxmatrix_alloc_entries(
             &A->storage.coo, field, precision, symmetry,
             num_rows, num_columns, num_nonzeros,
             idxstride, idxbase, rowidx, colidx);
-    } else if (type == mtxmatrix_csr) {
-        A->type = mtxmatrix_csr;
-        return mtxmatrix_csr_alloc_entries(
+    } else if (type == mtxbasecsr) {
+        A->type = mtxbasecsr;
+        return mtxbasecsr_alloc_entries(
             &A->storage.csr, field, precision, symmetry,
             num_rows, num_columns, num_nonzeros,
             idxstride, idxbase, rowidx, colidx, NULL);
@@ -485,9 +485,9 @@ int mtxmatrix_init_entries_real_single(
         return mtxbasecoo_init_entries_real_single(
             &A->storage.coo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_csr) {
-        A->type = mtxmatrix_csr;
-        return mtxmatrix_csr_init_entries_real_single(
+    } else if (type == mtxbasecsr) {
+        A->type = mtxbasecsr;
+        return mtxbasecsr_init_entries_real_single(
             &A->storage.csr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxbasedense) {
@@ -538,9 +538,9 @@ int mtxmatrix_init_entries_real_double(
         return mtxbasecoo_init_entries_real_double(
             &A->storage.coo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_csr) {
-        A->type = mtxmatrix_csr;
-        return mtxmatrix_csr_init_entries_real_double(
+    } else if (type == mtxbasecsr) {
+        A->type = mtxbasecsr;
+        return mtxbasecsr_init_entries_real_double(
             &A->storage.csr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxbasedense) {
@@ -591,9 +591,9 @@ int mtxmatrix_init_entries_complex_single(
         return mtxbasecoo_init_entries_complex_single(
             &A->storage.coo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_csr) {
-        A->type = mtxmatrix_csr;
-        return mtxmatrix_csr_init_entries_complex_single(
+    } else if (type == mtxbasecsr) {
+        A->type = mtxbasecsr;
+        return mtxbasecsr_init_entries_complex_single(
             &A->storage.csr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxbasedense) {
@@ -644,9 +644,9 @@ int mtxmatrix_init_entries_complex_double(
         return mtxbasecoo_init_entries_complex_double(
             &A->storage.coo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_csr) {
-        A->type = mtxmatrix_csr;
-        return mtxmatrix_csr_init_entries_complex_double(
+    } else if (type == mtxbasecsr) {
+        A->type = mtxbasecsr;
+        return mtxbasecsr_init_entries_complex_double(
             &A->storage.csr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxbasedense) {
@@ -697,9 +697,9 @@ int mtxmatrix_init_entries_integer_single(
         return mtxbasecoo_init_entries_integer_single(
             &A->storage.coo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_csr) {
-        A->type = mtxmatrix_csr;
-        return mtxmatrix_csr_init_entries_integer_single(
+    } else if (type == mtxbasecsr) {
+        A->type = mtxbasecsr;
+        return mtxbasecsr_init_entries_integer_single(
             &A->storage.csr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxbasedense) {
@@ -750,9 +750,9 @@ int mtxmatrix_init_entries_integer_double(
         return mtxbasecoo_init_entries_integer_double(
             &A->storage.coo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_csr) {
-        A->type = mtxmatrix_csr;
-        return mtxmatrix_csr_init_entries_integer_double(
+    } else if (type == mtxbasecsr) {
+        A->type = mtxbasecsr;
+        return mtxbasecsr_init_entries_integer_double(
             &A->storage.csr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxbasedense) {
@@ -802,9 +802,9 @@ int mtxmatrix_init_entries_pattern(
         return mtxbasecoo_init_entries_pattern(
             &A->storage.coo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx);
-    } else if (type == mtxmatrix_csr) {
-        A->type = mtxmatrix_csr;
-        return mtxmatrix_csr_init_entries_pattern(
+    } else if (type == mtxbasecsr) {
+        A->type = mtxbasecsr;
+        return mtxbasecsr_init_entries_pattern(
             &A->storage.csr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx);
     } else if (type == mtxbasedense) {
@@ -999,8 +999,8 @@ int mtxmatrix_setzero(
 #endif
     } else if (A->type == mtxbasecoo) {
         return mtxbasecoo_setzero(&A->storage.coo);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_setzero(&A->storage.csr);
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_setzero(&A->storage.csr);
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_setzero(&A->storage.dense);
     } else if (A->type == mtxnullcoo) {
@@ -1030,8 +1030,8 @@ int mtxmatrix_set_real_single(
     } else if (A->type == mtxbasecoo) {
         return mtxbasecoo_set_real_single(
             &A->storage.coo, size, stride, a);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_set_real_single(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_set_real_single(
             &A->storage.csr, size, stride, a);
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_set_real_single(
@@ -1065,8 +1065,8 @@ int mtxmatrix_set_real_double(
     } else if (A->type == mtxbasecoo) {
         return mtxbasecoo_set_real_double(
             &A->storage.coo, size, stride, a);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_set_real_double(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_set_real_double(
             &A->storage.csr, size, stride, a);
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_set_real_double(
@@ -1100,8 +1100,8 @@ int mtxmatrix_set_complex_single(
     } else if (A->type == mtxbasecoo) {
         return mtxbasecoo_set_complex_single(
             &A->storage.coo, size, stride, a);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_set_complex_single(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_set_complex_single(
             &A->storage.csr, size, stride, a);
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_set_complex_single(
@@ -1135,8 +1135,8 @@ int mtxmatrix_set_complex_double(
     } else if (A->type == mtxbasecoo) {
         return mtxbasecoo_set_complex_double(
             &A->storage.coo, size, stride, a);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_set_complex_double(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_set_complex_double(
             &A->storage.csr, size, stride, a);
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_set_complex_double(
@@ -1170,8 +1170,8 @@ int mtxmatrix_set_integer_single(
     } else if (A->type == mtxbasecoo) {
         return mtxbasecoo_set_integer_single(
             &A->storage.coo, size, stride, a);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_set_integer_single(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_set_integer_single(
             &A->storage.csr, size, stride, a);
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_set_integer_single(
@@ -1205,8 +1205,8 @@ int mtxmatrix_set_integer_double(
     } else if (A->type == mtxbasecoo) {
         return mtxbasecoo_set_integer_double(
             &A->storage.coo, size, stride, a);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_set_integer_double(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_set_integer_double(
             &A->storage.csr, size, stride, a);
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_set_integer_double(
@@ -1244,8 +1244,8 @@ int mtxmatrix_alloc_row_vector(
     } else if (matrix->type == mtxbasecoo) {
         return mtxbasecoo_alloc_row_vector(
             &matrix->storage.coo, vector, vectortype);
-    } else if (matrix->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_alloc_row_vector(
+    } else if (matrix->type == mtxbasecsr) {
+        return mtxbasecsr_alloc_row_vector(
             &matrix->storage.csr, vector, vectortype);
     } else if (matrix->type == mtxbasedense) {
         return mtxbasedense_alloc_row_vector(
@@ -1279,8 +1279,8 @@ int mtxmatrix_alloc_column_vector(
     } else if (matrix->type == mtxbasecoo) {
         return mtxbasecoo_alloc_column_vector(
             &matrix->storage.coo, vector, vectortype);
-    } else if (matrix->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_alloc_column_vector(
+    } else if (matrix->type == mtxbasecsr) {
+        return mtxbasecsr_alloc_column_vector(
             &matrix->storage.csr, vector, vectortype);
     } else if (matrix->type == mtxbasedense) {
         return mtxbasedense_alloc_column_vector(
@@ -1319,9 +1319,9 @@ int mtxmatrix_from_mtxfile(
         matrix->type = mtxbasecoo;
         return mtxbasecoo_from_mtxfile(
             &matrix->storage.coo, mtxfile);
-    } else if (type == mtxmatrix_csr) {
-        matrix->type = mtxmatrix_csr;
-        return mtxmatrix_csr_from_mtxfile(
+    } else if (type == mtxbasecsr) {
+        matrix->type = mtxbasecsr;
+        return mtxbasecsr_from_mtxfile(
             &matrix->storage.csr, mtxfile);
     } else if (type == mtxbasedense) {
         matrix->type = mtxbasedense;
@@ -1362,8 +1362,8 @@ int mtxmatrix_to_mtxfile(
         return mtxbasecoo_to_mtxfile(
             dst, &src->storage.coo,
             num_rows, rowidx, num_columns, colidx, mtxfmt);
-    } else if (src->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_to_mtxfile(
+    } else if (src->type == mtxbasecsr) {
+        return mtxbasecsr_to_mtxfile(
             dst, &src->storage.csr,
             num_rows, rowidx, num_columns, colidx, mtxfmt);
     } else if (src->type == mtxbasedense) {
@@ -1683,8 +1683,8 @@ int mtxmatrix_partition_rowwise(
             &A->storage.coo,
             parttype, num_parts, partsizes, blksize, parts,
             dstnzpart, dstnzpartsizes, dstrowpart, dstrowpartsizes);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_partition_rowwise(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_partition_rowwise(
             &A->storage.csr,
             parttype, num_parts, partsizes, blksize, parts,
             dstnzpart, dstnzpartsizes, dstrowpart, dstrowpartsizes);
@@ -1741,8 +1741,8 @@ int mtxmatrix_partition_columnwise(
             &A->storage.coo,
             parttype, num_parts, partsizes, blksize, parts,
             dstnzpart, dstnzpartsizes, dstcolpart, dstcolpartsizes);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_partition_columnwise(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_partition_columnwise(
             &A->storage.csr,
             parttype, num_parts, partsizes, blksize, parts,
             dstnzpart, dstnzpartsizes, dstcolpart, dstcolpartsizes);
@@ -1810,8 +1810,8 @@ int mtxmatrix_partition_2d(
             dstnzpart, dstnzpartsizes,
             dstrowpart, dstrowpartsizes,
             dstcolpart, dstcolpartsizes);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_partition_2d(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_partition_2d(
             &A->storage.csr,
             rowparttype, num_row_parts, rowpartsizes, rowblksize, rowparts,
             colparttype, num_col_parts, colpartsizes, colblksize, colparts,
@@ -1876,15 +1876,15 @@ int mtxmatrix_split(
             num_parts, coodsts, &src->storage.coo, size, parts);
         free(coodsts);
         return err;
-    } else if (src->type == mtxmatrix_csr) {
-        struct mtxmatrix_csr ** csrdsts = malloc(
-            num_parts * sizeof(struct mtxmatrix_csr *));
+    } else if (src->type == mtxbasecsr) {
+        struct mtxbasecsr ** csrdsts = malloc(
+            num_parts * sizeof(struct mtxbasecsr *));
         if (!csrdsts) return MTX_ERR_ERRNO;
         for (int p = 0; p < num_parts; p++) {
-            dsts[p]->type = mtxmatrix_csr;
+            dsts[p]->type = mtxbasecsr;
             csrdsts[p] = &dsts[p]->storage.csr;
         }
-        int err = mtxmatrix_csr_split(
+        int err = mtxbasecsr_split(
             num_parts, csrdsts, &src->storage.csr, size, parts);
         free(csrdsts);
         return err;
@@ -1937,8 +1937,8 @@ int mtxmatrix_swap(
     } else if (X->type == mtxbasecoo && Y->type == mtxbasecoo) {
         return mtxbasecoo_swap(
             &X->storage.coo, &Y->storage.coo);
-    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_swap(
+    } else if (X->type == mtxbasecsr && Y->type == mtxbasecsr) {
+        return mtxbasecsr_swap(
             &X->storage.csr, &Y->storage.csr);
     } else if (X->type == mtxbasedense && Y->type == mtxbasedense) {
         return mtxbasedense_swap(
@@ -1969,8 +1969,8 @@ int mtxmatrix_copy(
     } else if (X->type == mtxbasecoo && Y->type == mtxbasecoo) {
         return mtxbasecoo_copy(
             &Y->storage.coo, &X->storage.coo);
-    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_copy(
+    } else if (X->type == mtxbasecsr && Y->type == mtxbasecsr) {
+        return mtxbasecsr_copy(
             &Y->storage.csr, &X->storage.csr);
     } else if (X->type == mtxbasedense && Y->type == mtxbasedense) {
         return mtxbasedense_copy(
@@ -2003,8 +2003,8 @@ int mtxmatrix_sscal(
     } else if (X->type == mtxbasecoo) {
         return mtxbasecoo_sscal(
             a, &X->storage.coo, num_flops);
-    } else if (X->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_sscal(
+    } else if (X->type == mtxbasecsr) {
+        return mtxbasecsr_sscal(
             a, &X->storage.csr, num_flops);
     } else if (X->type == mtxbasedense) {
         return mtxbasedense_sscal(
@@ -2037,8 +2037,8 @@ int mtxmatrix_dscal(
     } else if (X->type == mtxbasecoo) {
         return mtxbasecoo_dscal(
             a, &X->storage.coo, num_flops);
-    } else if (X->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_dscal(
+    } else if (X->type == mtxbasecsr) {
+        return mtxbasecsr_dscal(
             a, &X->storage.csr, num_flops);
     } else if (X->type == mtxbasedense) {
         return mtxbasedense_dscal(
@@ -2124,8 +2124,8 @@ int mtxmatrix_saxpy(
     } else if (X->type == mtxbasecoo && Y->type == mtxbasecoo) {
         return mtxbasecoo_saxpy(
             a, &X->storage.coo, &Y->storage.coo, num_flops);
-    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_saxpy(
+    } else if (X->type == mtxbasecsr && Y->type == mtxbasecsr) {
+        return mtxbasecsr_saxpy(
             a, &X->storage.csr, &Y->storage.csr, num_flops);
     } else if (X->type == mtxbasedense && Y->type == mtxbasedense) {
         return mtxbasedense_saxpy(
@@ -2159,8 +2159,8 @@ int mtxmatrix_daxpy(
     } else if (X->type == mtxbasecoo && Y->type == mtxbasecoo) {
         return mtxbasecoo_daxpy(
             a, &X->storage.coo, &Y->storage.coo, num_flops);
-    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_daxpy(
+    } else if (X->type == mtxbasecsr && Y->type == mtxbasecsr) {
+        return mtxbasecsr_daxpy(
             a, &X->storage.csr, &Y->storage.csr, num_flops);
     } else if (X->type == mtxbasedense && Y->type == mtxbasedense) {
         return mtxbasedense_daxpy(
@@ -2194,8 +2194,8 @@ int mtxmatrix_saypx(
     } else if (X->type == mtxbasecoo && Y->type == mtxbasecoo) {
         return mtxbasecoo_saypx(
             a, &Y->storage.coo, &X->storage.coo, num_flops);
-    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_saypx(
+    } else if (X->type == mtxbasecsr && Y->type == mtxbasecsr) {
+        return mtxbasecsr_saypx(
             a, &Y->storage.csr, &X->storage.csr, num_flops);
     } else if (X->type == mtxbasedense && Y->type == mtxbasedense) {
         return mtxbasedense_saypx(
@@ -2229,8 +2229,8 @@ int mtxmatrix_daypx(
     } else if (X->type == mtxbasecoo && Y->type == mtxbasecoo) {
         return mtxbasecoo_daypx(
             a, &Y->storage.coo, &X->storage.coo, num_flops);
-    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_daypx(
+    } else if (X->type == mtxbasecsr && Y->type == mtxbasecsr) {
+        return mtxbasecsr_daypx(
             a, &Y->storage.csr, &X->storage.csr, num_flops);
     } else if (X->type == mtxbasedense && Y->type == mtxbasedense) {
         return mtxbasedense_daypx(
@@ -2264,8 +2264,8 @@ int mtxmatrix_sdot(
     } else if (X->type == mtxbasecoo && Y->type == mtxbasecoo) {
         return mtxbasecoo_sdot(
             &X->storage.coo, &Y->storage.coo, dot, num_flops);
-    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_sdot(
+    } else if (X->type == mtxbasecsr && Y->type == mtxbasecsr) {
+        return mtxbasecsr_sdot(
             &X->storage.csr, &Y->storage.csr, dot, num_flops);
     } else if (X->type == mtxbasedense && Y->type == mtxbasedense) {
         return mtxbasedense_sdot(
@@ -2299,8 +2299,8 @@ int mtxmatrix_ddot(
     } else if (X->type == mtxbasecoo && Y->type == mtxbasecoo) {
         return mtxbasecoo_ddot(
             &X->storage.coo, &Y->storage.coo, dot, num_flops);
-    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_ddot(
+    } else if (X->type == mtxbasecsr && Y->type == mtxbasecsr) {
+        return mtxbasecsr_ddot(
             &X->storage.csr, &Y->storage.csr, dot, num_flops);
     } else if (X->type == mtxbasedense && Y->type == mtxbasedense) {
         return mtxbasedense_ddot(
@@ -2336,8 +2336,8 @@ int mtxmatrix_cdotu(
     } else if (X->type == mtxbasecoo && Y->type == mtxbasecoo) {
         return mtxbasecoo_cdotu(
             &X->storage.coo, &Y->storage.coo, dot, num_flops);
-    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_cdotu(
+    } else if (X->type == mtxbasecsr && Y->type == mtxbasecsr) {
+        return mtxbasecsr_cdotu(
             &X->storage.csr, &Y->storage.csr, dot, num_flops);
     } else if (X->type == mtxbasedense && Y->type == mtxbasedense) {
         return mtxbasedense_cdotu(
@@ -2373,8 +2373,8 @@ int mtxmatrix_zdotu(
     } else if (X->type == mtxbasecoo && Y->type == mtxbasecoo) {
         return mtxbasecoo_zdotu(
             &X->storage.coo, &Y->storage.coo, dot, num_flops);
-    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_zdotu(
+    } else if (X->type == mtxbasecsr && Y->type == mtxbasecsr) {
+        return mtxbasecsr_zdotu(
             &X->storage.csr, &Y->storage.csr, dot, num_flops);
     } else if (X->type == mtxbasedense && Y->type == mtxbasedense) {
         return mtxbasedense_zdotu(
@@ -2409,8 +2409,8 @@ int mtxmatrix_cdotc(
     } else if (X->type == mtxbasecoo && Y->type == mtxbasecoo) {
         return mtxbasecoo_cdotc(
             &X->storage.coo, &Y->storage.coo, dot, num_flops);
-    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_cdotc(
+    } else if (X->type == mtxbasecsr && Y->type == mtxbasecsr) {
+        return mtxbasecsr_cdotc(
             &X->storage.csr, &Y->storage.csr, dot, num_flops);
     } else if (X->type == mtxbasedense && Y->type == mtxbasedense) {
         return mtxbasedense_cdotc(
@@ -2445,8 +2445,8 @@ int mtxmatrix_zdotc(
     } else if (X->type == mtxbasecoo && Y->type == mtxbasecoo) {
         return mtxbasecoo_zdotc(
             &X->storage.coo, &Y->storage.coo, dot, num_flops);
-    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_zdotc(
+    } else if (X->type == mtxbasecsr && Y->type == mtxbasecsr) {
+        return mtxbasecsr_zdotc(
             &X->storage.csr, &Y->storage.csr, dot, num_flops);
     } else if (X->type == mtxbasedense && Y->type == mtxbasedense) {
         return mtxbasedense_zdotc(
@@ -2477,8 +2477,8 @@ int mtxmatrix_snrm2(
 #endif
     } else if (X->type == mtxbasecoo) {
         return mtxbasecoo_snrm2(&X->storage.coo, nrm2, num_flops);
-    } else if (X->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_snrm2(&X->storage.csr, nrm2, num_flops);
+    } else if (X->type == mtxbasecsr) {
+        return mtxbasecsr_snrm2(&X->storage.csr, nrm2, num_flops);
     } else if (X->type == mtxbasedense) {
         return mtxbasedense_snrm2(&X->storage.dense, nrm2, num_flops);
     } else if (X->type == mtxnullcoo) {
@@ -2505,8 +2505,8 @@ int mtxmatrix_dnrm2(
 #endif
     } else if (X->type == mtxbasecoo) {
         return mtxbasecoo_dnrm2(&X->storage.coo, nrm2, num_flops);
-    } else if (X->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_dnrm2(&X->storage.csr, nrm2, num_flops);
+    } else if (X->type == mtxbasecsr) {
+        return mtxbasecsr_dnrm2(&X->storage.csr, nrm2, num_flops);
     } else if (X->type == mtxbasedense) {
         return mtxbasedense_dnrm2(&X->storage.dense, nrm2, num_flops);
     } else if (X->type == mtxnullcoo) {
@@ -2535,8 +2535,8 @@ int mtxmatrix_sasum(
 #endif
     } else if (X->type == mtxbasecoo) {
         return mtxbasecoo_sasum(&X->storage.coo, asum, num_flops);
-    } else if (X->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_sasum(&X->storage.csr, asum, num_flops);
+    } else if (X->type == mtxbasecsr) {
+        return mtxbasecsr_sasum(&X->storage.csr, asum, num_flops);
     } else if (X->type == mtxbasedense) {
         return mtxbasedense_sasum(&X->storage.dense, asum, num_flops);
     } else if (X->type == mtxnullcoo) {
@@ -2565,8 +2565,8 @@ int mtxmatrix_dasum(
 #endif
     } else if (X->type == mtxbasecoo) {
         return mtxbasecoo_dasum(&X->storage.coo, asum, num_flops);
-    } else if (X->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_dasum(&X->storage.csr, asum, num_flops);
+    } else if (X->type == mtxbasecsr) {
+        return mtxbasecsr_dasum(&X->storage.csr, asum, num_flops);
     } else if (X->type == mtxbasedense) {
         return mtxbasedense_dasum(&X->storage.dense, asum, num_flops);
     } else if (X->type == mtxnullcoo) {
@@ -2594,8 +2594,8 @@ int mtxmatrix_iamax(
 #endif
     } else if (X->type == mtxbasecoo) {
         return mtxbasecoo_iamax(&X->storage.coo, iamax);
-    } else if (X->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_iamax(&X->storage.csr, iamax);
+    } else if (X->type == mtxbasecsr) {
+        return mtxbasecsr_iamax(&X->storage.csr, iamax);
     } else if (X->type == mtxbasedense) {
         return mtxbasedense_iamax(&X->storage.dense, iamax);
     } else if (X->type == mtxnullcoo) {
@@ -2637,8 +2637,8 @@ int mtxmatrix_sgemv(
     } else if (A->type == mtxbasecoo) {
         return mtxbasecoo_sgemv(
             trans, alpha, &A->storage.coo, x, beta, y, num_flops);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_sgemv(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_sgemv(
             trans, alpha, &A->storage.csr, x, beta, y, num_flops);
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_sgemv(
@@ -2680,8 +2680,8 @@ int mtxmatrix_dgemv(
     } else if (A->type == mtxbasecoo) {
         return mtxbasecoo_dgemv(
             trans, alpha, &A->storage.coo, x, beta, y, num_flops);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_dgemv(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_dgemv(
             trans, alpha, &A->storage.csr, x, beta, y, num_flops);
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_dgemv(
@@ -2724,8 +2724,8 @@ int mtxmatrix_cgemv(
     } else if (A->type == mtxbasecoo) {
         return mtxbasecoo_cgemv(
             trans, alpha, &A->storage.coo, x, beta, y, num_flops);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_cgemv(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_cgemv(
             trans, alpha, &A->storage.csr, x, beta, y, num_flops);
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_cgemv(
@@ -2768,8 +2768,8 @@ int mtxmatrix_zgemv(
     } else if (A->type == mtxbasecoo) {
         return mtxbasecoo_zgemv(
             trans, alpha, &A->storage.coo, x, beta, y, num_flops);
-    } else if (A->type == mtxmatrix_csr) {
-        return mtxmatrix_csr_zgemv(
+    } else if (A->type == mtxbasecsr) {
+        return mtxbasecsr_zgemv(
             trans, alpha, &A->storage.csr, x, beta, y, num_flops);
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_zgemv(

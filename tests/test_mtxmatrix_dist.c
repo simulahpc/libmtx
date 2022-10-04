@@ -618,7 +618,7 @@ int test_mtxmatrix_dist_to_mtxfile(void)
         int64_t num_nonzeros = (rank == 0) ? 3 : 2;
         struct mtxmatrix_dist src;
         err = mtxmatrix_dist_init_entries_global_real_double(
-            &src, mtxmatrix_csr, mtx_unsymmetric, num_rows, num_columns,
+            &src, mtxbasecsr, mtx_unsymmetric, num_rows, num_columns,
             num_nonzeros, rowidx, colidx, srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE

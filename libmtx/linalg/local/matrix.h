@@ -16,13 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-21
+ * Last modified: 2022-10-03
  *
  * Data structures for matrices.
  */
 
-#ifndef LIBMTX_MATRIX_MATRIX_H
-#define LIBMTX_MATRIX_MATRIX_H
+#ifndef LIBMTX_LINALG_LOCAL_MATRIX_H
+#define LIBMTX_LINALG_LOCAL_MATRIX_H
 
 #include <libmtx/libmtx-config.h>
 
@@ -30,13 +30,13 @@
 #include <libmtx/linalg/base/csr.h>
 #include <libmtx/linalg/base/dense.h>
 #include <libmtx/linalg/blas/dense.h>
+#include <libmtx/linalg/field.h>
+#include <libmtx/linalg/local/vector.h>
 #include <libmtx/linalg/null/coo.h>
 #include <libmtx/linalg/omp/csr.h>
+#include <libmtx/linalg/precision.h>
 #include <libmtx/linalg/symmetry.h>
 #include <libmtx/linalg/transpose.h>
-#include <libmtx/linalg/field.h>
-#include <libmtx/linalg/precision.h>
-#include <libmtx/linalg/local/vector.h>
 #include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
@@ -60,10 +60,10 @@ struct mtxvector;
  */
 enum mtxmatrixtype
 {
-    mtxblasdense,         /* dense matrices with BLAS-accelerated operations */
     mtxbasecoo,           /* coordinate format */
-    mtxmatrix_csr,        /* compressed sparse row */
+    mtxbasecsr,           /* compressed sparse row */
     mtxbasedense,         /* dense matrices */
+    mtxblasdense,         /* dense matrices with BLAS-accelerated operations */
     mtxnullcoo,           /* coordinate format where matrix operations
                            * do nothing (for debugging purposes) */
     mtxompcsr,            /* compressed sparse row with OpenMP */
@@ -129,7 +129,7 @@ struct mtxmatrix
         struct mtxblasdense blas;
 #endif
         struct mtxbasecoo coo;
-        struct mtxmatrix_csr csr;
+        struct mtxbasecsr csr;
         struct mtxbasedense dense;
         struct mtxnullcoo nullcoo;
 #ifdef LIBMTX_HAVE_OPENMP
