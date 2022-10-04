@@ -304,11 +304,11 @@ tests_test_mtxmatrix_base_dense_SOURCES = tests/test_mtxmatrix_base_dense.c test
 check_PROGRAMS += tests/test_mtxmatrix_base_dense
 TESTS += tests/test_mtxmatrix_base_dense
 if HAVE_BLAS
-tests_test_mtxmatrix_blas_dense_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxmatrix_blas_dense_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxmatrix_blas_dense_SOURCES = tests/test_mtxmatrix_blas_dense.c tests/test.h
-check_PROGRAMS += tests/test_mtxmatrix_blas_dense
-TESTS += tests/test_mtxmatrix_blas_dense
+tests_test_mtxblasdense_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxblasdense_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxblasdense_SOURCES = tests/test_mtxblasdense.c tests/test.h
+check_PROGRAMS += tests/test_mtxblasdense
+TESTS += tests/test_mtxblasdense
 endif
 if HAVE_OPENMP
 tests_test_mtxmatrix_ompcsr_CPPFLAGS = $(MPICPPFLAGS)

@@ -41,10 +41,10 @@ struct mtxfile;
 struct mtxmatrix;
 
 /**
- * ‘mtxmatrix_blas’ represents a dense matrix with entries stored in
+ * ‘mtxblasdense’ represents a dense matrix with entries stored in
  * row major order.
  */
-struct mtxmatrix_blas
+struct mtxblasdense
 {
     /**
      * ‘symmetry’ is the matrix symmetry: ‘unsymmetric’, ‘symmetric’,
@@ -90,52 +90,52 @@ struct mtxmatrix_blas
  */
 
 /**
- * ‘mtxmatrix_blas_field()’ gets the field of a matrix.
+ * ‘mtxblasdense_field()’ gets the field of a matrix.
  */
-enum mtxfield mtxmatrix_blas_field(const struct mtxmatrix_blas * A);
+enum mtxfield mtxblasdense_field(const struct mtxblasdense * A);
 
 /**
- * ‘mtxmatrix_blas_precision()’ gets the precision of a matrix.
+ * ‘mtxblasdense_precision()’ gets the precision of a matrix.
  */
-enum mtxprecision mtxmatrix_blas_precision(const struct mtxmatrix_blas * A);
+enum mtxprecision mtxblasdense_precision(const struct mtxblasdense * A);
 
 /**
- * ‘mtxmatrix_blas_symmetry()’ gets the symmetry of a matrix.
+ * ‘mtxblasdense_symmetry()’ gets the symmetry of a matrix.
  */
-enum mtxsymmetry mtxmatrix_blas_symmetry(const struct mtxmatrix_blas * A);
+enum mtxsymmetry mtxblasdense_symmetry(const struct mtxblasdense * A);
 
 /**
- * ‘mtxmatrix_blas_num_rows()’ gets the number of matrix rows.
+ * ‘mtxblasdense_num_rows()’ gets the number of matrix rows.
  */
-int mtxmatrix_blas_num_rows(const struct mtxmatrix_blas * A);
+int mtxblasdense_num_rows(const struct mtxblasdense * A);
 
 /**
- * ‘mtxmatrix_blas_num_columns()’ gets the number of matrix columns.
+ * ‘mtxblasdense_num_columns()’ gets the number of matrix columns.
  */
-int mtxmatrix_blas_num_columns(const struct mtxmatrix_blas * A);
+int mtxblasdense_num_columns(const struct mtxblasdense * A);
 
 /**
- * ‘mtxmatrix_blas_num_nonzeros()’ gets the number of the number of
+ * ‘mtxblasdense_num_nonzeros()’ gets the number of the number of
  *  nonzero matrix entries, including those represented implicitly due
  *  to symmetry.
  */
-int64_t mtxmatrix_blas_num_nonzeros(const struct mtxmatrix_blas * A);
+int64_t mtxblasdense_num_nonzeros(const struct mtxblasdense * A);
 
 /**
- * ‘mtxmatrix_blas_size()’ gets the number of explicitly stored
+ * ‘mtxblasdense_size()’ gets the number of explicitly stored
  * nonzeros of a matrix.
  */
-int64_t mtxmatrix_blas_size(const struct mtxmatrix_blas * A);
+int64_t mtxblasdense_size(const struct mtxblasdense * A);
 
 /**
- * ‘mtxmatrix_blas_rowcolidx()’ gets the row and column indices of the
+ * ‘mtxblasdense_rowcolidx()’ gets the row and column indices of the
  * explicitly stored matrix nonzeros.
  *
  * The arguments ‘rowidx’ and ‘colidx’ may be ‘NULL’ or must point to
  * an arrays of length ‘size’.
  */
-int mtxmatrix_blas_rowcolidx(
-    const struct mtxmatrix_blas * A,
+int mtxblasdense_rowcolidx(
+    const struct mtxblasdense * A,
     int64_t size,
     int * rowidx,
     int * colidx);
@@ -145,37 +145,37 @@ int mtxmatrix_blas_rowcolidx(
  */
 
 /**
- * ‘mtxmatrix_blas_free()’ frees storage allocated for a matrix.
+ * ‘mtxblasdense_free()’ frees storage allocated for a matrix.
  */
-void mtxmatrix_blas_free(
-    struct mtxmatrix_blas * A);
+void mtxblasdense_free(
+    struct mtxblasdense * A);
 
 /**
- * ‘mtxmatrix_blas_alloc_copy()’ allocates a copy of a matrix without
+ * ‘mtxblasdense_alloc_copy()’ allocates a copy of a matrix without
  * initialising the values.
  */
-int mtxmatrix_blas_alloc_copy(
-    struct mtxmatrix_blas * dst,
-    const struct mtxmatrix_blas * src);
+int mtxblasdense_alloc_copy(
+    struct mtxblasdense * dst,
+    const struct mtxblasdense * src);
 
 /**
- * ‘mtxmatrix_blas_init_copy()’ allocates a copy of a matrix and also
+ * ‘mtxblasdense_init_copy()’ allocates a copy of a matrix and also
  * copies the values.
  */
-int mtxmatrix_blas_init_copy(
-    struct mtxmatrix_blas * dst,
-    const struct mtxmatrix_blas * src);
+int mtxblasdense_init_copy(
+    struct mtxblasdense * dst,
+    const struct mtxblasdense * src);
 
 /*
  * initialise matrices from entrywise data in coordinate format
  */
 
 /**
- * ‘mtxmatrix_blas_alloc_entries()’ allocates a matrix from entrywise
+ * ‘mtxblasdense_alloc_entries()’ allocates a matrix from entrywise
  * data in coordinate format.
  */
-int mtxmatrix_blas_alloc_entries(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_alloc_entries(
+    struct mtxblasdense * A,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
@@ -188,12 +188,12 @@ int mtxmatrix_blas_alloc_entries(
     const int * colidx);
 
 /**
- * ‘mtxmatrix_blas_init_entries_real_single()’ allocates and
+ * ‘mtxblasdense_init_entries_real_single()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * real, single precision coefficients.
  */
-int mtxmatrix_blas_init_entries_real_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_real_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -203,12 +203,12 @@ int mtxmatrix_blas_init_entries_real_single(
     const float * data);
 
 /**
- * ‘mtxmatrix_blas_init_entries_real_double()’ allocates and
+ * ‘mtxblasdense_init_entries_real_double()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * real, double precision coefficients.
  */
-int mtxmatrix_blas_init_entries_real_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_real_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -218,12 +218,12 @@ int mtxmatrix_blas_init_entries_real_double(
     const double * data);
 
 /**
- * ‘mtxmatrix_blas_init_entries_complex_single()’ allocates and
+ * ‘mtxblasdense_init_entries_complex_single()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * complex, single precision coefficients.
  */
-int mtxmatrix_blas_init_entries_complex_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_complex_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -233,12 +233,12 @@ int mtxmatrix_blas_init_entries_complex_single(
     const float (* data)[2]);
 
 /**
- * ‘mtxmatrix_blas_init_entries_complex_double()’ allocates and
+ * ‘mtxblasdense_init_entries_complex_double()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * complex, double precision coefficients.
  */
-int mtxmatrix_blas_init_entries_complex_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_complex_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -248,12 +248,12 @@ int mtxmatrix_blas_init_entries_complex_double(
     const double (* data)[2]);
 
 /**
- * ‘mtxmatrix_blas_init_entries_integer_single()’ allocates and
+ * ‘mtxblasdense_init_entries_integer_single()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * integer, single precision coefficients.
  */
-int mtxmatrix_blas_init_entries_integer_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_integer_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -263,12 +263,12 @@ int mtxmatrix_blas_init_entries_integer_single(
     const int32_t * data);
 
 /**
- * ‘mtxmatrix_blas_init_entries_integer_double()’ allocates and
+ * ‘mtxblasdense_init_entries_integer_double()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * integer, double precision coefficients.
  */
-int mtxmatrix_blas_init_entries_integer_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_integer_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -278,12 +278,12 @@ int mtxmatrix_blas_init_entries_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxmatrix_blas_init_entries_pattern()’ allocates and initialises
+ * ‘mtxblasdense_init_entries_pattern()’ allocates and initialises
  * a matrix from entrywise data in coordinate format with boolean
  * coefficients.
  */
-int mtxmatrix_blas_init_entries_pattern(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_pattern(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -297,12 +297,12 @@ int mtxmatrix_blas_init_entries_pattern(
  */
 
 /**
- * ‘mtxmatrix_blas_init_entries_strided_real_single()’ allocates and
+ * ‘mtxblasdense_init_entries_strided_real_single()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * real, single precision coefficients.
  */
-int mtxmatrix_blas_init_entries_strided_real_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_strided_real_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -315,12 +315,12 @@ int mtxmatrix_blas_init_entries_strided_real_single(
     const float * data);
 
 /**
- * ‘mtxmatrix_blas_init_entries_strided_real_double()’ allocates and
+ * ‘mtxblasdense_init_entries_strided_real_double()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * real, double precision coefficients.
  */
-int mtxmatrix_blas_init_entries_strided_real_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_strided_real_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -333,12 +333,12 @@ int mtxmatrix_blas_init_entries_strided_real_double(
     const double * data);
 
 /**
- * ‘mtxmatrix_blas_init_entries_strided_complex_single()’ allocates
+ * ‘mtxblasdense_init_entries_strided_complex_single()’ allocates
  * and initialises a matrix from entrywise data in coordinate format
  * with complex, single precision coefficients.
  */
-int mtxmatrix_blas_init_entries_strided_complex_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_strided_complex_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -351,12 +351,12 @@ int mtxmatrix_blas_init_entries_strided_complex_single(
     const float (* data)[2]);
 
 /**
- * ‘mtxmatrix_blas_init_entries_strided_complex_double()’ allocates
+ * ‘mtxblasdense_init_entries_strided_complex_double()’ allocates
  * and initialises a matrix from entrywise data in coordinate format
  * with complex, double precision coefficients.
  */
-int mtxmatrix_blas_init_entries_strided_complex_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_strided_complex_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -369,12 +369,12 @@ int mtxmatrix_blas_init_entries_strided_complex_double(
     const double (* data)[2]);
 
 /**
- * ‘mtxmatrix_blas_init_entries_strided_integer_single()’ allocates
+ * ‘mtxblasdense_init_entries_strided_integer_single()’ allocates
  * and initialises a matrix from entrywise data in coordinate format
  * with integer, single precision coefficients.
  */
-int mtxmatrix_blas_init_entries_strided_integer_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_strided_integer_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -387,12 +387,12 @@ int mtxmatrix_blas_init_entries_strided_integer_single(
     const int32_t * data);
 
 /**
- * ‘mtxmatrix_blas_init_entries_strided_integer_double()’ allocates
+ * ‘mtxblasdense_init_entries_strided_integer_double()’ allocates
  * and initialises a matrix from entrywise data in coordinate format
  * with integer, double precision coefficients.
  */
-int mtxmatrix_blas_init_entries_strided_integer_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_strided_integer_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -405,12 +405,12 @@ int mtxmatrix_blas_init_entries_strided_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxmatrix_blas_init_entries_strided_pattern()’ allocates and
+ * ‘mtxblasdense_init_entries_strided_pattern()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * boolean coefficients.
  */
-int mtxmatrix_blas_init_entries_strided_pattern(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_entries_strided_pattern(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -425,11 +425,11 @@ int mtxmatrix_blas_init_entries_strided_pattern(
  */
 
 /**
- * ‘mtxmatrix_blas_alloc_rows()’ allocates a matrix from row-wise
+ * ‘mtxblasdense_alloc_rows()’ allocates a matrix from row-wise
  * data in compressed row format.
  */
-int mtxmatrix_blas_alloc_rows(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_alloc_rows(
+    struct mtxblasdense * A,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
@@ -439,12 +439,12 @@ int mtxmatrix_blas_alloc_rows(
     const int * colidx);
 
 /**
- * ‘mtxmatrix_blas_init_rows_real_single()’ allocates and initialises
+ * ‘mtxblasdense_init_rows_real_single()’ allocates and initialises
  * a matrix from row-wise data in compressed row format with real,
  * single precision coefficients.
  */
-int mtxmatrix_blas_init_rows_real_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_rows_real_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -453,12 +453,12 @@ int mtxmatrix_blas_init_rows_real_single(
     const float * data);
 
 /**
- * ‘mtxmatrix_blas_init_rows_real_double()’ allocates and initialises
+ * ‘mtxblasdense_init_rows_real_double()’ allocates and initialises
  * a matrix from row-wise data in compressed row format with real,
  * double precision coefficients.
  */
-int mtxmatrix_blas_init_rows_real_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_rows_real_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -467,12 +467,12 @@ int mtxmatrix_blas_init_rows_real_double(
     const double * data);
 
 /**
- * ‘mtxmatrix_blas_init_rows_complex_single()’ allocates and
+ * ‘mtxblasdense_init_rows_complex_single()’ allocates and
  * initialises a matrix from row-wise data in compressed row format
  * with complex, single precision coefficients.
  */
-int mtxmatrix_blas_init_rows_complex_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_rows_complex_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -481,12 +481,12 @@ int mtxmatrix_blas_init_rows_complex_single(
     const float (* data)[2]);
 
 /**
- * ‘mtxmatrix_blas_init_rows_complex_double()’ allocates and
+ * ‘mtxblasdense_init_rows_complex_double()’ allocates and
  * initialises a matrix from row-wise data in compressed row format
  * with complex, double precision coefficients.
  */
-int mtxmatrix_blas_init_rows_complex_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_rows_complex_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -495,12 +495,12 @@ int mtxmatrix_blas_init_rows_complex_double(
     const double (* data)[2]);
 
 /**
- * ‘mtxmatrix_blas_init_rows_integer_single()’ allocates and
+ * ‘mtxblasdense_init_rows_integer_single()’ allocates and
  * initialises a matrix from row-wise data in compressed row format
  * with integer, single precision coefficients.
  */
-int mtxmatrix_blas_init_rows_integer_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_rows_integer_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -509,12 +509,12 @@ int mtxmatrix_blas_init_rows_integer_single(
     const int32_t * data);
 
 /**
- * ‘mtxmatrix_blas_init_rows_integer_double()’ allocates and
+ * ‘mtxblasdense_init_rows_integer_double()’ allocates and
  * initialises a matrix from row-wise data in compressed row format
  * with integer, double precision coefficients.
  */
-int mtxmatrix_blas_init_rows_integer_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_rows_integer_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -523,12 +523,12 @@ int mtxmatrix_blas_init_rows_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxmatrix_blas_init_rows_pattern()’ allocates and initialises a
+ * ‘mtxblasdense_init_rows_pattern()’ allocates and initialises a
  * matrix from row-wise data in compressed row format with boolean
  * coefficients.
  */
-int mtxmatrix_blas_init_rows_pattern(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_rows_pattern(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -541,11 +541,11 @@ int mtxmatrix_blas_init_rows_pattern(
  */
 
 /**
- * ‘mtxmatrix_blas_alloc_columns()’ allocates a matrix from
+ * ‘mtxblasdense_alloc_columns()’ allocates a matrix from
  * column-wise data in compressed column format.
  */
-int mtxmatrix_blas_alloc_columns(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_alloc_columns(
+    struct mtxblasdense * A,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
@@ -555,12 +555,12 @@ int mtxmatrix_blas_alloc_columns(
     const int * rowidx);
 
 /**
- * ‘mtxmatrix_blas_init_columns_real_single()’ allocates and
+ * ‘mtxblasdense_init_columns_real_single()’ allocates and
  * initialises a matrix from column-wise data in compressed column
  * format with real, single precision coefficients.
  */
-int mtxmatrix_blas_init_columns_real_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_columns_real_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -569,12 +569,12 @@ int mtxmatrix_blas_init_columns_real_single(
     const float * data);
 
 /**
- * ‘mtxmatrix_blas_init_columns_real_double()’ allocates and
+ * ‘mtxblasdense_init_columns_real_double()’ allocates and
  * initialises a matrix from column-wise data in compressed column
  * format with real, double precision coefficients.
  */
-int mtxmatrix_blas_init_columns_real_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_columns_real_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -583,12 +583,12 @@ int mtxmatrix_blas_init_columns_real_double(
     const double * data);
 
 /**
- * ‘mtxmatrix_blas_init_columns_complex_single()’ allocates and
+ * ‘mtxblasdense_init_columns_complex_single()’ allocates and
  * initialises a matrix from column-wise data in compressed column
  * format with complex, single precision coefficients.
  */
-int mtxmatrix_blas_init_columns_complex_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_columns_complex_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -597,12 +597,12 @@ int mtxmatrix_blas_init_columns_complex_single(
     const float (* data)[2]);
 
 /**
- * ‘mtxmatrix_blas_init_columns_complex_double()’ allocates and
+ * ‘mtxblasdense_init_columns_complex_double()’ allocates and
  * initialises a matrix from column-wise data in compressed column
  * format with complex, double precision coefficients.
  */
-int mtxmatrix_blas_init_columns_complex_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_columns_complex_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -611,12 +611,12 @@ int mtxmatrix_blas_init_columns_complex_double(
     const double (* data)[2]);
 
 /**
- * ‘mtxmatrix_blas_init_columns_integer_single()’ allocates and
+ * ‘mtxblasdense_init_columns_integer_single()’ allocates and
  * initialises a matrix from column-wise data in compressed column
  * format with integer, single precision coefficients.
  */
-int mtxmatrix_blas_init_columns_integer_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_columns_integer_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -625,12 +625,12 @@ int mtxmatrix_blas_init_columns_integer_single(
     const int32_t * data);
 
 /**
- * ‘mtxmatrix_blas_init_columns_integer_double()’ allocates and
+ * ‘mtxblasdense_init_columns_integer_double()’ allocates and
  * initialises a matrix from column-wise data in compressed column
  * format with integer, double precision coefficients.
  */
-int mtxmatrix_blas_init_columns_integer_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_columns_integer_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -639,12 +639,12 @@ int mtxmatrix_blas_init_columns_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxmatrix_blas_init_columns_pattern()’ allocates and initialises
+ * ‘mtxblasdense_init_columns_pattern()’ allocates and initialises
  * a matrix from column-wise data in compressed column format with
  * boolean coefficients.
  */
-int mtxmatrix_blas_init_columns_pattern(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_columns_pattern(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -656,11 +656,11 @@ int mtxmatrix_blas_init_columns_pattern(
  */
 
 /**
- * ‘mtxmatrix_blas_alloc_cliques()’ allocates a matrix from a list of
+ * ‘mtxblasdense_alloc_cliques()’ allocates a matrix from a list of
  * dense cliques.
  */
-int mtxmatrix_blas_alloc_cliques(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_alloc_cliques(
+    struct mtxblasdense * A,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
@@ -672,12 +672,12 @@ int mtxmatrix_blas_alloc_cliques(
     const int * colidx);
 
 /**
- * ‘mtxmatrix_blas_init_cliques_real_single()’ allocates and
+ * ‘mtxblasdense_init_cliques_real_single()’ allocates and
  * initialises a matrix from a list of dense cliques with real, single
  * precision coefficients.
  */
-int mtxmatrix_blas_init_cliques_real_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_cliques_real_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -688,12 +688,12 @@ int mtxmatrix_blas_init_cliques_real_single(
     const float * data);
 
 /**
- * ‘mtxmatrix_blas_init_cliques_real_double()’ allocates and
+ * ‘mtxblasdense_init_cliques_real_double()’ allocates and
  * initialises a matrix from a list of dense cliques with real, double
  * precision coefficients.
  */
-int mtxmatrix_blas_init_cliques_real_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_cliques_real_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -704,12 +704,12 @@ int mtxmatrix_blas_init_cliques_real_double(
     const double * data);
 
 /**
- * ‘mtxmatrix_blas_init_cliques_complex_single()’ allocates and
+ * ‘mtxblasdense_init_cliques_complex_single()’ allocates and
  * initialises a matrix from a list of dense cliques with complex,
  * single precision coefficients.
  */
-int mtxmatrix_blas_init_cliques_complex_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_cliques_complex_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -720,12 +720,12 @@ int mtxmatrix_blas_init_cliques_complex_single(
     const float (* data)[2]);
 
 /**
- * ‘mtxmatrix_blas_init_cliques_complex_double()’ allocates and
+ * ‘mtxblasdense_init_cliques_complex_double()’ allocates and
  * initialises a matrix from a list of dense cliques with complex,
  * double precision coefficients.
  */
-int mtxmatrix_blas_init_cliques_complex_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_cliques_complex_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -736,12 +736,12 @@ int mtxmatrix_blas_init_cliques_complex_double(
     const double (* data)[2]);
 
 /**
- * ‘mtxmatrix_blas_init_cliques_integer_single()’ allocates and
+ * ‘mtxblasdense_init_cliques_integer_single()’ allocates and
  * initialises a matrix from a list of dense cliques with integer,
  * single precision coefficients.
  */
-int mtxmatrix_blas_init_cliques_integer_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_cliques_integer_single(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -752,12 +752,12 @@ int mtxmatrix_blas_init_cliques_integer_single(
     const int32_t * data);
 
 /**
- * ‘mtxmatrix_blas_init_cliques_integer_double()’ allocates and
+ * ‘mtxblasdense_init_cliques_integer_double()’ allocates and
  * initialises a matrix from a list of dense cliques with integer,
  * double precision coefficients.
  */
-int mtxmatrix_blas_init_cliques_integer_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_cliques_integer_double(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -768,11 +768,11 @@ int mtxmatrix_blas_init_cliques_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxmatrix_blas_init_cliques_pattern()’ allocates and initialises
+ * ‘mtxblasdense_init_cliques_pattern()’ allocates and initialises
  * a matrix from a list of dense cliques with boolean coefficients.
  */
-int mtxmatrix_blas_init_cliques_pattern(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_init_cliques_pattern(
+    struct mtxblasdense * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -786,69 +786,69 @@ int mtxmatrix_blas_init_cliques_pattern(
  */
 
 /**
- * ‘mtxmatrix_blas_setzero()’ sets every value of a matrix to zero.
+ * ‘mtxblasdense_setzero()’ sets every value of a matrix to zero.
  */
-int mtxmatrix_blas_setzero(
-    struct mtxmatrix_blas * A);
+int mtxblasdense_setzero(
+    struct mtxblasdense * A);
 
 /**
- * ‘mtxmatrix_blas_set_real_single()’ sets values of a matrix based
+ * ‘mtxblasdense_set_real_single()’ sets values of a matrix based
  * on an array of single precision floating point numbers.
  */
-int mtxmatrix_blas_set_real_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_set_real_single(
+    struct mtxblasdense * A,
     int64_t size,
     int stride,
     const float * a);
 
 /**
- * ‘mtxmatrix_blas_set_real_double()’ sets values of a matrix based
+ * ‘mtxblasdense_set_real_double()’ sets values of a matrix based
  * on an array of double precision floating point numbers.
  */
-int mtxmatrix_blas_set_real_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_set_real_double(
+    struct mtxblasdense * A,
     int64_t size,
     int stride,
     const double * a);
 
 /**
- * ‘mtxmatrix_blas_set_complex_single()’ sets values of a matrix
+ * ‘mtxblasdense_set_complex_single()’ sets values of a matrix
  * based on an array of single precision floating point complex
  * numbers.
  */
-int mtxmatrix_blas_set_complex_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_set_complex_single(
+    struct mtxblasdense * A,
     int64_t size,
     int stride,
     const float (*a)[2]);
 
 /**
- * ‘mtxmatrix_blas_set_complex_double()’ sets values of a matrix
+ * ‘mtxblasdense_set_complex_double()’ sets values of a matrix
  * based on an array of double precision floating point complex
  * numbers.
  */
-int mtxmatrix_blas_set_complex_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_set_complex_double(
+    struct mtxblasdense * A,
     int64_t size,
     int stride,
     const double (*a)[2]);
 
 /**
- * ‘mtxmatrix_blas_set_integer_single()’ sets values of a matrix
+ * ‘mtxblasdense_set_integer_single()’ sets values of a matrix
  * based on an array of integers.
  */
-int mtxmatrix_blas_set_integer_single(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_set_integer_single(
+    struct mtxblasdense * A,
     int64_t size,
     int stride,
     const int32_t * a);
 
 /**
- * ‘mtxmatrix_blas_set_integer_double()’ sets values of a matrix
+ * ‘mtxblasdense_set_integer_double()’ sets values of a matrix
  * based on an array of integers.
  */
-int mtxmatrix_blas_set_integer_double(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_set_integer_double(
+    struct mtxblasdense * A,
     int64_t size,
     int stride,
     const int64_t * a);
@@ -858,22 +858,22 @@ int mtxmatrix_blas_set_integer_double(
  */
 
 /**
- * ‘mtxmatrix_blas_alloc_row_vector()’ allocates a row vector for a
+ * ‘mtxblasdense_alloc_row_vector()’ allocates a row vector for a
  * given matrix, where a row vector is a vector whose length equal to
  * a single row of the matrix.
  */
-int mtxmatrix_blas_alloc_row_vector(
-    const struct mtxmatrix_blas * A,
+int mtxblasdense_alloc_row_vector(
+    const struct mtxblasdense * A,
     struct mtxvector * x,
     enum mtxvectortype vectortype);
 
 /**
- * ‘mtxmatrix_blas_alloc_column_vector()’ allocates a column vector
+ * ‘mtxblasdense_alloc_column_vector()’ allocates a column vector
  * for a given matrix, where a column vector is a vector whose length
  * equal to a single column of the matrix.
  */
-int mtxmatrix_blas_alloc_column_vector(
-    const struct mtxmatrix_blas * A,
+int mtxblasdense_alloc_column_vector(
+    const struct mtxblasdense * A,
     struct mtxvector * y,
     enum mtxvectortype vectortype);
 
@@ -882,20 +882,20 @@ int mtxmatrix_blas_alloc_column_vector(
  */
 
 /**
- * ‘mtxmatrix_blas_from_mtxfile()’ converts a matrix from Matrix
+ * ‘mtxblasdense_from_mtxfile()’ converts a matrix from Matrix
  * Market format.
  */
-int mtxmatrix_blas_from_mtxfile(
-    struct mtxmatrix_blas * A,
+int mtxblasdense_from_mtxfile(
+    struct mtxblasdense * A,
     const struct mtxfile * mtxfile);
 
 /**
- * ‘mtxmatrix_blas_to_mtxfile()’ converts a matrix to Matrix Market
+ * ‘mtxblasdense_to_mtxfile()’ converts a matrix to Matrix Market
  * format.
  */
-int mtxmatrix_blas_to_mtxfile(
+int mtxblasdense_to_mtxfile(
     struct mtxfile * mtxfile,
-    const struct mtxmatrix_blas * A,
+    const struct mtxblasdense * A,
     int64_t num_rows,
     const int64_t * rowidx,
     int64_t num_columns,
@@ -907,150 +907,150 @@ int mtxmatrix_blas_to_mtxfile(
  */
 
 /**
- * ‘mtxmatrix_blas_swap()’ swaps values of two matrices,
+ * ‘mtxblasdense_swap()’ swaps values of two matrices,
  * simultaneously performing ‘y <- x’ and ‘x <- y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_blas_swap(
-    struct mtxmatrix_blas * x,
-    struct mtxmatrix_blas * y);
+int mtxblasdense_swap(
+    struct mtxblasdense * x,
+    struct mtxblasdense * y);
 
 /**
- * ‘mtxmatrix_blas_copy()’ copies values of a matrix, ‘y = x’.
+ * ‘mtxblasdense_copy()’ copies values of a matrix, ‘y = x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_blas_copy(
-    struct mtxmatrix_blas * y,
-    const struct mtxmatrix_blas * x);
+int mtxblasdense_copy(
+    struct mtxblasdense * y,
+    const struct mtxblasdense * x);
 
 /**
- * ‘mtxmatrix_blas_sscal()’ scales a matrix by a single precision
+ * ‘mtxblasdense_sscal()’ scales a matrix by a single precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxmatrix_blas_sscal(
+int mtxblasdense_sscal(
     float a,
-    struct mtxmatrix_blas * x,
+    struct mtxblasdense * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_dscal()’ scales a matrix by a double precision
+ * ‘mtxblasdense_dscal()’ scales a matrix by a double precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxmatrix_blas_dscal(
+int mtxblasdense_dscal(
     double a,
-    struct mtxmatrix_blas * x,
+    struct mtxblasdense * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_cscal()’ scales a matrix by a complex, single
+ * ‘mtxblasdense_cscal()’ scales a matrix by a complex, single
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxmatrix_blas_cscal(
+int mtxblasdense_cscal(
     float a[2],
-    struct mtxmatrix_blas * x,
+    struct mtxblasdense * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_zscal()’ scales a matrix by a complex, double
+ * ‘mtxblasdense_zscal()’ scales a matrix by a complex, double
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxmatrix_blas_zscal(
+int mtxblasdense_zscal(
     double a[2],
-    struct mtxmatrix_blas * x,
+    struct mtxblasdense * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_saxpy()’ adds a matrix to another one multiplied
+ * ‘mtxblasdense_saxpy()’ adds a matrix to another one multiplied
  * by a single precision floating point value, ‘y = a*x + y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_blas_saxpy(
+int mtxblasdense_saxpy(
     float a,
-    const struct mtxmatrix_blas * x,
-    struct mtxmatrix_blas * y,
+    const struct mtxblasdense * x,
+    struct mtxblasdense * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_daxpy()’ adds a matrix to another one multiplied
+ * ‘mtxblasdense_daxpy()’ adds a matrix to another one multiplied
  * by a double precision floating point value, ‘y = a*x + y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_blas_daxpy(
+int mtxblasdense_daxpy(
     double a,
-    const struct mtxmatrix_blas * x,
-    struct mtxmatrix_blas * y,
+    const struct mtxblasdense * x,
+    struct mtxblasdense * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_saypx()’ multiplies a matrix by a single precision
+ * ‘mtxblasdense_saypx()’ multiplies a matrix by a single precision
  * floating point scalar and adds another matrix, ‘y = a*y + x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_blas_saypx(
+int mtxblasdense_saypx(
     float a,
-    struct mtxmatrix_blas * y,
-    const struct mtxmatrix_blas * x,
+    struct mtxblasdense * y,
+    const struct mtxblasdense * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_daypx()’ multiplies a matrix by a double precision
+ * ‘mtxblasdense_daypx()’ multiplies a matrix by a double precision
  * floating point scalar and adds another matrix, ‘y = a*y + x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_blas_daypx(
+int mtxblasdense_daypx(
     double a,
-    struct mtxmatrix_blas * y,
-    const struct mtxmatrix_blas * x,
+    struct mtxblasdense * y,
+    const struct mtxblasdense * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_sdot()’ computes the Frobenius inner product of
+ * ‘mtxblasdense_sdot()’ computes the Frobenius inner product of
  * two matrices in single precision floating point.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_blas_sdot(
-    const struct mtxmatrix_blas * x,
-    const struct mtxmatrix_blas * y,
+int mtxblasdense_sdot(
+    const struct mtxblasdense * x,
+    const struct mtxblasdense * y,
     float * dot,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_ddot()’ computes the Frobenius inner product of
+ * ‘mtxblasdense_ddot()’ computes the Frobenius inner product of
  * two matrices in double precision floating point.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_blas_ddot(
-    const struct mtxmatrix_blas * x,
-    const struct mtxmatrix_blas * y,
+int mtxblasdense_ddot(
+    const struct mtxblasdense * x,
+    const struct mtxblasdense * y,
     double * dot,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_cdotu()’ computes the product of the transpose of
+ * ‘mtxblasdense_cdotu()’ computes the product of the transpose of
  * a complex row matrix with another complex row matrix in single
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -1058,14 +1058,14 @@ int mtxmatrix_blas_ddot(
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_blas_cdotu(
-    const struct mtxmatrix_blas * x,
-    const struct mtxmatrix_blas * y,
+int mtxblasdense_cdotu(
+    const struct mtxblasdense * x,
+    const struct mtxblasdense * y,
     float (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_zdotu()’ computes the product of the transpose of
+ * ‘mtxblasdense_zdotu()’ computes the product of the transpose of
  * a complex row matrix with another complex row matrix in double
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -1073,14 +1073,14 @@ int mtxmatrix_blas_cdotu(
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_blas_zdotu(
-    const struct mtxmatrix_blas * x,
-    const struct mtxmatrix_blas * y,
+int mtxblasdense_zdotu(
+    const struct mtxblasdense * x,
+    const struct mtxblasdense * y,
     double (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_cdotc()’ computes the Frobenius inner product of
+ * ‘mtxblasdense_cdotc()’ computes the Frobenius inner product of
  * two complex matrices in single precision floating point, ‘dot :=
  * x^H*y’.
  *
@@ -1088,14 +1088,14 @@ int mtxmatrix_blas_zdotu(
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_blas_cdotc(
-    const struct mtxmatrix_blas * x,
-    const struct mtxmatrix_blas * y,
+int mtxblasdense_cdotc(
+    const struct mtxblasdense * x,
+    const struct mtxblasdense * y,
     float (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_zdotc()’ computes the Frobenius inner product of
+ * ‘mtxblasdense_zdotc()’ computes the Frobenius inner product of
  * two complex matrices in double precision floating point, ‘dot :=
  * x^H*y’.
  *
@@ -1103,61 +1103,61 @@ int mtxmatrix_blas_cdotc(
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_blas_zdotc(
-    const struct mtxmatrix_blas * x,
-    const struct mtxmatrix_blas * y,
+int mtxblasdense_zdotc(
+    const struct mtxblasdense * x,
+    const struct mtxblasdense * y,
     double (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_snrm2()’ computes the Frobenius norm of a matrix
+ * ‘mtxblasdense_snrm2()’ computes the Frobenius norm of a matrix
  * in single precision floating point.
  */
-int mtxmatrix_blas_snrm2(
-    const struct mtxmatrix_blas * x,
+int mtxblasdense_snrm2(
+    const struct mtxblasdense * x,
     float * nrm2,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_dnrm2()’ computes the Frobenius norm of a matrix
+ * ‘mtxblasdense_dnrm2()’ computes the Frobenius norm of a matrix
  * in double precision floating point.
  */
-int mtxmatrix_blas_dnrm2(
-    const struct mtxmatrix_blas * x,
+int mtxblasdense_dnrm2(
+    const struct mtxblasdense * x,
     double * nrm2,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_sasum()’ computes the sum of absolute values
+ * ‘mtxblasdense_sasum()’ computes the sum of absolute values
  * (1-norm) of a matrix in single precision floating point.  If the
  * matrix is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
  */
-int mtxmatrix_blas_sasum(
-    const struct mtxmatrix_blas * x,
+int mtxblasdense_sasum(
+    const struct mtxblasdense * x,
     float * asum,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_dasum()’ computes the sum of absolute values
+ * ‘mtxblasdense_dasum()’ computes the sum of absolute values
  * (1-norm) of a matrix in double precision floating point.  If the
  * matrix is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
  */
-int mtxmatrix_blas_dasum(
-    const struct mtxmatrix_blas * x,
+int mtxblasdense_dasum(
+    const struct mtxblasdense * x,
     double * asum,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_iamax()’ finds the index of the first element
+ * ‘mtxblasdense_iamax()’ finds the index of the first element
  * having the maximum absolute value.  If the matrix is
  * complex-valued, then the index points to the first element having
  * the maximum sum of the absolute values of the real and imaginary
  * parts.
  */
-int mtxmatrix_blas_iamax(
-    const struct mtxmatrix_blas * x,
+int mtxblasdense_iamax(
+    const struct mtxblasdense * x,
     int * iamax);
 
 /*
@@ -1165,7 +1165,7 @@ int mtxmatrix_blas_iamax(
  */
 
 /**
- * ‘mtxmatrix_blas_sgemv()’ multiplies a matrix ‘A’ or its transpose
+ * ‘mtxblasdense_sgemv()’ multiplies a matrix ‘A’ or its transpose
  * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
  * the result to another vector ‘y’ multiplied by another real scalar
  * ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
@@ -1186,17 +1186,17 @@ int mtxmatrix_blas_iamax(
  * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
  */
-int mtxmatrix_blas_sgemv(
+int mtxblasdense_sgemv(
     enum mtxtransposition trans,
     float alpha,
-    const struct mtxmatrix_blas * A,
+    const struct mtxblasdense * A,
     const struct mtxvector * x,
     float beta,
     struct mtxvector * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_dgemv()’ multiplies a matrix ‘A’ or its transpose
+ * ‘mtxblasdense_dgemv()’ multiplies a matrix ‘A’ or its transpose
  * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
  * the result to another vector ‘y’ multiplied by another scalar real
  * ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
@@ -1217,17 +1217,17 @@ int mtxmatrix_blas_sgemv(
  * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
  */
-int mtxmatrix_blas_dgemv(
+int mtxblasdense_dgemv(
     enum mtxtransposition trans,
     double alpha,
-    const struct mtxmatrix_blas * A,
+    const struct mtxblasdense * A,
     const struct mtxvector * x,
     double beta,
     struct mtxvector * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_cgemv()’ multiplies a complex-valued matrix ‘A’,
+ * ‘mtxblasdense_cgemv()’ multiplies a complex-valued matrix ‘A’,
  * its transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex
  * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
  * another vector ‘y’ multiplied by another complex scalar ‘beta’
@@ -1246,17 +1246,17 @@ int mtxmatrix_blas_dgemv(
  * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
  */
-int mtxmatrix_blas_cgemv(
+int mtxblasdense_cgemv(
     enum mtxtransposition trans,
     float alpha[2],
-    const struct mtxmatrix_blas * A,
+    const struct mtxblasdense * A,
     const struct mtxvector * x,
     float beta[2],
     struct mtxvector * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_blas_zgemv()’ multiplies a complex-valued matrix ‘A’,
+ * ‘mtxblasdense_zgemv()’ multiplies a complex-valued matrix ‘A’,
  * its transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex
  * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
  * another vector ‘y’ multiplied by another complex scalar ‘beta’
@@ -1275,10 +1275,10 @@ int mtxmatrix_blas_cgemv(
  * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
  */
-int mtxmatrix_blas_zgemv(
+int mtxblasdense_zgemv(
     enum mtxtransposition trans,
     double alpha[2],
-    const struct mtxmatrix_blas * A,
+    const struct mtxblasdense * A,
     const struct mtxvector * x,
     double beta[2],
     struct mtxvector * y,

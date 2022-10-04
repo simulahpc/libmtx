@@ -51,7 +51,7 @@ const char * mtxmatrixtype_str(
     enum mtxmatrixtype type)
 {
     switch (type) {
-    case mtxmatrix_blas: return "blas";
+    case mtxblasdense: return "blas";
     case mtxmatrix_coo: return "coo";
     case mtxmatrix_csr: return "csr";
     case mtxmatrix_dense: return "dense";
@@ -92,7 +92,7 @@ int mtxmatrixtype_parse(
     const char * t = s;
     if (strncmp("blas", t, strlen("blas")) == 0) {
         t += strlen("blas");
-        *matrix_type = mtxmatrix_blas;
+        *matrix_type = mtxblasdense;
     } else if (strncmp("coo", t, strlen("coo")) == 0) {
         t += strlen("coo");
         *matrix_type = mtxmatrix_coo;
@@ -130,9 +130,9 @@ int mtxmatrix_field(
     const struct mtxmatrix * A,
     enum mtxfield * field)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        *field = mtxmatrix_blas_field(&A->storage.blas);
+        *field = mtxblasdense_field(&A->storage.blas);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
@@ -161,9 +161,9 @@ int mtxmatrix_precision(
     const struct mtxmatrix * A,
     enum mtxprecision * precision)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        *precision = mtxmatrix_blas_precision(&A->storage.blas);
+        *precision = mtxblasdense_precision(&A->storage.blas);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
@@ -188,9 +188,9 @@ int mtxmatrix_symmetry(
     const struct mtxmatrix * A,
     enum mtxsymmetry * symmetry)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        *symmetry = mtxmatrix_blas_symmetry(&A->storage.blas);
+        *symmetry = mtxblasdense_symmetry(&A->storage.blas);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
@@ -217,9 +217,9 @@ int mtxmatrix_num_nonzeros(
     const struct mtxmatrix * A,
     int64_t * num_nonzeros)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        *num_nonzeros = mtxmatrix_blas_num_nonzeros(&A->storage.blas);
+        *num_nonzeros = mtxblasdense_num_nonzeros(&A->storage.blas);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
@@ -245,9 +245,9 @@ int mtxmatrix_size(
     const struct mtxmatrix * A,
     int64_t * size)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        *size = mtxmatrix_blas_size(&A->storage.blas);
+        *size = mtxblasdense_size(&A->storage.blas);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
@@ -278,9 +278,9 @@ int mtxmatrix_rowcolidx(
     int * rowidx,
     int * colidx)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_rowcolidx(&A->storage.blas, size, rowidx, colidx);
+        return mtxblasdense_rowcolidx(&A->storage.blas, size, rowidx, colidx);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
@@ -307,9 +307,9 @@ int mtxmatrix_rowcolidx(
 void mtxmatrix_free(
     struct mtxmatrix * matrix)
 {
-    if (matrix->type == mtxmatrix_blas) {
+    if (matrix->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        mtxmatrix_blas_free(&matrix->storage.blas);
+        mtxblasdense_free(&matrix->storage.blas);
 #endif
     } else if (matrix->type == mtxmatrix_coo) {
         mtxmatrix_coo_free(&matrix->storage.coo);
@@ -332,9 +332,9 @@ int mtxmatrix_alloc_copy(
     struct mtxmatrix * dst,
     const struct mtxmatrix * src)
 {
-    if (src->type == mtxmatrix_blas) {
+    if (src->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_alloc_copy(
+        return mtxblasdense_alloc_copy(
             &dst->storage.blas, &src->storage.blas);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -365,9 +365,9 @@ int mtxmatrix_init_copy(
     struct mtxmatrix * dst,
     const struct mtxmatrix * src)
 {
-    if (src->type == mtxmatrix_blas) {
+    if (src->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_init_copy(
+        return mtxblasdense_init_copy(
             &dst->storage.blas, &src->storage.blas);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -412,10 +412,10 @@ int mtxmatrix_alloc_entries(
     const int * rowidx,
     const int * colidx)
 {
-    if (type == mtxmatrix_blas) {
+    if (type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        A->type = mtxmatrix_blas;
-        return mtxmatrix_blas_alloc_entries(
+        A->type = mtxblasdense;
+        return mtxblasdense_alloc_entries(
             &A->storage.blas, field, precision, symmetry,
             num_rows, num_columns, num_nonzeros,
             idxstride, idxbase, rowidx, colidx);
@@ -471,10 +471,10 @@ int mtxmatrix_init_entries_real_single(
     const int * colidx,
     const float * data)
 {
-    if (type == mtxmatrix_blas) {
+    if (type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        A->type = mtxmatrix_blas;
-        return mtxmatrix_blas_init_entries_real_single(
+        A->type = mtxblasdense;
+        return mtxblasdense_init_entries_real_single(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
 #else
@@ -524,10 +524,10 @@ int mtxmatrix_init_entries_real_double(
     const int * colidx,
     const double * data)
 {
-    if (type == mtxmatrix_blas) {
+    if (type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        A->type = mtxmatrix_blas;
-        return mtxmatrix_blas_init_entries_real_double(
+        A->type = mtxblasdense;
+        return mtxblasdense_init_entries_real_double(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
 #else
@@ -577,10 +577,10 @@ int mtxmatrix_init_entries_complex_single(
     const int * colidx,
     const float (* data)[2])
 {
-    if (type == mtxmatrix_blas) {
+    if (type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        A->type = mtxmatrix_blas;
-        return mtxmatrix_blas_init_entries_complex_single(
+        A->type = mtxblasdense;
+        return mtxblasdense_init_entries_complex_single(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
 #else
@@ -630,10 +630,10 @@ int mtxmatrix_init_entries_complex_double(
     const int * colidx,
     const double (* data)[2])
 {
-    if (type == mtxmatrix_blas) {
+    if (type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        A->type = mtxmatrix_blas;
-        return mtxmatrix_blas_init_entries_complex_double(
+        A->type = mtxblasdense;
+        return mtxblasdense_init_entries_complex_double(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
 #else
@@ -683,10 +683,10 @@ int mtxmatrix_init_entries_integer_single(
     const int * colidx,
     const int32_t * data)
 {
-    if (type == mtxmatrix_blas) {
+    if (type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        A->type = mtxmatrix_blas;
-        return mtxmatrix_blas_init_entries_integer_single(
+        A->type = mtxblasdense;
+        return mtxblasdense_init_entries_integer_single(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
 #else
@@ -736,10 +736,10 @@ int mtxmatrix_init_entries_integer_double(
     const int * colidx,
     const int64_t * data)
 {
-    if (type == mtxmatrix_blas) {
+    if (type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        A->type = mtxmatrix_blas;
-        return mtxmatrix_blas_init_entries_integer_double(
+        A->type = mtxblasdense;
+        return mtxblasdense_init_entries_integer_double(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
 #else
@@ -788,10 +788,10 @@ int mtxmatrix_init_entries_pattern(
     const int * rowidx,
     const int * colidx)
 {
-    if (type == mtxmatrix_blas) {
+    if (type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        A->type = mtxmatrix_blas;
-        return mtxmatrix_blas_init_entries_pattern(
+        A->type = mtxblasdense;
+        return mtxblasdense_init_entries_pattern(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx);
 #else
@@ -991,9 +991,9 @@ int mtxmatrix_init_entries_strided_pattern(
 int mtxmatrix_setzero(
     struct mtxmatrix * A)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_setzero(&A->storage.blas);
+        return mtxblasdense_setzero(&A->storage.blas);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
@@ -1020,9 +1020,9 @@ int mtxmatrix_set_real_single(
     int stride,
     const float * a)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_set_real_single(
+        return mtxblasdense_set_real_single(
             &A->storage.blas, size, stride, a);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -1055,9 +1055,9 @@ int mtxmatrix_set_real_double(
     int stride,
     const double * a)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_set_real_double(
+        return mtxblasdense_set_real_double(
             &A->storage.blas, size, stride, a);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -1090,9 +1090,9 @@ int mtxmatrix_set_complex_single(
     int stride,
     const float (*a)[2])
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_set_complex_single(
+        return mtxblasdense_set_complex_single(
             &A->storage.blas, size, stride, a);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -1125,9 +1125,9 @@ int mtxmatrix_set_complex_double(
     int stride,
     const double (*a)[2])
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_set_complex_double(
+        return mtxblasdense_set_complex_double(
             &A->storage.blas, size, stride, a);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -1160,9 +1160,9 @@ int mtxmatrix_set_integer_single(
     int stride,
     const int32_t * a)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_set_integer_single(
+        return mtxblasdense_set_integer_single(
             &A->storage.blas, size, stride, a);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -1195,9 +1195,9 @@ int mtxmatrix_set_integer_double(
     int stride,
     const int64_t * a)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_set_integer_double(
+        return mtxblasdense_set_integer_double(
             &A->storage.blas, size, stride, a);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -1234,9 +1234,9 @@ int mtxmatrix_alloc_row_vector(
     struct mtxvector * vector,
     enum mtxvectortype vectortype)
 {
-    if (matrix->type == mtxmatrix_blas) {
+    if (matrix->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_alloc_row_vector(
+        return mtxblasdense_alloc_row_vector(
             &matrix->storage.blas, vector, vectortype);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -1269,9 +1269,9 @@ int mtxmatrix_alloc_column_vector(
     struct mtxvector * vector,
     enum mtxvectortype vectortype)
 {
-    if (matrix->type == mtxmatrix_blas) {
+    if (matrix->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_alloc_column_vector(
+        return mtxblasdense_alloc_column_vector(
             &matrix->storage.blas, vector, vectortype);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -1307,10 +1307,10 @@ int mtxmatrix_from_mtxfile(
     enum mtxmatrixtype type,
     const struct mtxfile * mtxfile)
 {
-    if (type == mtxmatrix_blas) {
+    if (type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        matrix->type = mtxmatrix_blas;
-        return mtxmatrix_blas_from_mtxfile(
+        matrix->type = mtxblasdense;
+        return mtxblasdense_from_mtxfile(
             &matrix->storage.blas, mtxfile);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -1350,9 +1350,9 @@ int mtxmatrix_to_mtxfile(
     const int64_t * colidx,
     enum mtxfileformat mtxfmt)
 {
-    if (src->type == mtxmatrix_blas) {
+    if (src->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_to_mtxfile(
+        return mtxblasdense_to_mtxfile(
             dst, &src->storage.blas,
             num_rows, rowidx, num_columns, colidx, mtxfmt);
 #else
@@ -1927,9 +1927,9 @@ int mtxmatrix_swap(
     struct mtxmatrix * X,
     struct mtxmatrix * Y)
 {
-    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense && Y->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_swap(
+        return mtxblasdense_swap(
             &X->storage.blas, &Y->storage.blas);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -1959,9 +1959,9 @@ int mtxmatrix_copy(
     struct mtxmatrix * Y,
     const struct mtxmatrix * X)
 {
-    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense && Y->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_copy(
+        return mtxblasdense_copy(
             &Y->storage.blas, &X->storage.blas);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -1993,9 +1993,9 @@ int mtxmatrix_sscal(
     struct mtxmatrix * X,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_sscal(
+        return mtxblasdense_sscal(
             a, &X->storage.blas, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2027,9 +2027,9 @@ int mtxmatrix_dscal(
     struct mtxmatrix * X,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_dscal(
+        return mtxblasdense_dscal(
             a, &X->storage.blas, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2061,9 +2061,9 @@ int mtxmatrix_cscal(
     struct mtxmatrix * X,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_cscal(
+        return mtxblasdense_cscal(
             a, &X->storage.blas, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2087,9 +2087,9 @@ int mtxmatrix_zscal(
     struct mtxmatrix * X,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_zscal(
+        return mtxblasdense_zscal(
             a, &X->storage.blas, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2114,9 +2114,9 @@ int mtxmatrix_saxpy(
     struct mtxmatrix * Y,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense && Y->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_saxpy(
+        return mtxblasdense_saxpy(
             a, &X->storage.blas, &Y->storage.blas, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2149,9 +2149,9 @@ int mtxmatrix_daxpy(
     struct mtxmatrix * Y,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense && Y->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_daxpy(
+        return mtxblasdense_daxpy(
             a, &X->storage.blas, &Y->storage.blas, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2184,9 +2184,9 @@ int mtxmatrix_saypx(
     const struct mtxmatrix * X,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense && Y->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_saypx(
+        return mtxblasdense_saypx(
             a, &Y->storage.blas, &X->storage.blas, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2219,9 +2219,9 @@ int mtxmatrix_daypx(
     const struct mtxmatrix * X,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense && Y->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_daypx(
+        return mtxblasdense_daypx(
             a, &Y->storage.blas, &X->storage.blas, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2254,9 +2254,9 @@ int mtxmatrix_sdot(
     float * dot,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense && Y->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_sdot(
+        return mtxblasdense_sdot(
             &X->storage.blas, &Y->storage.blas, dot, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2289,9 +2289,9 @@ int mtxmatrix_ddot(
     double * dot,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense && Y->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_ddot(
+        return mtxblasdense_ddot(
             &X->storage.blas, &Y->storage.blas, dot, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2326,9 +2326,9 @@ int mtxmatrix_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense && Y->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_cdotu(
+        return mtxblasdense_cdotu(
             &X->storage.blas, &Y->storage.blas, dot, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2363,9 +2363,9 @@ int mtxmatrix_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense && Y->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_zdotu(
+        return mtxblasdense_zdotu(
             &X->storage.blas, &Y->storage.blas, dot, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2399,9 +2399,9 @@ int mtxmatrix_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense && Y->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_cdotc(
+        return mtxblasdense_cdotc(
             &X->storage.blas, &Y->storage.blas, dot, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2435,9 +2435,9 @@ int mtxmatrix_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense && Y->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_zdotc(
+        return mtxblasdense_zdotc(
             &X->storage.blas, &Y->storage.blas, dot, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2469,9 +2469,9 @@ int mtxmatrix_snrm2(
     float * nrm2,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_snrm2(&X->storage.blas, nrm2, num_flops);
+        return mtxblasdense_snrm2(&X->storage.blas, nrm2, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
@@ -2497,9 +2497,9 @@ int mtxmatrix_dnrm2(
     double * nrm2,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_dnrm2(&X->storage.blas, nrm2, num_flops);
+        return mtxblasdense_dnrm2(&X->storage.blas, nrm2, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
@@ -2527,9 +2527,9 @@ int mtxmatrix_sasum(
     float * asum,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_sasum(&X->storage.blas, asum, num_flops);
+        return mtxblasdense_sasum(&X->storage.blas, asum, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
@@ -2557,9 +2557,9 @@ int mtxmatrix_dasum(
     double * asum,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_dasum(&X->storage.blas, asum, num_flops);
+        return mtxblasdense_dasum(&X->storage.blas, asum, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
@@ -2586,9 +2586,9 @@ int mtxmatrix_iamax(
     const struct mtxmatrix * X,
     int * iamax)
 {
-    if (X->type == mtxmatrix_blas) {
+    if (X->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_iamax(&X->storage.blas, iamax);
+        return mtxblasdense_iamax(&X->storage.blas, iamax);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
@@ -2627,9 +2627,9 @@ int mtxmatrix_sgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_sgemv(
+        return mtxblasdense_sgemv(
             trans, alpha, &A->storage.blas, x, beta, y, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2670,9 +2670,9 @@ int mtxmatrix_dgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_dgemv(
+        return mtxblasdense_dgemv(
             trans, alpha, &A->storage.blas, x, beta, y, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2714,9 +2714,9 @@ int mtxmatrix_cgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_cgemv(
+        return mtxblasdense_cgemv(
             trans, alpha, &A->storage.blas, x, beta, y, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
@@ -2758,9 +2758,9 @@ int mtxmatrix_zgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    if (A->type == mtxmatrix_blas) {
+    if (A->type == mtxblasdense) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxmatrix_blas_zgemv(
+        return mtxblasdense_zgemv(
             trans, alpha, &A->storage.blas, x, beta, y, num_flops);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
