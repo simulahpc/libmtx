@@ -40,10 +40,10 @@
 #include <string.h>
 
 /**
- * ‘test_mtxmatrix_ompcsr_from_mtxfile()’ tests converting Matrix
+ * ‘test_mtxompcsr_from_mtxfile()’ tests converting Matrix
  * Market files to matrices.
  */
-int test_mtxmatrix_ompcsr_from_mtxfile(void)
+int test_mtxompcsr_from_mtxfile(void)
 {
     int err;
 
@@ -58,10 +58,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -95,10 +95,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -136,10 +136,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -171,10 +171,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -208,10 +208,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -249,10 +249,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -284,10 +284,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -326,10 +326,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -371,10 +371,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -409,10 +409,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_hermitian, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_hermitian, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -454,10 +454,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -495,10 +495,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -532,10 +532,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -573,10 +573,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -607,10 +607,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -644,10 +644,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -685,10 +685,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -719,10 +719,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
@@ -750,10 +750,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_ompcsr, &mtxfile);
+        err = mtxmatrix_from_mtxfile(&x, mtxompcsr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, x.type);
-        const struct mtxmatrix_ompcsr * x_ = &x.storage.ompcsr;
+        TEST_ASSERT_EQ(mtxompcsr, x.type);
+        const struct mtxompcsr * x_ = &x.storage.ompcsr;
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(6, x_->num_nonzeros);
@@ -777,10 +777,10 @@ int test_mtxmatrix_ompcsr_from_mtxfile(void)
 }
 
 /**
- * ‘test_mtxmatrix_ompcsr_to_mtxfile()’ tests converting matrices
+ * ‘test_mtxompcsr_to_mtxfile()’ tests converting matrices
  * to Matrix Market files.
  */
-int test_mtxmatrix_ompcsr_to_mtxfile(void)
+int test_mtxompcsr_to_mtxfile(void)
 {
     int err;
 
@@ -793,7 +793,7 @@ int test_mtxmatrix_ompcsr_to_mtxfile(void)
         float Adata[] = {1.0f, 3.0f, 4.0f, 9.0f};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_real_single(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
@@ -825,7 +825,7 @@ int test_mtxmatrix_ompcsr_to_mtxfile(void)
         float Adata[] = {1.0f, 3.0f, 6.0f, 9.0f};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_real_single(
-            &A, mtxmatrix_ompcsr, mtx_symmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
+            &A, mtxompcsr, mtx_symmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
@@ -857,7 +857,7 @@ int test_mtxmatrix_ompcsr_to_mtxfile(void)
         float Adata[] = {2.0f, 3.0f, 6.0f};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_real_single(
-            &A, mtxmatrix_ompcsr, mtx_skew_symmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
+            &A, mtxompcsr, mtx_skew_symmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
@@ -889,7 +889,7 @@ int test_mtxmatrix_ompcsr_to_mtxfile(void)
         double Adata[] = {1.0, 3.0, 4.0, 9.0};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_real_double(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
@@ -921,7 +921,7 @@ int test_mtxmatrix_ompcsr_to_mtxfile(void)
         float Adata[][2] = {{1.0f,-1.0f}, {3.0f,-3.0f}, {4.0f,-4.0f}, {9.0f,-9.0f}};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_complex_single(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
@@ -954,7 +954,7 @@ int test_mtxmatrix_ompcsr_to_mtxfile(void)
         float Adata[][2] = {{2.0f,-2.0f}, {3.0f,-3.0f}, {6.0f,-6.0f}, {9.0f,-9.0f}};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_complex_single(
-            &A, mtxmatrix_ompcsr, mtx_hermitian, num_rows, num_columns, nnz, rowidx, colidx, Adata);
+            &A, mtxompcsr, mtx_hermitian, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
@@ -987,7 +987,7 @@ int test_mtxmatrix_ompcsr_to_mtxfile(void)
         double Adata[][2] = {{1.0,-1.0}, {3.0,-3.0}, {4.0,-4.0}, {9.0,-9.0}};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_complex_double(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
@@ -1020,7 +1020,7 @@ int test_mtxmatrix_ompcsr_to_mtxfile(void)
         int32_t Adata[] = {1, 3, 4, 9};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_integer_single(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
@@ -1052,7 +1052,7 @@ int test_mtxmatrix_ompcsr_to_mtxfile(void)
         int64_t Adata[] = {1, 3, 4, 9};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_integer_double(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
@@ -1083,7 +1083,7 @@ int test_mtxmatrix_ompcsr_to_mtxfile(void)
         int colidx[] = {0, 2, 0, 2};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_pattern(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
@@ -1108,10 +1108,10 @@ int test_mtxmatrix_ompcsr_to_mtxfile(void)
 }
 
 /**
- * ‘test_mtxmatrix_ompcsr_partition_rowwise()’ tests partitioning
+ * ‘test_mtxompcsr_partition_rowwise()’ tests partitioning
  * matrices rowwise.
  */
-int test_mtxmatrix_ompcsr_partition_rowwise(void)
+int test_mtxompcsr_partition_rowwise(void)
 {
     int err;
     {
@@ -1127,7 +1127,7 @@ int test_mtxmatrix_ompcsr_partition_rowwise(void)
         float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         int srcsize = sizeof(srcdata) / sizeof(*srcdata);
         err = mtxmatrix_init_entries_real_single(
-            &src, mtxmatrix_ompcsr, mtx_unsymmetric,
+            &src, mtxompcsr, mtx_unsymmetric,
             num_rows, num_columns, num_nonzeros,
             srcrowidx, srccolidx, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1158,7 +1158,7 @@ int test_mtxmatrix_ompcsr_partition_rowwise(void)
         float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         int srcsize = sizeof(srcdata) / sizeof(*srcdata);
         err = mtxmatrix_init_entries_real_single(
-            &src, mtxmatrix_ompcsr, mtx_unsymmetric,
+            &src, mtxompcsr, mtx_unsymmetric,
             num_rows, num_columns, num_nonzeros,
             srcrowidx, srccolidx, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1189,7 +1189,7 @@ int test_mtxmatrix_ompcsr_partition_rowwise(void)
         float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         int srcsize = sizeof(srcdata) / sizeof(*srcdata);
         err = mtxmatrix_init_entries_real_single(
-            &src, mtxmatrix_ompcsr, mtx_unsymmetric,
+            &src, mtxompcsr, mtx_unsymmetric,
             num_rows, num_columns, num_nonzeros,
             srcrowidx, srccolidx, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1212,10 +1212,10 @@ int test_mtxmatrix_ompcsr_partition_rowwise(void)
 }
 
 /**
- * ‘test_mtxmatrix_ompcsr_partition_columnwise()’ tests partitioning
+ * ‘test_mtxompcsr_partition_columnwise()’ tests partitioning
  * matrices columnwise.
  */
-int test_mtxmatrix_ompcsr_partition_columnwise(void)
+int test_mtxompcsr_partition_columnwise(void)
 {
     int err;
     {
@@ -1231,7 +1231,7 @@ int test_mtxmatrix_ompcsr_partition_columnwise(void)
         float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         int srcsize = sizeof(srcdata) / sizeof(*srcdata);
         err = mtxmatrix_init_entries_real_single(
-            &src, mtxmatrix_ompcsr, mtx_unsymmetric,
+            &src, mtxompcsr, mtx_unsymmetric,
             num_rows, num_columns, num_nonzeros,
             srcrowidx, srccolidx, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1262,7 +1262,7 @@ int test_mtxmatrix_ompcsr_partition_columnwise(void)
         float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         int srcsize = sizeof(srcdata) / sizeof(*srcdata);
         err = mtxmatrix_init_entries_real_single(
-            &src, mtxmatrix_ompcsr, mtx_unsymmetric,
+            &src, mtxompcsr, mtx_unsymmetric,
             num_rows, num_columns, num_nonzeros,
             srcrowidx, srccolidx, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1293,7 +1293,7 @@ int test_mtxmatrix_ompcsr_partition_columnwise(void)
         float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         int srcsize = sizeof(srcdata) / sizeof(*srcdata);
         err = mtxmatrix_init_entries_real_single(
-            &src, mtxmatrix_ompcsr, mtx_unsymmetric,
+            &src, mtxompcsr, mtx_unsymmetric,
             num_rows, num_columns, num_nonzeros,
             srcrowidx, srccolidx, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1316,10 +1316,10 @@ int test_mtxmatrix_ompcsr_partition_columnwise(void)
 }
 
 /**
- * ‘test_mtxmatrix_ompcsr_partition_2d()’ tests partitioning matrices in
+ * ‘test_mtxompcsr_partition_2d()’ tests partitioning matrices in
  * a 2D manner.
  */
-int test_mtxmatrix_ompcsr_partition_2d(void)
+int test_mtxompcsr_partition_2d(void)
 {
     int err;
     {
@@ -1334,7 +1334,7 @@ int test_mtxmatrix_ompcsr_partition_2d(void)
         float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         int srcsize = sizeof(srcdata) / sizeof(*srcdata);
         err = mtxmatrix_init_entries_real_single(
-            &src, mtxmatrix_ompcsr, mtx_unsymmetric,
+            &src, mtxompcsr, mtx_unsymmetric,
             num_rows, num_columns, num_nonzeros,
             srcrowidx, srccolidx, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1358,9 +1358,9 @@ int test_mtxmatrix_ompcsr_partition_2d(void)
 }
 
 /**
- * ‘test_mtxmatrix_ompcsr_split()’ tests splitting matrices.
+ * ‘test_mtxompcsr_split()’ tests splitting matrices.
  */
-int test_mtxmatrix_ompcsr_split(void)
+int test_mtxompcsr_split(void)
 {
     int err;
     {
@@ -1377,13 +1377,13 @@ int test_mtxmatrix_ompcsr_split(void)
         int parts[] =     {0, 1, 0, 0, 1, 1, 0, 1};
         int srcsize = sizeof(srcdata) / sizeof(*srcdata);
         err = mtxmatrix_init_entries_real_single(
-            &src, mtxmatrix_ompcsr, mtx_unsymmetric,
+            &src, mtxompcsr, mtx_unsymmetric,
             num_rows, num_columns, num_nonzeros,
             srcrowidx, srccolidx, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmatrix_split(num_parts, dsts, &src, srcsize, parts);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, dst0.type);
+        TEST_ASSERT_EQ(mtxompcsr, dst0.type);
         TEST_ASSERT_EQ(mtx_unsymmetric, dst0.storage.ompcsr.symmetry);
         TEST_ASSERT_EQ(3, dst0.storage.ompcsr.num_rows);
         TEST_ASSERT_EQ(3, dst0.storage.ompcsr.num_columns);
@@ -1403,7 +1403,7 @@ int test_mtxmatrix_ompcsr_split(void)
         TEST_ASSERT_EQ(dst0.storage.ompcsr.a.base.data.real_single[1], 4.0f);
         TEST_ASSERT_EQ(dst0.storage.ompcsr.a.base.data.real_single[2], 5.0f);
         TEST_ASSERT_EQ(dst0.storage.ompcsr.a.base.data.real_single[3], 8.0f);
-        TEST_ASSERT_EQ(mtxmatrix_ompcsr, dst1.type);
+        TEST_ASSERT_EQ(mtxompcsr, dst1.type);
         TEST_ASSERT_EQ(mtx_unsymmetric, dst1.storage.ompcsr.symmetry);
         TEST_ASSERT_EQ(3, dst1.storage.ompcsr.num_rows);
         TEST_ASSERT_EQ(3, dst1.storage.ompcsr.num_columns);
@@ -1429,10 +1429,10 @@ int test_mtxmatrix_ompcsr_split(void)
 }
 
 /**
- * ‘test_mtxmatrix_ompcsr_gemv()’ tests computing matrix-vector
+ * ‘test_mtxompcsr_gemv()’ tests computing matrix-vector
  * products for matrices in coordinate format.
  */
-int test_mtxmatrix_ompcsr_gemv(void)
+int test_mtxompcsr_gemv(void)
 {
     int err;
 
@@ -1558,7 +1558,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         float xdata[] = {3.0f, 2.0f, 1.0f};
         float ydata[] = {1.0f, 0.0f, 2.0f};
         err = mtxmatrix_init_entries_real_single(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_real_single(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1643,7 +1643,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         float xdata[] = {3.0f, 2.0f, 1.0f};
         float ydata[] = {1.0f, 0.0f, 2.0f};
         err = mtxmatrix_init_entries_real_single(
-            &A, mtxmatrix_ompcsr, mtx_symmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_symmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_real_single(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1728,7 +1728,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         double xdata[] = {3.0, 2.0, 1.0};
         double ydata[] = {1.0, 0.0, 2.0};
         err = mtxmatrix_init_entries_real_double(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_real_double(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1813,7 +1813,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         double xdata[] = {3.0, 2.0, 1.0};
         double ydata[] = {1.0, 0.0, 2.0};
         err = mtxmatrix_init_entries_real_double(
-            &A, mtxmatrix_ompcsr, mtx_symmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_symmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_real_double(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1898,7 +1898,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         float xdata[][2] = {{3.0f,1.0f}, {1.0f,2.0f}};
         float ydata[][2] = {{1.0f,0.0f}, {2.0f,2.0f}};
         err = mtxmatrix_init_entries_complex_single(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_complex_single(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -2119,7 +2119,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         float xdata[][2] = {{3.0f,1.0f}, {1.0f,2.0f}};
         float ydata[][2] = {{1.0f,0.0f}, {2.0f,2.0f}};
         err = mtxmatrix_init_entries_complex_single(
-            &A, mtxmatrix_ompcsr, mtx_symmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_symmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_complex_single(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -2340,7 +2340,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         float xdata[][2] = {{3.0f,1.0f}, {1.0f,2.0f}};
         float ydata[][2] = {{1.0f,0.0f}, {2.0f,2.0f}};
         err = mtxmatrix_init_entries_complex_single(
-            &A, mtxmatrix_ompcsr, mtx_hermitian, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_hermitian, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_complex_single(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -2561,7 +2561,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         double xdata[][2] = {{3.0,1.0}, {1.0,2.0}};
         double ydata[][2] = {{1.0,0.0}, {2.0,2.0}};
         err = mtxmatrix_init_entries_complex_double(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_complex_double(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -2782,7 +2782,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         double xdata[][2] = {{3.0,1.0}, {1.0,2.0}};
         double ydata[][2] = {{1.0,0.0}, {2.0,2.0}};
         err = mtxmatrix_init_entries_complex_double(
-            &A, mtxmatrix_ompcsr, mtx_symmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_symmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_complex_double(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -3003,7 +3003,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         double xdata[][2] = {{3.0,1.0}, {1.0,2.0}};
         double ydata[][2] = {{1.0,0.0}, {2.0,2.0}};
         err = mtxmatrix_init_entries_complex_double(
-            &A, mtxmatrix_ompcsr, mtx_hermitian, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_hermitian, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_complex_double(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -3224,7 +3224,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         int32_t xdata[] = {3, 2, 1};
         int32_t ydata[] = {1, 0, 2};
         err = mtxmatrix_init_entries_integer_single(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_integer_single(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -3309,7 +3309,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         int32_t xdata[] = {3, 2, 1};
         int32_t ydata[] = {1, 0, 2};
         err = mtxmatrix_init_entries_integer_single(
-            &A, mtxmatrix_ompcsr, mtx_symmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_symmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_integer_single(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -3394,7 +3394,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         int64_t xdata[] = {3, 2, 1};
         int64_t ydata[] = {1, 0, 2};
         err = mtxmatrix_init_entries_integer_double(
-            &A, mtxmatrix_ompcsr, mtx_unsymmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_unsymmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_integer_double(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -3479,7 +3479,7 @@ int test_mtxmatrix_ompcsr_gemv(void)
         int64_t xdata[] = {3, 2, 1};
         int64_t ydata[] = {1, 0, 2};
         err = mtxmatrix_init_entries_integer_double(
-            &A, mtxmatrix_ompcsr, mtx_symmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
+            &A, mtxompcsr, mtx_symmetric, num_rows, num_columns, num_nonzeros, Arowidx, Acolidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_integer_double(&x, mtxompvector, num_columns, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -3557,13 +3557,13 @@ int main(int argc, char * argv[])
     omp_set_num_threads(2);
 
     TEST_SUITE_BEGIN("Running tests for OpenMP CSR matrices\n");
-    TEST_RUN(test_mtxmatrix_ompcsr_from_mtxfile);
-    TEST_RUN(test_mtxmatrix_ompcsr_to_mtxfile);
-    TEST_RUN(test_mtxmatrix_ompcsr_partition_rowwise);
-    TEST_RUN(test_mtxmatrix_ompcsr_partition_columnwise);
-    TEST_RUN(test_mtxmatrix_ompcsr_partition_2d);
-    TEST_RUN(test_mtxmatrix_ompcsr_split);
-    TEST_RUN(test_mtxmatrix_ompcsr_gemv);
+    TEST_RUN(test_mtxompcsr_from_mtxfile);
+    TEST_RUN(test_mtxompcsr_to_mtxfile);
+    TEST_RUN(test_mtxompcsr_partition_rowwise);
+    TEST_RUN(test_mtxompcsr_partition_columnwise);
+    TEST_RUN(test_mtxompcsr_partition_2d);
+    TEST_RUN(test_mtxompcsr_split);
+    TEST_RUN(test_mtxompcsr_gemv);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

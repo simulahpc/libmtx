@@ -66,7 +66,7 @@ enum mtxmatrixtype
     mtxmatrix_dense,      /* dense matrices */
     mtxnullcoo,           /* coordinate format where matrix operations
                            * do nothing (for debugging purposes) */
-    mtxmatrix_ompcsr,     /* compressed sparse row with OpenMP */
+    mtxompcsr,            /* compressed sparse row with OpenMP */
 };
 
 /**
@@ -133,7 +133,7 @@ struct mtxmatrix
         struct mtxmatrix_dense dense;
         struct mtxnullcoo nullcoo;
 #ifdef LIBMTX_HAVE_OPENMP
-        struct mtxmatrix_ompcsr ompcsr;
+        struct mtxompcsr ompcsr;
 #endif
     } storage;
 };

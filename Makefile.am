@@ -311,11 +311,11 @@ check_PROGRAMS += tests/test_mtxblasdense
 TESTS += tests/test_mtxblasdense
 endif
 if HAVE_OPENMP
-tests_test_mtxmatrix_ompcsr_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxmatrix_ompcsr_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxmatrix_ompcsr_SOURCES = tests/test_mtxmatrix_ompcsr.c tests/test.h
-check_PROGRAMS += tests/test_mtxmatrix_ompcsr
-TESTS += tests/test_mtxmatrix_ompcsr
+tests_test_mtxompcsr_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxompcsr_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxompcsr_SOURCES = tests/test_mtxompcsr.c tests/test.h
+check_PROGRAMS += tests/test_mtxompcsr
+TESTS += tests/test_mtxompcsr
 endif
 if HAVE_MPI
 tests_test_mtxmatrix_dist_CPPFLAGS = $(MPICPPFLAGS)
