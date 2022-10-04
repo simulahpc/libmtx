@@ -44,7 +44,7 @@ struct mtxfile;
 struct mtxmatrix;
 
 /**
- * ‘mtxvector_null’ represents a matrix in coordinate (COO) format,
+ * ‘mtxnullvector’ represents a matrix in coordinate (COO) format,
  * where matrix operations are implemented to do nothing.
  *
  * This produces incorrect results, so it is only useful for the

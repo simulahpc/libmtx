@@ -44,14 +44,14 @@ struct mtxfile;
 struct mtxvector;
 
 /**
- * ‘mtxvector_null’ represents a vector, where vector operations are
+ * ‘mtxnullvector’ represents a vector, where vector operations are
  * implemented to do nothing.
  *
  * This produces incorrect results, so it is only useful for the
  * purpose of eliminating vector operations while debugging and
  * carrying out performance measurements.
  */
-struct mtxvector_null
+struct mtxnullvector
 {
     /**
      * ‘base’ is the underlying vector.
@@ -64,132 +64,132 @@ struct mtxvector_null
  */
 
 /**
- * ‘mtxvector_null_field()’ gets the field of a vector.
+ * ‘mtxnullvector_field()’ gets the field of a vector.
  */
-enum mtxfield mtxvector_null_field(const struct mtxvector_null * x);
+enum mtxfield mtxnullvector_field(const struct mtxnullvector * x);
 
 /**
- * ‘mtxvector_null_precision()’ gets the precision of a vector.
+ * ‘mtxnullvector_precision()’ gets the precision of a vector.
  */
-enum mtxprecision mtxvector_null_precision(const struct mtxvector_null * x);
+enum mtxprecision mtxnullvector_precision(const struct mtxnullvector * x);
 
 /**
- * ‘mtxvector_null_size()’ gets the size of a vector.
+ * ‘mtxnullvector_size()’ gets the size of a vector.
  */
-int64_t mtxvector_null_size(const struct mtxvector_null * x);
+int64_t mtxnullvector_size(const struct mtxnullvector * x);
 
 /**
- * ‘mtxvector_null_num_nonzeros()’ gets the number of explicitly
+ * ‘mtxnullvector_num_nonzeros()’ gets the number of explicitly
  * stored vector entries.
  */
-int64_t mtxvector_null_num_nonzeros(const struct mtxvector_null * x);
+int64_t mtxnullvector_num_nonzeros(const struct mtxnullvector * x);
 
 /**
- * ‘mtxvector_null_idx()’ gets a pointer to an array containing the
+ * ‘mtxnullvector_idx()’ gets a pointer to an array containing the
  * offset of each nonzero vector entry for a vector in packed storage
  * format.
  */
-int64_t * mtxvector_null_idx(const struct mtxvector_null * x);
+int64_t * mtxnullvector_idx(const struct mtxnullvector * x);
 
 /*
  * memory management
  */
 
 /**
- * ‘mtxvector_null_free()’ frees storage allocated for a vector.
+ * ‘mtxnullvector_free()’ frees storage allocated for a vector.
  */
-void mtxvector_null_free(
-    struct mtxvector_null * x);
+void mtxnullvector_free(
+    struct mtxnullvector * x);
 
 /**
- * ‘mtxvector_null_alloc_copy()’ allocates a copy of a vector without
+ * ‘mtxnullvector_alloc_copy()’ allocates a copy of a vector without
  * initialising the values.
  */
-int mtxvector_null_alloc_copy(
-    struct mtxvector_null * dst,
-    const struct mtxvector_null * src);
+int mtxnullvector_alloc_copy(
+    struct mtxnullvector * dst,
+    const struct mtxnullvector * src);
 
 /**
- * ‘mtxvector_null_init_copy()’ allocates a copy of a vector and also
+ * ‘mtxnullvector_init_copy()’ allocates a copy of a vector and also
  * copies the values.
  */
-int mtxvector_null_init_copy(
-    struct mtxvector_null * dst,
-    const struct mtxvector_null * src);
+int mtxnullvector_init_copy(
+    struct mtxnullvector * dst,
+    const struct mtxnullvector * src);
 
 /*
  * initialise vectors in full storage format
  */
 
 /**
- * ‘mtxvector_null_alloc()’ allocates a vector.
+ * ‘mtxnullvector_alloc()’ allocates a vector.
  */
-int mtxvector_null_alloc(
-    struct mtxvector_null * x,
+int mtxnullvector_alloc(
+    struct mtxnullvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
     int64_t size);
 
 /**
- * ‘mtxvector_null_init_real_single()’ allocates and initialises a
+ * ‘mtxnullvector_init_real_single()’ allocates and initialises a
  * vector with real, single precision coefficients.
  */
-int mtxvector_null_init_real_single(
-    struct mtxvector_null * x,
+int mtxnullvector_init_real_single(
+    struct mtxnullvector * x,
     int64_t size,
     const float * data);
 
 /**
- * ‘mtxvector_null_init_real_double()’ allocates and initialises a
+ * ‘mtxnullvector_init_real_double()’ allocates and initialises a
  * vector with real, double precision coefficients.
  */
-int mtxvector_null_init_real_double(
-    struct mtxvector_null * x,
+int mtxnullvector_init_real_double(
+    struct mtxnullvector * x,
     int64_t size,
     const double * data);
 
 /**
- * ‘mtxvector_null_init_complex_single()’ allocates and initialises a
+ * ‘mtxnullvector_init_complex_single()’ allocates and initialises a
  * vector with complex, single precision coefficients.
  */
-int mtxvector_null_init_complex_single(
-    struct mtxvector_null * x,
+int mtxnullvector_init_complex_single(
+    struct mtxnullvector * x,
     int64_t size,
     const float (* data)[2]);
 
 /**
- * ‘mtxvector_null_init_complex_double()’ allocates and initialises a
+ * ‘mtxnullvector_init_complex_double()’ allocates and initialises a
  * vector with complex, double precision coefficients.
  */
-int mtxvector_null_init_complex_double(
-    struct mtxvector_null * x,
+int mtxnullvector_init_complex_double(
+    struct mtxnullvector * x,
     int64_t size,
     const double (* data)[2]);
 
 /**
- * ‘mtxvector_null_init_integer_single()’ allocates and initialises a
+ * ‘mtxnullvector_init_integer_single()’ allocates and initialises a
  * vector with integer, single precision coefficients.
  */
-int mtxvector_null_init_integer_single(
-    struct mtxvector_null * x,
+int mtxnullvector_init_integer_single(
+    struct mtxnullvector * x,
     int64_t size,
     const int32_t * data);
 
 /**
- * ‘mtxvector_null_init_integer_double()’ allocates and initialises a
+ * ‘mtxnullvector_init_integer_double()’ allocates and initialises a
  * vector with integer, double precision coefficients.
  */
-int mtxvector_null_init_integer_double(
-    struct mtxvector_null * x,
+int mtxnullvector_init_integer_double(
+    struct mtxnullvector * x,
     int64_t size,
     const int64_t * data);
 
 /**
- * ‘mtxvector_null_init_pattern()’ allocates and initialises a vector
+ * ‘mtxnullvector_init_pattern()’ allocates and initialises a vector
  * of ones.
  */
-int mtxvector_null_init_pattern(
-    struct mtxvector_null * x,
+int mtxnullvector_init_pattern(
+    struct mtxnullvector * x,
     int64_t size);
 
 /*
@@ -197,61 +197,61 @@ int mtxvector_null_init_pattern(
  */
 
 /**
- * ‘mtxvector_null_init_strided_real_single()’ allocates and
+ * ‘mtxnullvector_init_strided_real_single()’ allocates and
  * initialises a vector with real, single precision coefficients.
  */
-int mtxvector_null_init_strided_real_single(
-    struct mtxvector_null * x,
+int mtxnullvector_init_strided_real_single(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t stride,
     const float * data);
 
 /**
- * ‘mtxvector_null_init_strided_real_double()’ allocates and
+ * ‘mtxnullvector_init_strided_real_double()’ allocates and
  * initialises a vector with real, double precision coefficients.
  */
-int mtxvector_null_init_strided_real_double(
-    struct mtxvector_null * x,
+int mtxnullvector_init_strided_real_double(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t stride,
     const double * data);
 
 /**
- * ‘mtxvector_null_init_strided_complex_single()’ allocates and
+ * ‘mtxnullvector_init_strided_complex_single()’ allocates and
  * initialises a vector with complex, single precision coefficients.
  */
-int mtxvector_null_init_strided_complex_single(
-    struct mtxvector_null * x,
+int mtxnullvector_init_strided_complex_single(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t stride,
     const float (* data)[2]);
 
 /**
- * ‘mtxvector_null_init_strided_complex_double()’ allocates and
+ * ‘mtxnullvector_init_strided_complex_double()’ allocates and
  * initialises a vector with complex, double precision coefficients.
  */
-int mtxvector_null_init_strided_complex_double(
-    struct mtxvector_null * x,
+int mtxnullvector_init_strided_complex_double(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t stride,
     const double (* data)[2]);
 
 /**
- * ‘mtxvector_null_init_strided_integer_single()’ allocates and
+ * ‘mtxnullvector_init_strided_integer_single()’ allocates and
  * initialises a vector with integer, single precision coefficients.
  */
-int mtxvector_null_init_strided_integer_single(
-    struct mtxvector_null * x,
+int mtxnullvector_init_strided_integer_single(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t stride,
     const int32_t * data);
 
 /**
- * ‘mtxvector_null_init_strided_integer_double()’ allocates and
+ * ‘mtxnullvector_init_strided_integer_double()’ allocates and
  * initialises a vector with integer, double precision coefficients.
  */
-int mtxvector_null_init_strided_integer_double(
-    struct mtxvector_null * x,
+int mtxnullvector_init_strided_integer_double(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t stride,
     const int64_t * data);
@@ -261,11 +261,11 @@ int mtxvector_null_init_strided_integer_double(
  */
 
 /**
- * ‘mtxvector_null_alloc_packed()’ allocates a vector in packed
+ * ‘mtxnullvector_alloc_packed()’ allocates a vector in packed
  * storage format.
  */
-int mtxvector_null_alloc_packed(
-    struct mtxvector_null * x,
+int mtxnullvector_alloc_packed(
+    struct mtxnullvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
     int64_t size,
@@ -273,77 +273,77 @@ int mtxvector_null_alloc_packed(
     const int64_t * idx);
 
 /**
- * ‘mtxvector_null_init_packed_real_single()’ allocates and initialises a
+ * ‘mtxnullvector_init_packed_real_single()’ allocates and initialises a
  * vector with real, single precision coefficients.
  */
-int mtxvector_null_init_packed_real_single(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_real_single(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
     const float * data);
 
 /**
- * ‘mtxvector_null_init_packed_real_double()’ allocates and initialises a
+ * ‘mtxnullvector_init_packed_real_double()’ allocates and initialises a
  * vector with real, double precision coefficients.
  */
-int mtxvector_null_init_packed_real_double(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_real_double(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
     const double * data);
 
 /**
- * ‘mtxvector_null_init_packed_complex_single()’ allocates and initialises
+ * ‘mtxnullvector_init_packed_complex_single()’ allocates and initialises
  * a vector with complex, single precision coefficients.
  */
-int mtxvector_null_init_packed_complex_single(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_complex_single(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
     const float (* data)[2]);
 
 /**
- * ‘mtxvector_null_init_packed_complex_double()’ allocates and initialises
+ * ‘mtxnullvector_init_packed_complex_double()’ allocates and initialises
  * a vector with complex, double precision coefficients.
  */
-int mtxvector_null_init_packed_complex_double(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_complex_double(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
     const double (* data)[2]);
 
 /**
- * ‘mtxvector_null_init_packed_integer_single()’ allocates and initialises
+ * ‘mtxnullvector_init_packed_integer_single()’ allocates and initialises
  * a vector with integer, single precision coefficients.
  */
-int mtxvector_null_init_packed_integer_single(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_integer_single(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
     const int32_t * data);
 
 /**
- * ‘mtxvector_null_init_packed_integer_double()’ allocates and initialises
+ * ‘mtxnullvector_init_packed_integer_double()’ allocates and initialises
  * a vector with integer, double precision coefficients.
  */
-int mtxvector_null_init_packed_integer_double(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_integer_double(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
     const int64_t * data);
 
 /**
- * ‘mtxvector_null_init_packed_pattern()’ allocates and initialises a
+ * ‘mtxnullvector_init_packed_pattern()’ allocates and initialises a
  * binary pattern vector, where every entry has a value of one.
  */
-int mtxvector_null_init_packed_pattern(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_pattern(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx);
@@ -353,11 +353,11 @@ int mtxvector_null_init_packed_pattern(
  */
 
 /**
- * ‘mtxvector_null_alloc_packed_strided()’ allocates a vector in
+ * ‘mtxnullvector_alloc_packed_strided()’ allocates a vector in
  * packed storage format.
  */
-int mtxvector_null_alloc_packed_strided(
-    struct mtxvector_null * x,
+int mtxnullvector_alloc_packed_strided(
+    struct mtxnullvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
     int64_t size,
@@ -367,11 +367,11 @@ int mtxvector_null_alloc_packed_strided(
     const int64_t * idx);
 
 /**
- * ‘mtxvector_null_init_packed_strided_real_single()’ allocates and
+ * ‘mtxnullvector_init_packed_strided_real_single()’ allocates and
  * initialises a vector with real, single precision coefficients.
  */
-int mtxvector_null_init_packed_strided_real_single(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_strided_real_single(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -381,11 +381,11 @@ int mtxvector_null_init_packed_strided_real_single(
     const float * data);
 
 /**
- * ‘mtxvector_null_init_packed_strided_real_double()’ allocates and
+ * ‘mtxnullvector_init_packed_strided_real_double()’ allocates and
  * initialises a vector with real, double precision coefficients.
  */
-int mtxvector_null_init_packed_strided_real_double(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_strided_real_double(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -395,11 +395,11 @@ int mtxvector_null_init_packed_strided_real_double(
     const double * data);
 
 /**
- * ‘mtxvector_null_init_packed_strided_complex_single()’ allocates and
+ * ‘mtxnullvector_init_packed_strided_complex_single()’ allocates and
  * initialises a vector with complex, single precision coefficients.
  */
-int mtxvector_null_init_packed_strided_complex_single(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_strided_complex_single(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -409,11 +409,11 @@ int mtxvector_null_init_packed_strided_complex_single(
     const float (* data)[2]);
 
 /**
- * ‘mtxvector_null_init_packed_strided_complex_double()’ allocates and
+ * ‘mtxnullvector_init_packed_strided_complex_double()’ allocates and
  * initialises a vector with complex, double precision coefficients.
  */
-int mtxvector_null_init_packed_strided_complex_double(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_strided_complex_double(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -423,11 +423,11 @@ int mtxvector_null_init_packed_strided_complex_double(
     const double (* data)[2]);
 
 /**
- * ‘mtxvector_null_init_packed_strided_integer_single()’ allocates and
+ * ‘mtxnullvector_init_packed_strided_integer_single()’ allocates and
  * initialises a vector with integer, single precision coefficients.
  */
-int mtxvector_null_init_packed_strided_integer_single(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_strided_integer_single(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -437,11 +437,11 @@ int mtxvector_null_init_packed_strided_integer_single(
     const int32_t * data);
 
 /**
- * ‘mtxvector_null_init_packed_strided_integer_double()’ allocates and
+ * ‘mtxnullvector_init_packed_strided_integer_double()’ allocates and
  * initialises a vector with integer, double precision coefficients.
  */
-int mtxvector_null_init_packed_strided_integer_double(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_strided_integer_double(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -451,12 +451,12 @@ int mtxvector_null_init_packed_strided_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxvector_null_init_packed_pattern()’ allocates and initialises a
+ * ‘mtxnullvector_init_packed_pattern()’ allocates and initialises a
  * binary pattern vector, where every nonzero entry has a value of
  * one.
  */
-int mtxvector_null_init_packed_strided_pattern(
-    struct mtxvector_null * x,
+int mtxnullvector_init_packed_strided_pattern(
+    struct mtxnullvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -468,85 +468,85 @@ int mtxvector_null_init_packed_strided_pattern(
  */
 
 /**
- * ‘mtxvector_null_get_real_single()’ obtains the values of a vector
+ * ‘mtxnullvector_get_real_single()’ obtains the values of a vector
  * of single precision floating point numbers.
  *
  * The array ‘a’ must be large enough to store ‘size’ elements
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_null_get_real_single(
-    const struct mtxvector_null * x,
+int mtxnullvector_get_real_single(
+    const struct mtxnullvector * x,
     int64_t size,
     int stride,
     float * a);
 
 /**
- * ‘mtxvector_null_get_real_double()’ obtains the values of a vector
+ * ‘mtxnullvector_get_real_double()’ obtains the values of a vector
  * of double precision floating point numbers.
  *
  * The array ‘a’ must be large enough to store ‘size’ elements
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_null_get_real_double(
-    const struct mtxvector_null * x,
+int mtxnullvector_get_real_double(
+    const struct mtxnullvector * x,
     int64_t size,
     int stride,
     double * a);
 
 /**
- * ‘mtxvector_null_get_complex_single()’ obtains the values of a
+ * ‘mtxnullvector_get_complex_single()’ obtains the values of a
  * vector of single precision floating point complex numbers.
  *
  * The array ‘a’ must be large enough to store ‘size’ elements
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_null_get_complex_single(
-    struct mtxvector_null * x,
+int mtxnullvector_get_complex_single(
+    struct mtxnullvector * x,
     int64_t size,
     int stride,
     float (* a)[2]);
 
 /**
- * ‘mtxvector_null_get_complex_double()’ obtains the values of a
+ * ‘mtxnullvector_get_complex_double()’ obtains the values of a
  * vector of double precision floating point complex numbers.
  *
  * The array ‘a’ must be large enough to store ‘size’ elements
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_null_get_complex_double(
-    struct mtxvector_null * x,
+int mtxnullvector_get_complex_double(
+    struct mtxnullvector * x,
     int64_t size,
     int stride,
     double (* a)[2]);
 
 /**
- * ‘mtxvector_null_get_integer_single()’ obtains the values of a
+ * ‘mtxnullvector_get_integer_single()’ obtains the values of a
  * vector of single precision integers.
  *
  * The array ‘a’ must be large enough to store ‘size’ elements
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_null_get_integer_single(
-    struct mtxvector_null * x,
+int mtxnullvector_get_integer_single(
+    struct mtxnullvector * x,
     int64_t size,
     int stride,
     int32_t * a);
 
 /**
- * ‘mtxvector_null_get_integer_double()’ obtains the values of a
+ * ‘mtxnullvector_get_integer_double()’ obtains the values of a
  * vector of double precision integers.
  *
  * The array ‘a’ must be large enough to store ‘size’ elements
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_null_get_integer_double(
-    struct mtxvector_null * x,
+int mtxnullvector_get_integer_double(
+    struct mtxnullvector * x,
     int64_t size,
     int stride,
     int64_t * a);
@@ -556,117 +556,117 @@ int mtxvector_null_get_integer_double(
  */
 
 /**
- * ‘mtxvector_null_setzero()’ sets every value of a vector to zero.
+ * ‘mtxnullvector_setzero()’ sets every value of a vector to zero.
  */
-int mtxvector_null_setzero(
-    struct mtxvector_null * x);
+int mtxnullvector_setzero(
+    struct mtxnullvector * x);
 
 /**
- * ‘mtxvector_null_set_constant_real_single()’ sets every value of a
+ * ‘mtxnullvector_set_constant_real_single()’ sets every value of a
  * vector equal to a constant, single precision floating point number.
  */
-int mtxvector_null_set_constant_real_single(
-    struct mtxvector_null * x,
+int mtxnullvector_set_constant_real_single(
+    struct mtxnullvector * x,
     float a);
 
 /**
- * ‘mtxvector_null_set_constant_real_double()’ sets every value of a
+ * ‘mtxnullvector_set_constant_real_double()’ sets every value of a
  * vector equal to a constant, double precision floating point number.
  */
-int mtxvector_null_set_constant_real_double(
-    struct mtxvector_null * x,
+int mtxnullvector_set_constant_real_double(
+    struct mtxnullvector * x,
     double a);
 
 /**
- * ‘mtxvector_null_set_constant_complex_single()’ sets every value of
+ * ‘mtxnullvector_set_constant_complex_single()’ sets every value of
  * a vector equal to a constant, single precision floating point
  * complex number.
  */
-int mtxvector_null_set_constant_complex_single(
-    struct mtxvector_null * x,
+int mtxnullvector_set_constant_complex_single(
+    struct mtxnullvector * x,
     float a[2]);
 
 /**
- * ‘mtxvector_null_set_constant_complex_double()’ sets every value of
+ * ‘mtxnullvector_set_constant_complex_double()’ sets every value of
  * a vector equal to a constant, double precision floating point
  * complex number.
  */
-int mtxvector_null_set_constant_complex_double(
-    struct mtxvector_null * x,
+int mtxnullvector_set_constant_complex_double(
+    struct mtxnullvector * x,
     double a[2]);
 
 /**
- * ‘mtxvector_null_set_constant_integer_single()’ sets every value of
+ * ‘mtxnullvector_set_constant_integer_single()’ sets every value of
  * a vector equal to a constant integer.
  */
-int mtxvector_null_set_constant_integer_single(
-    struct mtxvector_null * x,
+int mtxnullvector_set_constant_integer_single(
+    struct mtxnullvector * x,
     int32_t a);
 
 /**
- * ‘mtxvector_null_set_constant_integer_double()’ sets every value of
+ * ‘mtxnullvector_set_constant_integer_double()’ sets every value of
  * a vector equal to a constant integer.
  */
-int mtxvector_null_set_constant_integer_double(
-    struct mtxvector_null * x,
+int mtxnullvector_set_constant_integer_double(
+    struct mtxnullvector * x,
     int64_t a);
 
 /**
- * ‘mtxvector_null_set_real_single()’ sets values of a vector based on
+ * ‘mtxnullvector_set_real_single()’ sets values of a vector based on
  * an array of single precision floating point numbers.
  */
-int mtxvector_null_set_real_single(
-    struct mtxvector_null * x,
+int mtxnullvector_set_real_single(
+    struct mtxnullvector * x,
     int64_t size,
     int stride,
     const float * a);
 
 /**
- * ‘mtxvector_null_set_real_double()’ sets values of a vector based on
+ * ‘mtxnullvector_set_real_double()’ sets values of a vector based on
  * an array of double precision floating point numbers.
  */
-int mtxvector_null_set_real_double(
-    struct mtxvector_null * x,
+int mtxnullvector_set_real_double(
+    struct mtxnullvector * x,
     int64_t size,
     int stride,
     const double * a);
 
 /**
- * ‘mtxvector_null_set_complex_single()’ sets values of a vector based
+ * ‘mtxnullvector_set_complex_single()’ sets values of a vector based
  * on an array of single precision floating point complex numbers.
  */
-int mtxvector_null_set_complex_single(
-    struct mtxvector_null * x,
+int mtxnullvector_set_complex_single(
+    struct mtxnullvector * x,
     int64_t size,
     int stride,
     const float (*a)[2]);
 
 /**
- * ‘mtxvector_null_set_complex_double()’ sets values of a vector based
+ * ‘mtxnullvector_set_complex_double()’ sets values of a vector based
  * on an array of double precision floating point complex numbers.
  */
-int mtxvector_null_set_complex_double(
-    struct mtxvector_null * x,
+int mtxnullvector_set_complex_double(
+    struct mtxnullvector * x,
     int64_t size,
     int stride,
     const double (*a)[2]);
 
 /**
- * ‘mtxvector_null_set_integer_single()’ sets values of a vector based
+ * ‘mtxnullvector_set_integer_single()’ sets values of a vector based
  * on an array of integers.
  */
-int mtxvector_null_set_integer_single(
-    struct mtxvector_null * x,
+int mtxnullvector_set_integer_single(
+    struct mtxnullvector * x,
     int64_t size,
     int stride,
     const int32_t * a);
 
 /**
- * ‘mtxvector_null_set_integer_double()’ sets values of a vector based
+ * ‘mtxnullvector_set_integer_double()’ sets values of a vector based
  * on an array of integers.
  */
-int mtxvector_null_set_integer_double(
-    struct mtxvector_null * x,
+int mtxnullvector_set_integer_double(
+    struct mtxnullvector * x,
     int64_t size,
     int stride,
     const int64_t * a);
@@ -676,20 +676,20 @@ int mtxvector_null_set_integer_double(
  */
 
 /**
- * ‘mtxvector_null_from_mtxfile()’ converts a vector in Matrix Market
+ * ‘mtxnullvector_from_mtxfile()’ converts a vector in Matrix Market
  * format to a vector.
  */
-int mtxvector_null_from_mtxfile(
-    struct mtxvector_null * x,
+int mtxnullvector_from_mtxfile(
+    struct mtxnullvector * x,
     const struct mtxfile * mtxfile);
 
 /**
- * ‘mtxvector_null_to_mtxfile()’ converts a vector to a vector in
+ * ‘mtxnullvector_to_mtxfile()’ converts a vector to a vector in
  * Matrix Market format.
  */
-int mtxvector_null_to_mtxfile(
+int mtxnullvector_to_mtxfile(
     struct mtxfile * mtxfile,
-    const struct mtxvector_null * x,
+    const struct mtxnullvector * x,
     int64_t num_rows,
     const int64_t * idx,
     enum mtxfileformat mtxfmt);
@@ -699,7 +699,7 @@ int mtxvector_null_to_mtxfile(
  */
 
 /**
- * ‘mtxvector_null_split()’ splits a vector into multiple vectors
+ * ‘mtxnullvector_split()’ splits a vector into multiple vectors
  * according to a given assignment of parts to each vector element.
  *
  * The partitioning of the vector elements is specified by the array
@@ -709,7 +709,7 @@ int mtxvector_null_to_mtxfile(
  * which the corresponding vector element belongs.
  *
  * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
- * of type ‘struct mtxvector_null’. If successful, then ‘dsts[p]’
+ * of type ‘struct mtxnullvector’. If successful, then ‘dsts[p]’
  * points to a vector consisting of elements from ‘src’ that belong to
  * the ‘p’th part, as designated by the ‘parts’ array.
  *
@@ -721,13 +721,13 @@ int mtxvector_null_to_mtxfile(
  * sorting) of the vector element that now occupies the ‘i’th position
  * among the sorted elements.
  *
- * The caller is responsible for calling ‘mtxvector_null_free()’ to
+ * The caller is responsible for calling ‘mtxnullvector_free()’ to
  * free storage allocated for each vector in the ‘dsts’ array.
  */
-int mtxvector_null_split(
+int mtxnullvector_split(
     int num_parts,
-    struct mtxvector_null ** dsts,
-    const struct mtxvector_null * src,
+    struct mtxnullvector ** dsts,
+    const struct mtxnullvector * src,
     int64_t size,
     int * parts,
     int64_t * invperm);
@@ -737,243 +737,243 @@ int mtxvector_null_split(
  */
 
 /**
- * ‘mtxvector_null_swap()’ swaps values of two vectors, simultaneously
+ * ‘mtxnullvector_swap()’ swaps values of two vectors, simultaneously
  * performing ‘y <- x’ and ‘x <- y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_null_swap(
-    struct mtxvector_null * x,
-    struct mtxvector_null * y);
+int mtxnullvector_swap(
+    struct mtxnullvector * x,
+    struct mtxnullvector * y);
 
 /**
- * ‘mtxvector_null_copy()’ copies values of a vector, ‘y = x’.
+ * ‘mtxnullvector_copy()’ copies values of a vector, ‘y = x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_null_copy(
-    struct mtxvector_null * y,
-    const struct mtxvector_null * x);
+int mtxnullvector_copy(
+    struct mtxnullvector * y,
+    const struct mtxnullvector * x);
 
 /**
- * ‘mtxvector_null_sscal()’ scales a vector by a single precision
+ * ‘mtxnullvector_sscal()’ scales a vector by a single precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxvector_null_sscal(
+int mtxnullvector_sscal(
     float a,
-    struct mtxvector_null * x,
+    struct mtxnullvector * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_dscal()’ scales a vector by a double precision
+ * ‘mtxnullvector_dscal()’ scales a vector by a double precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxvector_null_dscal(
+int mtxnullvector_dscal(
     double a,
-    struct mtxvector_null * x,
+    struct mtxnullvector * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_cscal()’ scales a vector by a complex, single
+ * ‘mtxnullvector_cscal()’ scales a vector by a complex, single
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxvector_null_cscal(
+int mtxnullvector_cscal(
     float a[2],
-    struct mtxvector_null * x,
+    struct mtxnullvector * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_zscal()’ scales a vector by a complex, double
+ * ‘mtxnullvector_zscal()’ scales a vector by a complex, double
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxvector_null_zscal(
+int mtxnullvector_zscal(
     double a[2],
-    struct mtxvector_null * x,
+    struct mtxnullvector * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_saxpy()’ adds a vector to another one multiplied by
+ * ‘mtxnullvector_saxpy()’ adds a vector to another one multiplied by
  * a single precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_null_saxpy(
+int mtxnullvector_saxpy(
     float a,
-    const struct mtxvector_null * x,
-    struct mtxvector_null * y,
+    const struct mtxnullvector * x,
+    struct mtxnullvector * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_daxpy()’ adds a vector to another one multiplied by
+ * ‘mtxnullvector_daxpy()’ adds a vector to another one multiplied by
  * a double precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_null_daxpy(
+int mtxnullvector_daxpy(
     double a,
-    const struct mtxvector_null * x,
-    struct mtxvector_null * y,
+    const struct mtxnullvector * x,
+    struct mtxnullvector * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_saypx()’ multiplies a vector by a single precision
+ * ‘mtxnullvector_saypx()’ multiplies a vector by a single precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_null_saypx(
+int mtxnullvector_saypx(
     float a,
-    struct mtxvector_null * y,
-    const struct mtxvector_null * x,
+    struct mtxnullvector * y,
+    const struct mtxnullvector * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_daypx()’ multiplies a vector by a double precision
+ * ‘mtxnullvector_daypx()’ multiplies a vector by a double precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_null_daypx(
+int mtxnullvector_daypx(
     double a,
-    struct mtxvector_null * y,
-    const struct mtxvector_null * x,
+    struct mtxnullvector * y,
+    const struct mtxnullvector * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_sdot()’ computes the Euclidean dot product of two
+ * ‘mtxnullvector_sdot()’ computes the Euclidean dot product of two
  * vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_null_sdot(
-    const struct mtxvector_null * x,
-    const struct mtxvector_null * y,
+int mtxnullvector_sdot(
+    const struct mtxnullvector * x,
+    const struct mtxnullvector * y,
     float * dot,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_ddot()’ computes the Euclidean dot product of two
+ * ‘mtxnullvector_ddot()’ computes the Euclidean dot product of two
  * vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_null_ddot(
-    const struct mtxvector_null * x,
-    const struct mtxvector_null * y,
+int mtxnullvector_ddot(
+    const struct mtxnullvector * x,
+    const struct mtxnullvector * y,
     double * dot,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_cdotu()’ computes the product of the transpose of a
+ * ‘mtxnullvector_cdotu()’ computes the product of the transpose of a
  * complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_null_cdotu(
-    const struct mtxvector_null * x,
-    const struct mtxvector_null * y,
+int mtxnullvector_cdotu(
+    const struct mtxnullvector * x,
+    const struct mtxnullvector * y,
     float (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_zdotu()’ computes the product of the transpose of a
+ * ‘mtxnullvector_zdotu()’ computes the product of the transpose of a
  * complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_null_zdotu(
-    const struct mtxvector_null * x,
-    const struct mtxvector_null * y,
+int mtxnullvector_zdotu(
+    const struct mtxnullvector * x,
+    const struct mtxnullvector * y,
     double (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_cdotc()’ computes the Euclidean dot product of two
+ * ‘mtxnullvector_cdotc()’ computes the Euclidean dot product of two
  * complex vectors in single precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_null_cdotc(
-    const struct mtxvector_null * x,
-    const struct mtxvector_null * y,
+int mtxnullvector_cdotc(
+    const struct mtxnullvector * x,
+    const struct mtxnullvector * y,
     float (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_zdotc()’ computes the Euclidean dot product of two
+ * ‘mtxnullvector_zdotc()’ computes the Euclidean dot product of two
  * complex vectors in double precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_null_zdotc(
-    const struct mtxvector_null * x,
-    const struct mtxvector_null * y,
+int mtxnullvector_zdotc(
+    const struct mtxnullvector * x,
+    const struct mtxnullvector * y,
     double (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_snrm2()’ computes the Euclidean norm of a vector in
+ * ‘mtxnullvector_snrm2()’ computes the Euclidean norm of a vector in
  * single precision floating point.
  */
-int mtxvector_null_snrm2(
-    const struct mtxvector_null * x,
+int mtxnullvector_snrm2(
+    const struct mtxnullvector * x,
     float * nrm2,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_dnrm2()’ computes the Euclidean norm of a vector in
+ * ‘mtxnullvector_dnrm2()’ computes the Euclidean norm of a vector in
  * double precision floating point.
  */
-int mtxvector_null_dnrm2(
-    const struct mtxvector_null * x,
+int mtxnullvector_dnrm2(
+    const struct mtxnullvector * x,
     double * nrm2,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_sasum()’ computes the sum of absolute values
+ * ‘mtxnullvector_sasum()’ computes the sum of absolute values
  * (1-norm) of a vector in single precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
  */
-int mtxvector_null_sasum(
-    const struct mtxvector_null * x,
+int mtxnullvector_sasum(
+    const struct mtxnullvector * x,
     float * asum,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_dasum()’ computes the sum of absolute values
+ * ‘mtxnullvector_dasum()’ computes the sum of absolute values
  * (1-norm) of a vector in double precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
  */
-int mtxvector_null_dasum(
-    const struct mtxvector_null * x,
+int mtxnullvector_dasum(
+    const struct mtxnullvector * x,
     double * asum,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_iamax()’ finds the index of the first element
+ * ‘mtxnullvector_iamax()’ finds the index of the first element
  * having the maximum absolute value.  If the vector is
  * complex-valued, then the index points to the first element having
  * the maximum sum of the absolute values of the real and imaginary
  * parts.
  */
-int mtxvector_null_iamax(
-    const struct mtxvector_null * x,
+int mtxnullvector_iamax(
+    const struct mtxnullvector * x,
     int * iamax);
 
 /*
@@ -985,7 +985,7 @@ int mtxvector_null_iamax(
  */
 
 /**
- * ‘mtxvector_null_ussdot()’ computes the Euclidean dot product of two
+ * ‘mtxnullvector_ussdot()’ computes the Euclidean dot product of two
  * vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -993,14 +993,14 @@ int mtxvector_null_iamax(
  * indices in the packed vector are not allowed, otherwise the result
  * is undefined.
  */
-int mtxvector_null_ussdot(
-    const struct mtxvector_null * x,
-    const struct mtxvector_null * y,
+int mtxnullvector_ussdot(
+    const struct mtxnullvector * x,
+    const struct mtxnullvector * y,
     float * dot,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_usddot()’ computes the Euclidean dot product of two
+ * ‘mtxnullvector_usddot()’ computes the Euclidean dot product of two
  * vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1008,14 +1008,14 @@ int mtxvector_null_ussdot(
  * indices in the packed vector are not allowed, otherwise the result
  * is undefined.
  */
-int mtxvector_null_usddot(
-    const struct mtxvector_null * x,
-    const struct mtxvector_null * y,
+int mtxnullvector_usddot(
+    const struct mtxnullvector * x,
+    const struct mtxnullvector * y,
     double * dot,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_uscdotu()’ computes the product of the transpose of
+ * ‘mtxnullvector_uscdotu()’ computes the product of the transpose of
  * a complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -1024,14 +1024,14 @@ int mtxvector_null_usddot(
  * indices in the packed vector are not allowed, otherwise the result
  * is undefined.
  */
-int mtxvector_null_uscdotu(
-    const struct mtxvector_null * x,
-    const struct mtxvector_null * y,
+int mtxnullvector_uscdotu(
+    const struct mtxnullvector * x,
+    const struct mtxnullvector * y,
     float (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_uszdotu()’ computes the product of the transpose of
+ * ‘mtxnullvector_uszdotu()’ computes the product of the transpose of
  * a complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -1040,14 +1040,14 @@ int mtxvector_null_uscdotu(
  * indices in the packed vector are not allowed, otherwise the result
  * is undefined.
  */
-int mtxvector_null_uszdotu(
-    const struct mtxvector_null * x,
-    const struct mtxvector_null * y,
+int mtxnullvector_uszdotu(
+    const struct mtxnullvector * x,
+    const struct mtxnullvector * y,
     double (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_uscdotc()’ computes the Euclidean dot product of two
+ * ‘mtxnullvector_uscdotc()’ computes the Euclidean dot product of two
  * complex vectors in single precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1055,14 +1055,14 @@ int mtxvector_null_uszdotu(
  * indices in the packed vector are not allowed, otherwise the result
  * is undefined.
  */
-int mtxvector_null_uscdotc(
-    const struct mtxvector_null * x,
-    const struct mtxvector_null * y,
+int mtxnullvector_uscdotc(
+    const struct mtxnullvector * x,
+    const struct mtxnullvector * y,
     float (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_uszdotc()’ computes the Euclidean dot product of two
+ * ‘mtxnullvector_uszdotc()’ computes the Euclidean dot product of two
  * complex vectors in double precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1070,14 +1070,14 @@ int mtxvector_null_uscdotc(
  * indices in the packed vector are not allowed, otherwise the result
  * is undefined.
  */
-int mtxvector_null_uszdotc(
-    const struct mtxvector_null * x,
-    const struct mtxvector_null * y,
+int mtxnullvector_uszdotc(
+    const struct mtxnullvector * x,
+    const struct mtxnullvector * y,
     double (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_ussaxpy()’ performs a sparse vector update,
+ * ‘mtxnullvector_ussaxpy()’ performs a sparse vector update,
  * multiplying a sparse vector ‘x’ in packed form by a scalar ‘alpha’
  * and adding the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
  *
@@ -1085,14 +1085,14 @@ int mtxvector_null_uszdotc(
  * size. Repeated indices in the packed vector are not allowed,
  * otherwise the result is undefined.
  */
-int mtxvector_null_ussaxpy(
+int mtxnullvector_ussaxpy(
     float alpha,
-    const struct mtxvector_null * x,
-    struct mtxvector_null * y,
+    const struct mtxnullvector * x,
+    struct mtxnullvector * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_usdaxpy()’ performs a sparse vector update,
+ * ‘mtxnullvector_usdaxpy()’ performs a sparse vector update,
  * multiplying a sparse vector ‘x’ in packed form by a scalar ‘alpha’
  * and adding the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
  *
@@ -1100,14 +1100,14 @@ int mtxvector_null_ussaxpy(
  * size. Repeated indices in the packed vector are not allowed,
  * otherwise the result is undefined.
  */
-int mtxvector_null_usdaxpy(
+int mtxnullvector_usdaxpy(
     double alpha,
-    const struct mtxvector_null * x,
-    struct mtxvector_null * y,
+    const struct mtxnullvector * x,
+    struct mtxnullvector * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_uscaxpy()’ performs a sparse vector update,
+ * ‘mtxnullvector_uscaxpy()’ performs a sparse vector update,
  * multiplying a sparse vector ‘x’ in packed form by a scalar ‘alpha’
  * and adding the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
  *
@@ -1115,14 +1115,14 @@ int mtxvector_null_usdaxpy(
  * size. Repeated indices in the packed vector are not allowed,
  * otherwise the result is undefined.
  */
-int mtxvector_null_uscaxpy(
+int mtxnullvector_uscaxpy(
     float alpha[2],
-    const struct mtxvector_null * x,
-    struct mtxvector_null * y,
+    const struct mtxnullvector * x,
+    struct mtxnullvector * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_uszaxpy()’ performs a sparse vector update,
+ * ‘mtxnullvector_uszaxpy()’ performs a sparse vector update,
  * multiplying a sparse vector ‘x’ in packed form by a scalar ‘alpha’
  * and adding the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
  *
@@ -1130,55 +1130,55 @@ int mtxvector_null_uscaxpy(
  * size. Repeated indices in the packed vector are not allowed,
  * otherwise the result is undefined.
  */
-int mtxvector_null_uszaxpy(
+int mtxnullvector_uszaxpy(
     double alpha[2],
-    const struct mtxvector_null * x,
-    struct mtxvector_null * y,
+    const struct mtxnullvector * x,
+    struct mtxnullvector * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_usga()’ performs a gather operation from a vector
+ * ‘mtxnullvector_usga()’ performs a gather operation from a vector
  * ‘y’ into a sparse vector ‘x’ in packed form. Repeated indices in
  * the packed vector are allowed.
  */
-int mtxvector_null_usga(
-    struct mtxvector_null * x,
-    const struct mtxvector_null * y);
+int mtxnullvector_usga(
+    struct mtxnullvector * x,
+    const struct mtxnullvector * y);
 
 /**
- * ‘mtxvector_null_usgz()’ performs a gather operation from a vector
+ * ‘mtxnullvector_usgz()’ performs a gather operation from a vector
  * ‘y’ into a sparse vector ‘x’ in packed form, while zeroing the
  * values of the source vector ‘y’ that were copied to ‘x’. Repeated
  * indices in the packed vector are allowed.
  */
-int mtxvector_null_usgz(
-    struct mtxvector_null * x,
-    struct mtxvector_null * y);
+int mtxnullvector_usgz(
+    struct mtxnullvector * x,
+    struct mtxnullvector * y);
 
 /**
- * ‘mtxvector_null_ussc()’ performs a scatter operation to a vector
+ * ‘mtxnullvector_ussc()’ performs a scatter operation to a vector
  * ‘y’ from a sparse vector ‘x’ in packed form. Repeated indices in
  * the packed vector are not allowed, otherwise the result is
  * undefined.
  */
-int mtxvector_null_ussc(
-    struct mtxvector_null * y,
-    const struct mtxvector_null * x);
+int mtxnullvector_ussc(
+    struct mtxnullvector * y,
+    const struct mtxnullvector * x);
 
 /*
  * Level 1 BLAS-like extensions
  */
 
 /**
- * ‘mtxvector_null_usscga()’ performs a combined scatter-gather
+ * ‘mtxnullvector_usscga()’ performs a combined scatter-gather
  * operation from a sparse vector ‘x’ in packed form into another
  * sparse vector ‘z’ in packed form. Repeated indices in the packed
  * vector ‘x’ are not allowed, otherwise the result is undefined. They
  * are, however, allowed in the packed vector ‘z’.
  */
-int mtxvector_null_usscga(
-    struct mtxvector_null * z,
-    const struct mtxvector_null * x);
+int mtxnullvector_usscga(
+    struct mtxnullvector * z,
+    const struct mtxnullvector * x);
 
 /*
  * MPI functions
@@ -1186,13 +1186,13 @@ int mtxvector_null_usscga(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * ‘mtxvector_null_send()’ sends a vector to another MPI process.
+ * ‘mtxnullvector_send()’ sends a vector to another MPI process.
  *
  * This is analogous to ‘MPI_Send()’ and requires the receiving
- * process to perform a matching call to ‘mtxvector_null_recv()’.
+ * process to perform a matching call to ‘mtxnullvector_recv()’.
  */
-int mtxvector_null_send(
-    const struct mtxvector_null * x,
+int mtxnullvector_send(
+    const struct mtxnullvector * x,
     int64_t offset,
     int count,
     int recipient,
@@ -1201,13 +1201,13 @@ int mtxvector_null_send(
     int * mpierrcode);
 
 /**
- * ‘mtxvector_null_recv()’ receives a vector from another MPI process.
+ * ‘mtxnullvector_recv()’ receives a vector from another MPI process.
  *
  * This is analogous to ‘MPI_Recv()’ and requires the sending process
- * to perform a matching call to ‘mtxvector_null_send()’.
+ * to perform a matching call to ‘mtxnullvector_send()’.
  */
-int mtxvector_null_recv(
-    struct mtxvector_null * x,
+int mtxnullvector_recv(
+    struct mtxnullvector * x,
     int64_t offset,
     int count,
     int sender,
@@ -1217,14 +1217,14 @@ int mtxvector_null_recv(
     int * mpierrcode);
 
 /**
- * ‘mtxvector_null_irecv()’ performs a non-blocking receive of a
+ * ‘mtxnullvector_irecv()’ performs a non-blocking receive of a
  * vector from another MPI process.
  *
  * This is analogous to ‘MPI_Irecv()’ and requires the sending process
- * to perform a matching call to ‘mtxvector_null_send()’.
+ * to perform a matching call to ‘mtxnullvector_send()’.
  */
-int mtxvector_null_irecv(
-    struct mtxvector_null * x,
+int mtxnullvector_irecv(
+    struct mtxnullvector * x,
     int64_t offset,
     int count,
     int sender,

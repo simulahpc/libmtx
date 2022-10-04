@@ -54,7 +54,7 @@ enum mtxvectortype
     mtxvector_base,       /* basic dense vectors */
     mtxvector_blas,       /* dense vectors with vector operations
                            * performed by an external BLAS library */
-    mtxvector_null,       /* dense vectors where vector operations do
+    mtxnullvector,        /* dense vectors where vector operations do
                            * nothing (for debugging purposes) */
     mtxvector_omp,        /* dense vectors using OpenMP for shared
                            * memory parallel operations */
@@ -119,7 +119,7 @@ struct mtxvector
 #ifdef LIBMTX_HAVE_BLAS
         struct mtxvector_blas blas;
 #endif
-        struct mtxvector_null null;
+        struct mtxnullvector null;
 #ifdef LIBMTX_HAVE_OPENMP
         struct mtxvector_omp omp;
 #endif
