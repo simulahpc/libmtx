@@ -55,7 +55,7 @@ const char * mtxmatrixtype_str(
     case mtxmatrix_coo: return "coo";
     case mtxmatrix_csr: return "csr";
     case mtxmatrix_dense: return "dense";
-    case mtxmatrix_nullcoo: return "nullcoo";
+    case mtxnullcoo: return "nullcoo";
     case mtxmatrix_ompcsr: return "ompcsr";
     default: return mtxstrerror(MTX_ERR_INVALID_MATRIX_TYPE);
     }
@@ -104,7 +104,7 @@ int mtxmatrixtype_parse(
         *matrix_type = mtxmatrix_dense;
     } else if (strncmp("nullcoo", t, strlen("nullcoo")) == 0) {
         t += strlen("nullcoo");
-        *matrix_type = mtxmatrix_nullcoo;
+        *matrix_type = mtxnullcoo;
     } else if (strncmp("ompcsr", t, strlen("ompcsr")) == 0) {
         t += strlen("ompcsr");
         *matrix_type = mtxmatrix_ompcsr;
@@ -142,8 +142,8 @@ int mtxmatrix_field(
         *field = mtxmatrix_dense_field(&A->storage.dense);
     } else if (A->type == mtxmatrix_csr) {
         *field = mtxmatrix_csr_field(&A->storage.csr);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        *field = mtxmatrix_nullcoo_field(&A->storage.nullcoo);
+    } else if (A->type == mtxnullcoo) {
+        *field = mtxnullcoo_field(&A->storage.nullcoo);
     } else if (A->type == mtxmatrix_ompcsr) {
 #ifdef LIBMTX_HAVE_OPENMP
         *field = mtxmatrix_ompcsr_field(&A->storage.ompcsr);
@@ -173,8 +173,8 @@ int mtxmatrix_precision(
         *precision = mtxmatrix_dense_precision(&A->storage.dense);
     } else if (A->type == mtxmatrix_csr) {
         *precision = mtxmatrix_csr_precision(&A->storage.csr);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        *precision = mtxmatrix_nullcoo_precision(&A->storage.nullcoo);
+    } else if (A->type == mtxnullcoo) {
+        *precision = mtxnullcoo_precision(&A->storage.nullcoo);
     } else if (A->type == mtxmatrix_ompcsr) {
         *precision = mtxmatrix_ompcsr_precision(&A->storage.ompcsr);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
@@ -200,8 +200,8 @@ int mtxmatrix_symmetry(
         *symmetry = mtxmatrix_dense_symmetry(&A->storage.dense);
     } else if (A->type == mtxmatrix_csr) {
         *symmetry = mtxmatrix_csr_symmetry(&A->storage.csr);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        *symmetry = mtxmatrix_nullcoo_symmetry(&A->storage.nullcoo);
+    } else if (A->type == mtxnullcoo) {
+        *symmetry = mtxnullcoo_symmetry(&A->storage.nullcoo);
     } else if (A->type == mtxmatrix_ompcsr) {
         *symmetry = mtxmatrix_ompcsr_symmetry(&A->storage.ompcsr);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
@@ -229,8 +229,8 @@ int mtxmatrix_num_nonzeros(
         *num_nonzeros = mtxmatrix_dense_num_nonzeros(&A->storage.dense);
     } else if (A->type == mtxmatrix_csr) {
         *num_nonzeros = mtxmatrix_csr_num_nonzeros(&A->storage.csr);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        *num_nonzeros = mtxmatrix_nullcoo_num_nonzeros(&A->storage.nullcoo);
+    } else if (A->type == mtxnullcoo) {
+        *num_nonzeros = mtxnullcoo_num_nonzeros(&A->storage.nullcoo);
     } else if (A->type == mtxmatrix_ompcsr) {
         *num_nonzeros = mtxmatrix_ompcsr_num_nonzeros(&A->storage.ompcsr);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
@@ -257,8 +257,8 @@ int mtxmatrix_size(
         *size = mtxmatrix_dense_size(&A->storage.dense);
     } else if (A->type == mtxmatrix_csr) {
         *size = mtxmatrix_csr_size(&A->storage.csr);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        *size = mtxmatrix_nullcoo_size(&A->storage.nullcoo);
+    } else if (A->type == mtxnullcoo) {
+        *size = mtxnullcoo_size(&A->storage.nullcoo);
     } else if (A->type == mtxmatrix_ompcsr) {
         *size = mtxmatrix_ompcsr_size(&A->storage.ompcsr);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
@@ -290,8 +290,8 @@ int mtxmatrix_rowcolidx(
         return mtxmatrix_csr_rowcolidx(&A->storage.csr, size, rowidx, colidx);
     } else if (A->type == mtxmatrix_dense) {
         return mtxmatrix_dense_rowcolidx(&A->storage.dense, size, rowidx, colidx);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_rowcolidx(&A->storage.nullcoo, size, rowidx, colidx);
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_rowcolidx(&A->storage.nullcoo, size, rowidx, colidx);
     } else if (A->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_rowcolidx(&A->storage.ompcsr, size, rowidx, colidx);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
@@ -317,8 +317,8 @@ void mtxmatrix_free(
         mtxmatrix_csr_free(&matrix->storage.csr);
     } else if (matrix->type == mtxmatrix_dense) {
         mtxmatrix_dense_free(&matrix->storage.dense);
-    } else if (matrix->type == mtxmatrix_nullcoo) {
-        mtxmatrix_nullcoo_free(&matrix->storage.nullcoo);
+    } else if (matrix->type == mtxnullcoo) {
+        mtxnullcoo_free(&matrix->storage.nullcoo);
     } else if (matrix->type == mtxmatrix_ompcsr) {
         mtxmatrix_ompcsr_free(&matrix->storage.ompcsr);
     }
@@ -348,8 +348,8 @@ int mtxmatrix_alloc_copy(
     } else if (src->type == mtxmatrix_dense) {
         return mtxmatrix_dense_alloc_copy(
             &dst->storage.dense, &src->storage.dense);
-    } else if (src->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_alloc_copy(
+    } else if (src->type == mtxnullcoo) {
+        return mtxnullcoo_alloc_copy(
             &dst->storage.nullcoo, &src->storage.nullcoo);
     } else if (src->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_alloc_copy(
@@ -381,8 +381,8 @@ int mtxmatrix_init_copy(
     } else if (src->type == mtxmatrix_dense) {
         return mtxmatrix_dense_init_copy(
             &dst->storage.dense, &src->storage.dense);
-    } else if (src->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_init_copy(
+    } else if (src->type == mtxnullcoo) {
+        return mtxnullcoo_init_copy(
             &dst->storage.nullcoo, &src->storage.nullcoo);
     } else if (src->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_init_copy(
@@ -440,9 +440,9 @@ int mtxmatrix_alloc_entries(
             &A->storage.dense, field, precision, symmetry,
             num_rows, num_columns, num_nonzeros,
             idxstride, idxbase, rowidx, colidx);
-    } else if (type == mtxmatrix_nullcoo) {
-        A->type = mtxmatrix_nullcoo;
-        return mtxmatrix_nullcoo_alloc_entries(
+    } else if (type == mtxnullcoo) {
+        A->type = mtxnullcoo;
+        return mtxnullcoo_alloc_entries(
             &A->storage.nullcoo, field, precision, symmetry,
             num_rows, num_columns, num_nonzeros,
             idxstride, idxbase, rowidx, colidx);
@@ -495,9 +495,9 @@ int mtxmatrix_init_entries_real_single(
         return mtxmatrix_dense_init_entries_real_single(
             &A->storage.dense, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_nullcoo) {
-        A->type = mtxmatrix_nullcoo;
-        return mtxmatrix_nullcoo_init_entries_real_single(
+    } else if (type == mtxnullcoo) {
+        A->type = mtxnullcoo;
+        return mtxnullcoo_init_entries_real_single(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxmatrix_ompcsr) {
@@ -548,9 +548,9 @@ int mtxmatrix_init_entries_real_double(
         return mtxmatrix_dense_init_entries_real_double(
             &A->storage.dense, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_nullcoo) {
-        A->type = mtxmatrix_nullcoo;
-        return mtxmatrix_nullcoo_init_entries_real_double(
+    } else if (type == mtxnullcoo) {
+        A->type = mtxnullcoo;
+        return mtxnullcoo_init_entries_real_double(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxmatrix_ompcsr) {
@@ -601,9 +601,9 @@ int mtxmatrix_init_entries_complex_single(
         return mtxmatrix_dense_init_entries_complex_single(
             &A->storage.dense, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_nullcoo) {
-        A->type = mtxmatrix_nullcoo;
-        return mtxmatrix_nullcoo_init_entries_complex_single(
+    } else if (type == mtxnullcoo) {
+        A->type = mtxnullcoo;
+        return mtxnullcoo_init_entries_complex_single(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxmatrix_ompcsr) {
@@ -654,9 +654,9 @@ int mtxmatrix_init_entries_complex_double(
         return mtxmatrix_dense_init_entries_complex_double(
             &A->storage.dense, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_nullcoo) {
-        A->type = mtxmatrix_nullcoo;
-        return mtxmatrix_nullcoo_init_entries_complex_double(
+    } else if (type == mtxnullcoo) {
+        A->type = mtxnullcoo;
+        return mtxnullcoo_init_entries_complex_double(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxmatrix_ompcsr) {
@@ -707,9 +707,9 @@ int mtxmatrix_init_entries_integer_single(
         return mtxmatrix_dense_init_entries_integer_single(
             &A->storage.dense, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_nullcoo) {
-        A->type = mtxmatrix_nullcoo;
-        return mtxmatrix_nullcoo_init_entries_integer_single(
+    } else if (type == mtxnullcoo) {
+        A->type = mtxnullcoo;
+        return mtxnullcoo_init_entries_integer_single(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxmatrix_ompcsr) {
@@ -760,9 +760,9 @@ int mtxmatrix_init_entries_integer_double(
         return mtxmatrix_dense_init_entries_integer_double(
             &A->storage.dense, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_nullcoo) {
-        A->type = mtxmatrix_nullcoo;
-        return mtxmatrix_nullcoo_init_entries_integer_double(
+    } else if (type == mtxnullcoo) {
+        A->type = mtxnullcoo;
+        return mtxnullcoo_init_entries_integer_double(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxmatrix_ompcsr) {
@@ -812,9 +812,9 @@ int mtxmatrix_init_entries_pattern(
         return mtxmatrix_dense_init_entries_pattern(
             &A->storage.dense, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx);
-    } else if (type == mtxmatrix_nullcoo) {
-        A->type = mtxmatrix_nullcoo;
-        return mtxmatrix_nullcoo_init_entries_pattern(
+    } else if (type == mtxnullcoo) {
+        A->type = mtxnullcoo;
+        return mtxnullcoo_init_entries_pattern(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx);
     } else if (type == mtxmatrix_ompcsr) {
@@ -1003,8 +1003,8 @@ int mtxmatrix_setzero(
         return mtxmatrix_csr_setzero(&A->storage.csr);
     } else if (A->type == mtxmatrix_dense) {
         return mtxmatrix_dense_setzero(&A->storage.dense);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_setzero(&A->storage.nullcoo);
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_setzero(&A->storage.nullcoo);
     } else if (A->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_setzero(&A->storage.ompcsr);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
@@ -1036,8 +1036,8 @@ int mtxmatrix_set_real_single(
     } else if (A->type == mtxmatrix_dense) {
         return mtxmatrix_dense_set_real_single(
             &A->storage.dense, size, stride, a);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_set_real_single(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_set_real_single(
             &A->storage.nullcoo, size, stride, a);
     } else if (A->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_set_real_single(
@@ -1071,8 +1071,8 @@ int mtxmatrix_set_real_double(
     } else if (A->type == mtxmatrix_dense) {
         return mtxmatrix_dense_set_real_double(
             &A->storage.dense, size, stride, a);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_set_real_double(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_set_real_double(
             &A->storage.nullcoo, size, stride, a);
     } else if (A->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_set_real_double(
@@ -1106,8 +1106,8 @@ int mtxmatrix_set_complex_single(
     } else if (A->type == mtxmatrix_dense) {
         return mtxmatrix_dense_set_complex_single(
             &A->storage.dense, size, stride, a);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_set_complex_single(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_set_complex_single(
             &A->storage.nullcoo, size, stride, a);
     } else if (A->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_set_complex_single(
@@ -1141,8 +1141,8 @@ int mtxmatrix_set_complex_double(
     } else if (A->type == mtxmatrix_dense) {
         return mtxmatrix_dense_set_complex_double(
             &A->storage.dense, size, stride, a);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_set_complex_double(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_set_complex_double(
             &A->storage.nullcoo, size, stride, a);
     } else if (A->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_set_complex_double(
@@ -1176,8 +1176,8 @@ int mtxmatrix_set_integer_single(
     } else if (A->type == mtxmatrix_dense) {
         return mtxmatrix_dense_set_integer_single(
             &A->storage.dense, size, stride, a);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_set_integer_single(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_set_integer_single(
             &A->storage.nullcoo, size, stride, a);
     } else if (A->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_set_integer_single(
@@ -1211,8 +1211,8 @@ int mtxmatrix_set_integer_double(
     } else if (A->type == mtxmatrix_dense) {
         return mtxmatrix_dense_set_integer_double(
             &A->storage.dense, size, stride, a);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_set_integer_double(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_set_integer_double(
             &A->storage.nullcoo, size, stride, a);
     } else if (A->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_set_integer_double(
@@ -1250,8 +1250,8 @@ int mtxmatrix_alloc_row_vector(
     } else if (matrix->type == mtxmatrix_dense) {
         return mtxmatrix_dense_alloc_row_vector(
             &matrix->storage.dense, vector, vectortype);
-    } else if (matrix->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_alloc_row_vector(
+    } else if (matrix->type == mtxnullcoo) {
+        return mtxnullcoo_alloc_row_vector(
             &matrix->storage.nullcoo, vector, vectortype);
     } else if (matrix->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_alloc_row_vector(
@@ -1285,8 +1285,8 @@ int mtxmatrix_alloc_column_vector(
     } else if (matrix->type == mtxmatrix_dense) {
         return mtxmatrix_dense_alloc_column_vector(
             &matrix->storage.dense, vector, vectortype);
-    } else if (matrix->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_alloc_column_vector(
+    } else if (matrix->type == mtxnullcoo) {
+        return mtxnullcoo_alloc_column_vector(
             &matrix->storage.nullcoo, vector, vectortype);
     } else if (matrix->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_alloc_column_vector(
@@ -1327,9 +1327,9 @@ int mtxmatrix_from_mtxfile(
         matrix->type = mtxmatrix_dense;
         return mtxmatrix_dense_from_mtxfile(
             &matrix->storage.dense, mtxfile);
-    } else if (type == mtxmatrix_nullcoo) {
-        matrix->type = mtxmatrix_nullcoo;
-        return mtxmatrix_nullcoo_from_mtxfile(
+    } else if (type == mtxnullcoo) {
+        matrix->type = mtxnullcoo;
+        return mtxnullcoo_from_mtxfile(
             &matrix->storage.nullcoo, mtxfile);
     } else if (type == mtxmatrix_ompcsr) {
         matrix->type = mtxmatrix_ompcsr;
@@ -1370,8 +1370,8 @@ int mtxmatrix_to_mtxfile(
         return mtxmatrix_dense_to_mtxfile(
             dst, &src->storage.dense,
             num_rows, rowidx, num_columns, colidx, mtxfmt);
-    } else if (src->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_to_mtxfile(
+    } else if (src->type == mtxnullcoo) {
+        return mtxnullcoo_to_mtxfile(
             dst, &src->storage.nullcoo,
             num_rows, rowidx, num_columns, colidx, mtxfmt);
     } else if (src->type == mtxmatrix_ompcsr) {
@@ -1688,8 +1688,8 @@ int mtxmatrix_partition_rowwise(
             &A->storage.csr,
             parttype, num_parts, partsizes, blksize, parts,
             dstnzpart, dstnzpartsizes, dstrowpart, dstrowpartsizes);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_partition_rowwise(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_partition_rowwise(
             &A->storage.nullcoo,
             parttype, num_parts, partsizes, blksize, parts,
             dstnzpart, dstnzpartsizes, dstrowpart, dstrowpartsizes);
@@ -1746,8 +1746,8 @@ int mtxmatrix_partition_columnwise(
             &A->storage.csr,
             parttype, num_parts, partsizes, blksize, parts,
             dstnzpart, dstnzpartsizes, dstcolpart, dstcolpartsizes);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_partition_columnwise(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_partition_columnwise(
             &A->storage.nullcoo,
             parttype, num_parts, partsizes, blksize, parts,
             dstnzpart, dstnzpartsizes, dstcolpart, dstcolpartsizes);
@@ -1818,8 +1818,8 @@ int mtxmatrix_partition_2d(
             dstnzpart, dstnzpartsizes,
             dstrowpart, dstrowpartsizes,
             dstcolpart, dstcolpartsizes);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_partition_2d(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_partition_2d(
             &A->storage.nullcoo,
             rowparttype, num_row_parts, rowpartsizes, rowblksize, rowparts,
             colparttype, num_col_parts, colpartsizes, colblksize, colparts,
@@ -1888,15 +1888,15 @@ int mtxmatrix_split(
             num_parts, csrdsts, &src->storage.csr, size, parts);
         free(csrdsts);
         return err;
-    } else if (src->type == mtxmatrix_nullcoo) {
-        struct mtxmatrix_nullcoo ** nullcoodsts = malloc(
-            num_parts * sizeof(struct mtxmatrix_nullcoo *));
+    } else if (src->type == mtxnullcoo) {
+        struct mtxnullcoo ** nullcoodsts = malloc(
+            num_parts * sizeof(struct mtxnullcoo *));
         if (!nullcoodsts) return MTX_ERR_ERRNO;
         for (int p = 0; p < num_parts; p++) {
-            dsts[p]->type = mtxmatrix_nullcoo;
+            dsts[p]->type = mtxnullcoo;
             nullcoodsts[p] = &dsts[p]->storage.nullcoo;
         }
-        int err = mtxmatrix_nullcoo_split(
+        int err = mtxnullcoo_split(
             num_parts, nullcoodsts, &src->storage.nullcoo, size, parts);
         free(nullcoodsts);
         return err;
@@ -1943,8 +1943,8 @@ int mtxmatrix_swap(
     } else if (X->type == mtxmatrix_dense && Y->type == mtxmatrix_dense) {
         return mtxmatrix_dense_swap(
             &X->storage.dense, &Y->storage.dense);
-    } else if (X->type == mtxmatrix_nullcoo && Y->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_swap(
+    } else if (X->type == mtxnullcoo && Y->type == mtxnullcoo) {
+        return mtxnullcoo_swap(
             &X->storage.nullcoo, &Y->storage.nullcoo);
     } else if (X->type == mtxmatrix_ompcsr && Y->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_swap(
@@ -1975,8 +1975,8 @@ int mtxmatrix_copy(
     } else if (X->type == mtxmatrix_dense && Y->type == mtxmatrix_dense) {
         return mtxmatrix_dense_copy(
             &Y->storage.dense, &X->storage.dense);
-    } else if (X->type == mtxmatrix_nullcoo && Y->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_copy(
+    } else if (X->type == mtxnullcoo && Y->type == mtxnullcoo) {
+        return mtxnullcoo_copy(
             &Y->storage.nullcoo, &X->storage.nullcoo);
     } else if (X->type == mtxmatrix_ompcsr && Y->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_copy(
@@ -2009,8 +2009,8 @@ int mtxmatrix_sscal(
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_sscal(
             a, &X->storage.dense, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_sscal(
+    } else if (X->type == mtxnullcoo) {
+        return mtxnullcoo_sscal(
             a, &X->storage.nullcoo, num_flops);
     } else if (X->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_sscal(
@@ -2043,8 +2043,8 @@ int mtxmatrix_dscal(
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_dscal(
             a, &X->storage.dense, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_dscal(
+    } else if (X->type == mtxnullcoo) {
+        return mtxnullcoo_dscal(
             a, &X->storage.nullcoo, num_flops);
     } else if (X->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_dscal(
@@ -2130,8 +2130,8 @@ int mtxmatrix_saxpy(
     } else if (X->type == mtxmatrix_dense && Y->type == mtxmatrix_dense) {
         return mtxmatrix_dense_saxpy(
             a, &X->storage.dense, &Y->storage.dense, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo && Y->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_saxpy(
+    } else if (X->type == mtxnullcoo && Y->type == mtxnullcoo) {
+        return mtxnullcoo_saxpy(
             a, &X->storage.nullcoo, &Y->storage.nullcoo, num_flops);
     } else if (X->type == mtxmatrix_ompcsr && Y->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_saxpy(
@@ -2165,8 +2165,8 @@ int mtxmatrix_daxpy(
     } else if (X->type == mtxmatrix_dense && Y->type == mtxmatrix_dense) {
         return mtxmatrix_dense_daxpy(
             a, &X->storage.dense, &Y->storage.dense, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo && Y->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_daxpy(
+    } else if (X->type == mtxnullcoo && Y->type == mtxnullcoo) {
+        return mtxnullcoo_daxpy(
             a, &X->storage.nullcoo, &Y->storage.nullcoo, num_flops);
     } else if (X->type == mtxmatrix_ompcsr && Y->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_daxpy(
@@ -2200,8 +2200,8 @@ int mtxmatrix_saypx(
     } else if (X->type == mtxmatrix_dense && Y->type == mtxmatrix_dense) {
         return mtxmatrix_dense_saypx(
             a, &Y->storage.dense, &X->storage.dense, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo && Y->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_saypx(
+    } else if (X->type == mtxnullcoo && Y->type == mtxnullcoo) {
+        return mtxnullcoo_saypx(
             a, &Y->storage.nullcoo, &X->storage.nullcoo, num_flops);
     } else if (X->type == mtxmatrix_ompcsr && Y->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_saypx(
@@ -2235,8 +2235,8 @@ int mtxmatrix_daypx(
     } else if (X->type == mtxmatrix_dense && Y->type == mtxmatrix_dense) {
         return mtxmatrix_dense_daypx(
             a, &Y->storage.dense, &X->storage.dense, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo && Y->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_daypx(
+    } else if (X->type == mtxnullcoo && Y->type == mtxnullcoo) {
+        return mtxnullcoo_daypx(
             a, &Y->storage.nullcoo, &X->storage.nullcoo, num_flops);
     } else if (X->type == mtxmatrix_ompcsr && Y->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_daypx(
@@ -2270,8 +2270,8 @@ int mtxmatrix_sdot(
     } else if (X->type == mtxmatrix_dense && Y->type == mtxmatrix_dense) {
         return mtxmatrix_dense_sdot(
             &X->storage.dense, &Y->storage.dense, dot, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo && Y->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_sdot(
+    } else if (X->type == mtxnullcoo && Y->type == mtxnullcoo) {
+        return mtxnullcoo_sdot(
             &X->storage.nullcoo, &Y->storage.nullcoo, dot, num_flops);
     } else if (X->type == mtxmatrix_ompcsr && Y->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_sdot(
@@ -2305,8 +2305,8 @@ int mtxmatrix_ddot(
     } else if (X->type == mtxmatrix_dense && Y->type == mtxmatrix_dense) {
         return mtxmatrix_dense_ddot(
             &X->storage.dense, &Y->storage.dense, dot, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo && Y->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_ddot(
+    } else if (X->type == mtxnullcoo && Y->type == mtxnullcoo) {
+        return mtxnullcoo_ddot(
             &X->storage.nullcoo, &Y->storage.nullcoo, dot, num_flops);
     } else if (X->type == mtxmatrix_ompcsr && Y->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_ddot(
@@ -2342,8 +2342,8 @@ int mtxmatrix_cdotu(
     } else if (X->type == mtxmatrix_dense && Y->type == mtxmatrix_dense) {
         return mtxmatrix_dense_cdotu(
             &X->storage.dense, &Y->storage.dense, dot, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo && Y->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_cdotu(
+    } else if (X->type == mtxnullcoo && Y->type == mtxnullcoo) {
+        return mtxnullcoo_cdotu(
             &X->storage.nullcoo, &Y->storage.nullcoo, dot, num_flops);
     } else if (X->type == mtxmatrix_ompcsr && Y->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_cdotu(
@@ -2379,8 +2379,8 @@ int mtxmatrix_zdotu(
     } else if (X->type == mtxmatrix_dense && Y->type == mtxmatrix_dense) {
         return mtxmatrix_dense_zdotu(
             &X->storage.dense, &Y->storage.dense, dot, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo && Y->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_zdotu(
+    } else if (X->type == mtxnullcoo && Y->type == mtxnullcoo) {
+        return mtxnullcoo_zdotu(
             &X->storage.nullcoo, &Y->storage.nullcoo, dot, num_flops);
     } else if (X->type == mtxmatrix_ompcsr && Y->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_zdotu(
@@ -2415,8 +2415,8 @@ int mtxmatrix_cdotc(
     } else if (X->type == mtxmatrix_dense && Y->type == mtxmatrix_dense) {
         return mtxmatrix_dense_cdotc(
             &X->storage.dense, &Y->storage.dense, dot, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo && Y->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_cdotc(
+    } else if (X->type == mtxnullcoo && Y->type == mtxnullcoo) {
+        return mtxnullcoo_cdotc(
             &X->storage.nullcoo, &Y->storage.nullcoo, dot, num_flops);
     } else if (X->type == mtxmatrix_ompcsr && Y->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_cdotc(
@@ -2451,8 +2451,8 @@ int mtxmatrix_zdotc(
     } else if (X->type == mtxmatrix_dense && Y->type == mtxmatrix_dense) {
         return mtxmatrix_dense_zdotc(
             &X->storage.dense, &Y->storage.dense, dot, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo && Y->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_zdotc(
+    } else if (X->type == mtxnullcoo && Y->type == mtxnullcoo) {
+        return mtxnullcoo_zdotc(
             &X->storage.nullcoo, &Y->storage.nullcoo, dot, num_flops);
     } else if (X->type == mtxmatrix_ompcsr && Y->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_zdotc(
@@ -2481,8 +2481,8 @@ int mtxmatrix_snrm2(
         return mtxmatrix_csr_snrm2(&X->storage.csr, nrm2, num_flops);
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_snrm2(&X->storage.dense, nrm2, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_snrm2(&X->storage.nullcoo, nrm2, num_flops);
+    } else if (X->type == mtxnullcoo) {
+        return mtxnullcoo_snrm2(&X->storage.nullcoo, nrm2, num_flops);
     } else if (X->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_snrm2(&X->storage.ompcsr, nrm2, num_flops);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
@@ -2509,8 +2509,8 @@ int mtxmatrix_dnrm2(
         return mtxmatrix_csr_dnrm2(&X->storage.csr, nrm2, num_flops);
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_dnrm2(&X->storage.dense, nrm2, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_dnrm2(&X->storage.nullcoo, nrm2, num_flops);
+    } else if (X->type == mtxnullcoo) {
+        return mtxnullcoo_dnrm2(&X->storage.nullcoo, nrm2, num_flops);
     } else if (X->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_dnrm2(&X->storage.ompcsr, nrm2, num_flops);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
@@ -2539,8 +2539,8 @@ int mtxmatrix_sasum(
         return mtxmatrix_csr_sasum(&X->storage.csr, asum, num_flops);
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_sasum(&X->storage.dense, asum, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_sasum(&X->storage.nullcoo, asum, num_flops);
+    } else if (X->type == mtxnullcoo) {
+        return mtxnullcoo_sasum(&X->storage.nullcoo, asum, num_flops);
     } else if (X->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_sasum(&X->storage.ompcsr, asum, num_flops);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
@@ -2569,8 +2569,8 @@ int mtxmatrix_dasum(
         return mtxmatrix_csr_dasum(&X->storage.csr, asum, num_flops);
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_dasum(&X->storage.dense, asum, num_flops);
-    } else if (X->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_dasum(&X->storage.nullcoo, asum, num_flops);
+    } else if (X->type == mtxnullcoo) {
+        return mtxnullcoo_dasum(&X->storage.nullcoo, asum, num_flops);
     } else if (X->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_dasum(&X->storage.ompcsr, asum, num_flops);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
@@ -2598,8 +2598,8 @@ int mtxmatrix_iamax(
         return mtxmatrix_csr_iamax(&X->storage.csr, iamax);
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_iamax(&X->storage.dense, iamax);
-    } else if (X->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_iamax(&X->storage.nullcoo, iamax);
+    } else if (X->type == mtxnullcoo) {
+        return mtxnullcoo_iamax(&X->storage.nullcoo, iamax);
     } else if (X->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_iamax(&X->storage.ompcsr, iamax);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
@@ -2643,8 +2643,8 @@ int mtxmatrix_sgemv(
     } else if (A->type == mtxmatrix_dense) {
         return mtxmatrix_dense_sgemv(
             trans, alpha, &A->storage.dense, x, beta, y, num_flops);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_sgemv(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_sgemv(
             trans, alpha, &A->storage.nullcoo, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_sgemv(
@@ -2686,8 +2686,8 @@ int mtxmatrix_dgemv(
     } else if (A->type == mtxmatrix_dense) {
         return mtxmatrix_dense_dgemv(
             trans, alpha, &A->storage.dense, x, beta, y, num_flops);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_dgemv(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_dgemv(
             trans, alpha, &A->storage.nullcoo, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_dgemv(
@@ -2730,8 +2730,8 @@ int mtxmatrix_cgemv(
     } else if (A->type == mtxmatrix_dense) {
         return mtxmatrix_dense_cgemv(
             trans, alpha, &A->storage.dense, x, beta, y, num_flops);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_cgemv(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_cgemv(
             trans, alpha, &A->storage.nullcoo, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_cgemv(
@@ -2774,8 +2774,8 @@ int mtxmatrix_zgemv(
     } else if (A->type == mtxmatrix_dense) {
         return mtxmatrix_dense_zgemv(
             trans, alpha, &A->storage.dense, x, beta, y, num_flops);
-    } else if (A->type == mtxmatrix_nullcoo) {
-        return mtxmatrix_nullcoo_zgemv(
+    } else if (A->type == mtxnullcoo) {
+        return mtxnullcoo_zgemv(
             trans, alpha, &A->storage.nullcoo, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_ompcsr) {
         return mtxmatrix_ompcsr_zgemv(
