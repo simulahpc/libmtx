@@ -29,7 +29,7 @@
 #include <libmtx/linalg/base/coo.h>
 #include <libmtx/linalg/base/csr.h>
 #include <libmtx/linalg/base/dense.h>
-#include <libmtx/matrix/blas/dense.h>
+#include <libmtx/linalg/blas/dense.h>
 #include <libmtx/linalg/null/coo.h>
 #include <libmtx/matrix/omp/csr.h>
 #include <libmtx/matrix/symmetry.h>

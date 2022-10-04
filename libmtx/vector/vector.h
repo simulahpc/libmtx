@@ -29,7 +29,7 @@
 #include <libmtx/vector/precision.h>
 #include <libmtx/vector/field.h>
 #include <libmtx/linalg/base/vector.h>
-#include <libmtx/vector/blas.h>
+#include <libmtx/linalg/blas/vector.h>
 #include <libmtx/linalg/null/vector.h>
 #include <libmtx/vector/omp.h>
 

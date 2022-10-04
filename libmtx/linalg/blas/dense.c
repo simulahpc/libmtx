@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-05
+ * Last modified: 2022-10-03
  *
  * Dense matrices with BLAS-accelerated operations.
  */
@@ -27,8 +27,7 @@
 #include <libmtx/error.h>
 #include <libmtx/vector/field.h>
 #include <libmtx/vector/precision.h>
-
-#include <libmtx/matrix/blas/dense.h>
+#include <libmtx/linalg/blas/dense.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/vector/vector.h>

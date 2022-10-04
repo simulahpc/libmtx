@@ -16,14 +16,14 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-07-11
+ * Last modified: 2022-10-03
  *
  * Data structures and routines for dense vectors with vector
  * operations accelerated by an external BLAS library.
  */
 
-#ifndef LIBMTX_VECTOR_BLAS_H
-#define LIBMTX_VECTOR_BLAS_H
+#ifndef LIBMTX_LINALG_BLAS_VECTOR_H
+#define LIBMTX_LINALG_BLAS_VECTOR_H
 
 #include <libmtx/libmtx-config.h>
 

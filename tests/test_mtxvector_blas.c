@@ -27,7 +27,7 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/linalg/base/vector.h>
-#include <libmtx/vector/blas.h>
+#include <libmtx/linalg/blas/vector.h>
 #include <libmtx/vector/vector.h>
 
 #include <errno.h>

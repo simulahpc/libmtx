@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-07-11
+ * Last modified: 2022-10-03
  *
  * Data structures and routines for dense vectors with vector
  * operations accelerated by an external BLAS library.
@@ -32,7 +32,7 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/linalg/base/vector.h>
-#include <libmtx/vector/blas.h>
+#include <libmtx/linalg/blas/vector.h>
 #include <libmtx/vector/vector.h>
 
 #include <cblas.h>

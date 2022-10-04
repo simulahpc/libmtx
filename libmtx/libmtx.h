@@ -33,7 +33,7 @@
 #include <libmtx/linalg/base/vector.h>
 #include <libmtx/linalg/null/coo.h>
 #include <libmtx/linalg/null/vector.h>
-#include <libmtx/matrix/blas/dense.h>
+#include <libmtx/linalg/blas/dense.h>
 #include <libmtx/matrix/dist.h>
 #include <libmtx/matrix/gemvoverlap.h>
 #include <libmtx/matrix/matrix.h>
@@ -44,7 +44,7 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/solver/cg.h>
 #include <libmtx/util/partition.h>
-#include <libmtx/vector/blas.h>
+#include <libmtx/linalg/blas/vector.h>
 #include <libmtx/vector/dist.h>
 #include <libmtx/vector/field.h>
 #include <libmtx/vector/omp.h>
