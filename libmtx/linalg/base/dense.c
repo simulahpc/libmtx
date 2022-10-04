@@ -25,7 +25,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/vector/field.h>
-#include <libmtx/vector/precision.h>
+#include <libmtx/linalg/precision.h>
 
 #include <libmtx/linalg/base/dense.h>
 #include <libmtx/matrix/matrix.h>

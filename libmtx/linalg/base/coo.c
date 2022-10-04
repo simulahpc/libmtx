@@ -29,7 +29,7 @@
 #include <libmtx/linalg/base/coo.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/sort.h>
-#include <libmtx/vector/precision.h>
+#include <libmtx/linalg/precision.h>
 #include <libmtx/linalg/base/vector.h>
 #include <libmtx/vector/vector.h>
 

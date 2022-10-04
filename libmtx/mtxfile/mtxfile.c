@@ -32,7 +32,7 @@
 #include <libmtx/util/cuthill_mckee.h>
 #include <libmtx/util/metis.h>
 #include <libmtx/util/partition.h>
-#include <libmtx/vector/precision.h>
+#include <libmtx/linalg/precision.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>

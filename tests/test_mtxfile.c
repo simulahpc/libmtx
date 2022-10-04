@@ -24,7 +24,7 @@
 #include "test.h"
 
 #include <libmtx/error.h>
-#include <libmtx/vector/precision.h>
+#include <libmtx/linalg/precision.h>
 #include <libmtx/mtxfile/comments.h>
 #include <libmtx/mtxfile/data.h>
 #include <libmtx/mtxfile/header.h>

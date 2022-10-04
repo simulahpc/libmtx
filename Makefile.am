@@ -65,11 +65,12 @@ libmtx_la_SOURCES = \
 	libmtx/linalg/blas/vector.c \
 	libmtx/linalg/null/coo.c \
 	libmtx/linalg/null/vector.c \
+	libmtx/linalg/omp/csr.c \
 	libmtx/linalg/omp/vector.c \
+	libmtx/linalg/precision.c \
 	libmtx/matrix/dist.c \
 	libmtx/matrix/gemvoverlap.c \
 	libmtx/matrix/matrix.c \
-	libmtx/linalg/omp/csr.c \
 	libmtx/matrix/partition.c \
 	libmtx/matrix/symmetry.c \
 	libmtx/matrix/transpose.c \
@@ -99,7 +100,6 @@ libmtx_la_SOURCES = \
 	libmtx/util/sort.h \
 	libmtx/vector/dist.c \
 	libmtx/vector/field.c \
-	libmtx/vector/precision.c \
 	libmtx/vector/vector.c \
 	libmtx/version.c
 
@@ -115,11 +115,12 @@ nobase_include_HEADERS = \
 	libmtx/linalg/blas/vector.h \
 	libmtx/linalg/null/coo.h \
 	libmtx/linalg/null/vector.h \
+	libmtx/linalg/omp/csr.h \
 	libmtx/linalg/omp/vector.h \
+	libmtx/linalg/precision.h \
 	libmtx/matrix/dist.h \
 	libmtx/matrix/gemvoverlap.h \
 	libmtx/matrix/matrix.h \
-	libmtx/linalg/omp/csr.h \
 	libmtx/matrix/partition.h \
 	libmtx/matrix/symmetry.h \
 	libmtx/matrix/transpose.h \
@@ -133,7 +134,6 @@ nobase_include_HEADERS = \
 	libmtx/util/partition.h \
 	libmtx/vector/dist.h \
 	libmtx/vector/field.h \
-	libmtx/vector/precision.h \
 	libmtx/vector/vector.h \
 	libmtx/version.h
 

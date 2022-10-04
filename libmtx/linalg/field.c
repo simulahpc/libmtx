@@ -16,34 +16,32 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-23
+ * Last modified: 2022-10-03
  *
  * Fields for values of matrices and vectors.
  */
 
-#ifndef LIBMTX_VECTOR_FIELD_H
-#define LIBMTX_VECTOR_FIELD_H
+#include <libmtx/error.h>
+#include <libmtx/vector/field.h>
 
 #include <stdint.h>
-
-/**
- * ‘mtxfield’ is used to enumerate fields for representing matrix and
- * vector values.
- */
-enum mtxfield
-{
-    mtx_field_auto,    /* automatic selection of field */
-    mtx_field_real,    /* real, floating-point coefficients */
-    mtx_field_complex, /* complex, floating point coefficients */
-    mtx_field_integer, /* integer coefficients */
-    mtx_field_pattern  /* boolean coefficients (sparsity pattern) */
-};
+#include <string.h>
 
 /**
  * ‘mtxfield_str()’ is a string representing the field type.
  */
 const char * mtxfield_str(
-    enum mtxfield field);
+    enum mtxfield field)
+{
+    switch (field) {
+    case mtx_field_auto: return "auto";
+    case mtx_field_real: return "real";
+    case mtx_field_complex: return "complex";
+    case mtx_field_integer: return "integer";
+    case mtx_field_pattern: return "pattern";
+    default: return mtxstrerror(MTX_ERR_INVALID_FIELD);
+    }
+}
 
 /**
  * ‘mtxfield_parse()’ parses a string to obtain one of the field types
@@ -71,6 +69,35 @@ int mtxfield_parse(
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
-    const char * valid_delimiters);
-
-#endif
+    const char * valid_delimiters)
+{
+    const char * t = s;
+    if (strncmp("auto", t, strlen("auto")) == 0) {
+        t += strlen("auto");
+        *field = mtx_field_auto;
+    } else if (strncmp("real", t, strlen("real")) == 0) {
+        t += strlen("real");
+        *field = mtx_field_real;
+    } else if (strncmp("complex", t, strlen("complex")) == 0) {
+        t += strlen("complex");
+        *field = mtx_field_complex;
+    } else if (strncmp("integer", t, strlen("integer")) == 0) {
+        t += strlen("integer");
+        *field = mtx_field_integer;
+    } else if (strncmp("pattern", t, strlen("pattern")) == 0) {
+        t += strlen("pattern");
+        *field = mtx_field_pattern;
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    if (valid_delimiters && *t != '\0') {
+        if (!strchr(valid_delimiters, *t))
+            return MTX_ERR_INVALID_FIELD;
+        t++;
+    }
+    if (bytes_read)
+        *bytes_read += t-s;
+    if (endptr)
+        *endptr = t;
+    return MTX_SUCCESS;
+}

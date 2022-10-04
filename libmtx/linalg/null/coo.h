@@ -33,7 +33,7 @@
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/vector/field.h>
-#include <libmtx/vector/precision.h>
+#include <libmtx/linalg/precision.h>
 #include <libmtx/vector/vector.h>
 #include <libmtx/util/partition.h>
 
