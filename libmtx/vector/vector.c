@@ -29,7 +29,7 @@
 #include <libmtx/util/partition.h>
 #include <libmtx/linalg/base/vector.h>
 #include <libmtx/linalg/blas/vector.h>
-#include <libmtx/vector/omp.h>
+#include <libmtx/linalg/omp/vector.h>
 #include <libmtx/vector/vector.h>
 
 #ifdef LIBMTX_HAVE_LIBZ

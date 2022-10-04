@@ -31,7 +31,7 @@
 #include <libmtx/linalg/base/dense.h>
 #include <libmtx/linalg/blas/dense.h>
 #include <libmtx/linalg/null/coo.h>
-#include <libmtx/matrix/omp/csr.h>
+#include <libmtx/linalg/omp/csr.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/vector/field.h>

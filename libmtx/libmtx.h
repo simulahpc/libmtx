@@ -47,7 +47,7 @@
 #include <libmtx/linalg/blas/vector.h>
 #include <libmtx/vector/dist.h>
 #include <libmtx/vector/field.h>
-#include <libmtx/vector/omp.h>
+#include <libmtx/linalg/omp/vector.h>
 #include <libmtx/vector/precision.h>
 #include <libmtx/vector/vector.h>
 #include <libmtx/version.h>

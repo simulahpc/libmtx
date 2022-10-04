@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-07-12
+ * Last modified: 2022-10-03
  *
  * Data structures and routines for shared-memory parallel, dense
  * vectors using OpenMP.
@@ -31,7 +31,7 @@
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/partition.h>
-#include <libmtx/vector/omp.h>
+#include <libmtx/linalg/omp/vector.h>
 #include <libmtx/linalg/base/vector.h>
 #include <libmtx/vector/vector.h>
 
