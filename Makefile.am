@@ -99,7 +99,6 @@ libmtx_la_SOURCES = \
 	libmtx/util/sort.h \
 	libmtx/vector/dist.c \
 	libmtx/vector/field.c \
-	libmtx/vector/packed.c \
 	libmtx/vector/precision.c \
 	libmtx/vector/vector.c \
 	libmtx/version.c
@@ -134,7 +133,6 @@ nobase_include_HEADERS = \
 	libmtx/util/partition.h \
 	libmtx/vector/dist.h \
 	libmtx/vector/field.h \
-	libmtx/vector/packed.h \
 	libmtx/vector/precision.h \
 	libmtx/vector/vector.h \
 	libmtx/version.h
@@ -263,11 +261,6 @@ tests_test_mtxvector_base_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxvector_base_SOURCES = tests/test_mtxvector_base.c tests/test.h
 check_PROGRAMS += tests/test_mtxvector_base
 TESTS += tests/test_mtxvector_base
-tests_test_mtxvector_packed_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxvector_packed_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxvector_packed_SOURCES = tests/test_mtxvector_packed.c tests/test.h
-check_PROGRAMS += tests/test_mtxvector_packed
-TESTS += tests/test_mtxvector_packed
 
 if HAVE_BLAS
 tests_test_mtxvector_blas_CPPFLAGS = $(MPICPPFLAGS)

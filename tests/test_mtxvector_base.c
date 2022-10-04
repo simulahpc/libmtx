@@ -1303,7 +1303,6 @@ int test_mtxvector_base_copy(void)
     return TEST_SUCCESS;
 }
 
-
 /**
  * ‘test_mtxvector_base_scal()’ tests scaling vectors by a constant.
  */
@@ -1436,6 +1435,148 @@ int test_mtxvector_base_scal(void)
         TEST_ASSERT_EQ(   8.0, x.storage.base.data.complex_double[1][1]);
         TEST_ASSERT_EQ( -60.0, x.storage.base.data.complex_double[2][0]);
         TEST_ASSERT_EQ( 144.0, x.storage.base.data.complex_double[2][1]);
+        mtxvector_free(&x);
+    }
+
+    /* vectors in packed storage format */
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t xidx[] = {0, 3, 5, 6, 9};
+        float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_packed_real_single(&x, mtxvector_base, size, num_nonzeros, xidx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_sscal(2.0f, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(2.0f, x.storage.base.data.real_single[0]);
+        TEST_ASSERT_EQ(2.0f, x.storage.base.data.real_single[1]);
+        TEST_ASSERT_EQ(2.0f, x.storage.base.data.real_single[2]);
+        TEST_ASSERT_EQ(4.0f, x.storage.base.data.real_single[3]);
+        TEST_ASSERT_EQ(6.0f, x.storage.base.data.real_single[4]);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t xidx[] = {0, 3, 5, 6, 9};
+        double xdata[] = {1.0, 1.0, 1.0, 2.0, 3.0};
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_packed_real_double(&x, mtxvector_base, size, num_nonzeros, xidx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_sscal(2.0f, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(2.0, x.storage.base.data.real_double[0]);
+        TEST_ASSERT_EQ(2.0, x.storage.base.data.real_double[1]);
+        TEST_ASSERT_EQ(2.0, x.storage.base.data.real_double[2]);
+        TEST_ASSERT_EQ(4.0, x.storage.base.data.real_double[3]);
+        TEST_ASSERT_EQ(6.0, x.storage.base.data.real_double[4]);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t xidx[] = {0, 3, 5};
+        float xdata[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_packed_complex_single(&x, mtxvector_base, size, num_nonzeros, xidx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_sscal(2.0f, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(2.0f, x.storage.base.data.complex_single[0][0]);
+        TEST_ASSERT_EQ(2.0f, x.storage.base.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(2.0f, x.storage.base.data.complex_single[1][0]);
+        TEST_ASSERT_EQ(4.0f, x.storage.base.data.complex_single[1][1]);
+        TEST_ASSERT_EQ(6.0f, x.storage.base.data.complex_single[2][0]);
+        TEST_ASSERT_EQ(0.0f, x.storage.base.data.complex_single[2][1]);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t xidx[] = {0, 3, 5};
+        double xdata[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_packed_complex_double(&x, mtxvector_base, size, num_nonzeros, xidx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_sscal(2.0f, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(2.0, x.storage.base.data.complex_double[0][0]);
+        TEST_ASSERT_EQ(2.0, x.storage.base.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(2.0, x.storage.base.data.complex_double[1][0]);
+        TEST_ASSERT_EQ(4.0, x.storage.base.data.complex_double[1][1]);
+        TEST_ASSERT_EQ(6.0, x.storage.base.data.complex_double[2][0]);
+        TEST_ASSERT_EQ(0.0, x.storage.base.data.complex_double[2][1]);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t xidx[] = {0, 3, 5, 6, 9};
+        float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_packed_real_single(&x, mtxvector_base, size, num_nonzeros, xidx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_dscal(2.0, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(2.0f, x.storage.base.data.real_single[0]);
+        TEST_ASSERT_EQ(2.0f, x.storage.base.data.real_single[1]);
+        TEST_ASSERT_EQ(2.0f, x.storage.base.data.real_single[2]);
+        TEST_ASSERT_EQ(4.0f, x.storage.base.data.real_single[3]);
+        TEST_ASSERT_EQ(6.0f, x.storage.base.data.real_single[4]);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t xidx[] = {0, 3, 5, 6, 9};
+        double xdata[] = {1.0, 1.0, 1.0, 2.0, 3.0};
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_packed_real_double(&x, mtxvector_base, size, num_nonzeros, xidx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_dscal(2.0, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(2.0, x.storage.base.data.real_double[0]);
+        TEST_ASSERT_EQ(2.0, x.storage.base.data.real_double[1]);
+        TEST_ASSERT_EQ(2.0, x.storage.base.data.real_double[2]);
+        TEST_ASSERT_EQ(4.0, x.storage.base.data.real_double[3]);
+        TEST_ASSERT_EQ(6.0, x.storage.base.data.real_double[4]);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t xidx[] = {0, 3, 5};
+        float xdata[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_packed_complex_single(&x, mtxvector_base, size, num_nonzeros, xidx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_dscal(2.0, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(2.0f, x.storage.base.data.complex_single[0][0]);
+        TEST_ASSERT_EQ(2.0f, x.storage.base.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(2.0f, x.storage.base.data.complex_single[1][0]);
+        TEST_ASSERT_EQ(4.0f, x.storage.base.data.complex_single[1][1]);
+        TEST_ASSERT_EQ(6.0f, x.storage.base.data.complex_single[2][0]);
+        TEST_ASSERT_EQ(0.0f, x.storage.base.data.complex_single[2][1]);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t xidx[] = {0, 3, 5};
+        double xdata[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_packed_complex_double(&x, mtxvector_base, size, num_nonzeros, xidx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_dscal(2.0, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(2.0, x.storage.base.data.complex_double[0][0]);
+        TEST_ASSERT_EQ(2.0, x.storage.base.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(2.0, x.storage.base.data.complex_double[1][0]);
+        TEST_ASSERT_EQ(4.0, x.storage.base.data.complex_double[1][1]);
+        TEST_ASSERT_EQ(6.0, x.storage.base.data.complex_double[2][0]);
+        TEST_ASSERT_EQ(0.0, x.storage.base.data.complex_double[2][1]);
         mtxvector_free(&x);
     }
     return TEST_SUCCESS;
@@ -1584,6 +1725,188 @@ int test_mtxvector_base_axpy(void)
         err = mtxvector_init_complex_double(&x, mtxvector_base, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_complex_double(&y, mtxvector_base, size, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_saxpy(2.0f, &x, &y, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4.0, y.storage.base.data.complex_double[0][0]);
+        TEST_ASSERT_EQ(3.0, y.storage.base.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(2.0, y.storage.base.data.complex_double[1][0]);
+        TEST_ASSERT_EQ(6.0, y.storage.base.data.complex_double[1][1]);
+        TEST_ASSERT_EQ(7.0, y.storage.base.data.complex_double[2][0]);
+        TEST_ASSERT_EQ(0.0, y.storage.base.data.complex_double[2][1]);
+        err = mtxvector_daxpy(2.0, &x, &y, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(6.0, y.storage.base.data.complex_double[0][0]);
+        TEST_ASSERT_EQ(5.0, y.storage.base.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(4.0, y.storage.base.data.complex_double[1][0]);
+        TEST_ASSERT_EQ(10.0, y.storage.base.data.complex_double[1][1]);
+        TEST_ASSERT_EQ(13.0, y.storage.base.data.complex_double[2][0]);
+        TEST_ASSERT_EQ(0.0, y.storage.base.data.complex_double[2][1]);
+        err = mtxvector_saypx(2.0f, &y, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(13.0, y.storage.base.data.complex_double[0][0]);
+        TEST_ASSERT_EQ(11.0, y.storage.base.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(9.0, y.storage.base.data.complex_double[1][0]);
+        TEST_ASSERT_EQ(22.0, y.storage.base.data.complex_double[1][1]);
+        TEST_ASSERT_EQ(29.0, y.storage.base.data.complex_double[2][0]);
+        TEST_ASSERT_EQ(0.0, y.storage.base.data.complex_double[2][1]);
+        err = mtxvector_daypx(2.0, &y, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(27.0, y.storage.base.data.complex_double[0][0]);
+        TEST_ASSERT_EQ(23.0, y.storage.base.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(19.0, y.storage.base.data.complex_double[1][0]);
+        TEST_ASSERT_EQ(46.0, y.storage.base.data.complex_double[1][1]);
+        TEST_ASSERT_EQ(61.0, y.storage.base.data.complex_double[2][0]);
+        TEST_ASSERT_EQ(0.0, y.storage.base.data.complex_double[2][1]);
+        mtxvector_free(&y);
+        mtxvector_free(&x);
+    }
+
+    /* vectors in packed storage format */
+    {
+        struct mtxvector x;
+        struct mtxvector y;
+        int64_t idx[] = {0, 3, 5, 6, 9};
+        float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        float ydata[] = {2.0f, 1.0f, 0.0f, 2.0f, 1.0f};
+        int size = 12;
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_packed_real_single(&x, mtxvector_base, size, num_nonzeros, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_packed_real_single(&y, mtxvector_base, size, num_nonzeros, idx, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_saxpy(2.0f, &x, &y, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4.0f, y.storage.base.data.real_single[0]);
+        TEST_ASSERT_EQ(3.0f, y.storage.base.data.real_single[1]);
+        TEST_ASSERT_EQ(2.0f, y.storage.base.data.real_single[2]);
+        TEST_ASSERT_EQ(6.0f, y.storage.base.data.real_single[3]);
+        TEST_ASSERT_EQ(7.0f, y.storage.base.data.real_single[4]);
+        err = mtxvector_daxpy(2.0, &x, &y, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(6.0f, y.storage.base.data.real_single[0]);
+        TEST_ASSERT_EQ(5.0f, y.storage.base.data.real_single[1]);
+        TEST_ASSERT_EQ(4.0f, y.storage.base.data.real_single[2]);
+        TEST_ASSERT_EQ(10.0f, y.storage.base.data.real_single[3]);
+        TEST_ASSERT_EQ(13.0f, y.storage.base.data.real_single[4]);
+        err = mtxvector_saypx(2.0f, &y, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(13.0f, y.storage.base.data.real_single[0]);
+        TEST_ASSERT_EQ(11.0f, y.storage.base.data.real_single[1]);
+        TEST_ASSERT_EQ(9.0f, y.storage.base.data.real_single[2]);
+        TEST_ASSERT_EQ(22.0f, y.storage.base.data.real_single[3]);
+        TEST_ASSERT_EQ(29.0f, y.storage.base.data.real_single[4]);
+        err = mtxvector_daypx(2.0, &y, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(27.0f, y.storage.base.data.real_single[0]);
+        TEST_ASSERT_EQ(23.0f, y.storage.base.data.real_single[1]);
+        TEST_ASSERT_EQ(19.0f, y.storage.base.data.real_single[2]);
+        TEST_ASSERT_EQ(46.0f, y.storage.base.data.real_single[3]);
+        TEST_ASSERT_EQ(61.0f, y.storage.base.data.real_single[4]);
+        mtxvector_free(&y);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        struct mtxvector y;
+        int64_t idx[] = {0, 3, 5, 6, 9};
+        double xdata[] = {1.0, 1.0, 1.0, 2.0, 3.0};
+        double ydata[] = {2.0, 1.0, 0.0, 2.0, 1.0};
+        int size = 12;
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_packed_real_double(&x, mtxvector_base, size, num_nonzeros, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_packed_real_double(&y, mtxvector_base, size, num_nonzeros, idx, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_saxpy(2.0f, &x, &y, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4.0, y.storage.base.data.real_double[0]);
+        TEST_ASSERT_EQ(3.0, y.storage.base.data.real_double[1]);
+        TEST_ASSERT_EQ(2.0, y.storage.base.data.real_double[2]);
+        TEST_ASSERT_EQ(6.0, y.storage.base.data.real_double[3]);
+        TEST_ASSERT_EQ(7.0, y.storage.base.data.real_double[4]);
+        err = mtxvector_daxpy(2.0, &x, &y, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(6.0, y.storage.base.data.real_double[0]);
+        TEST_ASSERT_EQ(5.0, y.storage.base.data.real_double[1]);
+        TEST_ASSERT_EQ(4.0, y.storage.base.data.real_double[2]);
+        TEST_ASSERT_EQ(10.0, y.storage.base.data.real_double[3]);
+        TEST_ASSERT_EQ(13.0, y.storage.base.data.real_double[4]);
+        err = mtxvector_saypx(2.0f, &y, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(13.0, y.storage.base.data.real_double[0]);
+        TEST_ASSERT_EQ(11.0, y.storage.base.data.real_double[1]);
+        TEST_ASSERT_EQ(9.0, y.storage.base.data.real_double[2]);
+        TEST_ASSERT_EQ(22.0, y.storage.base.data.real_double[3]);
+        TEST_ASSERT_EQ(29.0, y.storage.base.data.real_double[4]);
+        err = mtxvector_daypx(2.0, &y, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(27.0, y.storage.base.data.real_double[0]);
+        TEST_ASSERT_EQ(23.0, y.storage.base.data.real_double[1]);
+        TEST_ASSERT_EQ(19.0, y.storage.base.data.real_double[2]);
+        TEST_ASSERT_EQ(46.0, y.storage.base.data.real_double[3]);
+        TEST_ASSERT_EQ(61.0, y.storage.base.data.real_double[4]);
+        mtxvector_free(&y);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        struct mtxvector y;
+        int64_t idx[] = {0, 3, 5};
+        float xdata[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        float ydata[][2] = {{2.0f,1.0f}, {0.0f,2.0f}, {1.0f,0.0f}};
+        int size = 12;
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_packed_complex_single(&x, mtxvector_base, size, num_nonzeros, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_packed_complex_single(&y, mtxvector_base, size, num_nonzeros, idx, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_saxpy(2.0f, &x, &y, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4.0f, y.storage.base.data.complex_single[0][0]);
+        TEST_ASSERT_EQ(3.0f, y.storage.base.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(2.0f, y.storage.base.data.complex_single[1][0]);
+        TEST_ASSERT_EQ(6.0f, y.storage.base.data.complex_single[1][1]);
+        TEST_ASSERT_EQ(7.0f, y.storage.base.data.complex_single[2][0]);
+        TEST_ASSERT_EQ(0.0f, y.storage.base.data.complex_single[2][1]);
+        err = mtxvector_daxpy(2.0, &x, &y, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(6.0f, y.storage.base.data.complex_single[0][0]);
+        TEST_ASSERT_EQ(5.0f, y.storage.base.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(4.0f, y.storage.base.data.complex_single[1][0]);
+        TEST_ASSERT_EQ(10.0f, y.storage.base.data.complex_single[1][1]);
+        TEST_ASSERT_EQ(13.0f, y.storage.base.data.complex_single[2][0]);
+        TEST_ASSERT_EQ(0.0f, y.storage.base.data.complex_single[2][1]);
+        err = mtxvector_saypx(2.0f, &y, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(13.0f, y.storage.base.data.complex_single[0][0]);
+        TEST_ASSERT_EQ(11.0f, y.storage.base.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(9.0f, y.storage.base.data.complex_single[1][0]);
+        TEST_ASSERT_EQ(22.0f, y.storage.base.data.complex_single[1][1]);
+        TEST_ASSERT_EQ(29.0f, y.storage.base.data.complex_single[2][0]);
+        TEST_ASSERT_EQ(0.0f, y.storage.base.data.complex_single[2][1]);
+        err = mtxvector_daypx(2.0, &y, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(27.0f, y.storage.base.data.complex_single[0][0]);
+        TEST_ASSERT_EQ(23.0f, y.storage.base.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(19.0f, y.storage.base.data.complex_single[1][0]);
+        TEST_ASSERT_EQ(46.0f, y.storage.base.data.complex_single[1][1]);
+        TEST_ASSERT_EQ(61.0f, y.storage.base.data.complex_single[2][0]);
+        TEST_ASSERT_EQ(0.0f, y.storage.base.data.complex_single[2][1]);
+        mtxvector_free(&y);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        struct mtxvector y;
+        int64_t idx[] = {0, 3, 5};
+        double xdata[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
+        double ydata[][2] = {{2.0,1.0}, {0.0,2.0}, {1.0,0.0}};
+        int size = 12;
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_packed_complex_double(&x, mtxvector_base, size, num_nonzeros, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_packed_complex_double(&y, mtxvector_base, size, num_nonzeros, idx, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_saxpy(2.0f, &x, &y, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1854,6 +2177,238 @@ int test_mtxvector_base_dot(void)
         mtxvector_free(&y);
         mtxvector_free(&x);
     }
+
+    /* vectors in packed storage format */
+    {
+        int size = 12;
+        int nnz = 5;
+        int64_t idx[] = {1, 3, 5, 7, 9};
+        struct mtxvector x;
+        float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        err = mtxvector_init_packed_real_single(&x, mtxvector_base, size, nnz, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxvector y;
+        float ydata[] = {3.0f, 2.0f, 1.0f, 0.0f, 1.0f};
+        err = mtxvector_init_packed_real_single(&y, mtxvector_base, size, nnz, idx, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float sdot;
+        err = mtxvector_sdot(&x, &y, &sdot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, sdot);
+        double ddot;
+        err = mtxvector_ddot(&x, &y, &ddot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, ddot);
+        float cdotu[2];
+        err = mtxvector_cdotu(&x, &y, &cdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
+        float cdotc[2];
+        err = mtxvector_cdotc(&x, &y, &cdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
+        double zdotu[2];
+        err = mtxvector_zdotu(&x, &y, &zdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
+        double zdotc[2];
+        err = mtxvector_zdotc(&x, &y, &zdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
+        mtxvector_free(&y);
+        mtxvector_free(&x);
+    }
+    {
+        int size = 12;
+        int nnz = 5;
+        int64_t idx[] = {1, 3, 5, 7, 9};
+        struct mtxvector x;
+        double xdata[] = {1.0, 1.0, 1.0, 2.0, 3.0};
+        err = mtxvector_init_packed_real_double(&x, mtxvector_base, size, nnz, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxvector y;
+        double ydata[] = {3.0, 2.0, 1.0, 0.0, 1.0};
+        err = mtxvector_init_packed_real_double(&y, mtxvector_base, size, nnz, idx, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float sdot;
+        err = mtxvector_sdot(&x, &y, &sdot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, sdot);
+        double ddot;
+        err = mtxvector_ddot(&x, &y, &ddot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, ddot);
+        float cdotu[2];
+        err = mtxvector_cdotu(&x, &y, &cdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
+        float cdotc[2];
+        err = mtxvector_cdotc(&x, &y, &cdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
+        double zdotu[2];
+        err = mtxvector_zdotu(&x, &y, &zdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
+        double zdotc[2];
+        err = mtxvector_zdotc(&x, &y, &zdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
+        mtxvector_free(&y);
+        mtxvector_free(&x);
+    }
+    {
+        int size = 12;
+        int nnz = 3;
+        int64_t idx[] = {1, 3, 5};
+        struct mtxvector x;
+        float xdata[][2] = {{1.0f, 1.0f}, {1.0f, 2.0f}, {3.0f, 0.0f}};
+        err = mtxvector_init_packed_complex_single(&x, mtxvector_base, size, nnz, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxvector y;
+        float ydata[][2] = {{3.0f, 2.0f}, {1.0f, 0.0f}, {1.0f, 0.0f}};
+        err = mtxvector_init_packed_complex_single(&y, mtxvector_base, size, nnz, idx, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float sdot;
+        err = mtxvector_sdot(&x, &y, &sdot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_ERR_INVALID_FIELD, err, "%s", mtxstrerror(err));
+        double ddot;
+        err = mtxvector_ddot(&x, &y, &ddot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_ERR_INVALID_FIELD, err, "%s", mtxstrerror(err));
+        float cdotu[2];
+        err = mtxvector_cdotu(&x, &y, &cdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(5.0f, cdotu[0]); TEST_ASSERT_EQ(7.0f, cdotu[1]);
+        float cdotc[2];
+        err = mtxvector_cdotc(&x, &y, &cdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(-3.0f, cdotc[1]);
+        double zdotu[2];
+        err = mtxvector_zdotu(&x, &y, &zdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(5.0, zdotu[0]); TEST_ASSERT_EQ(7.0, zdotu[1]);
+        double zdotc[2];
+        err = mtxvector_zdotc(&x, &y, &zdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(-3.0, zdotc[1]);
+        mtxvector_free(&y);
+        mtxvector_free(&x);
+    }
+    {
+        int size = 12;
+        int nnz = 3;
+        int64_t idx[] = {1, 3, 5};
+        struct mtxvector x;
+        double xdata[][2] = {{1.0, 1.0}, {1.0, 2.0}, {3.0, 0.0}};
+        err = mtxvector_init_packed_complex_double(&x, mtxvector_base, size, nnz, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxvector y;
+        double ydata[][2] = {{3.0, 2.0}, {1.0, 0.0}, {1.0, 0.0}};
+        err = mtxvector_init_packed_complex_double(&y, mtxvector_base, size, nnz, idx, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float sdot;
+        err = mtxvector_sdot(&x, &y, &sdot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_ERR_INVALID_FIELD, err, "%s", mtxstrerror(err));
+        double ddot;
+        err = mtxvector_ddot(&x, &y, &ddot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_ERR_INVALID_FIELD, err, "%s", mtxstrerror(err));
+        float cdotu[2];
+        err = mtxvector_cdotu(&x, &y, &cdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(5.0f, cdotu[0]); TEST_ASSERT_EQ(7.0f, cdotu[1]);
+        float cdotc[2];
+        err = mtxvector_cdotc(&x, &y, &cdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(-3.0f, cdotc[1]);
+        double zdotu[2];
+        err = mtxvector_zdotu(&x, &y, &zdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(5.0, zdotu[0]); TEST_ASSERT_EQ(7.0, zdotu[1]);
+        double zdotc[2];
+        err = mtxvector_zdotc(&x, &y, &zdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(-3.0, zdotc[1]);
+        mtxvector_free(&y);
+        mtxvector_free(&x);
+    }
+    {
+        int size = 12;
+        int nnz = 5;
+        int64_t idx[] = {1, 3, 5, 7, 9};
+        struct mtxvector x;
+        int32_t xdata[] = {1, 1, 1, 2, 3};
+        err = mtxvector_init_packed_integer_single(&x, mtxvector_base, size, nnz, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxvector y;
+        int32_t ydata[] = {3, 2, 1, 0, 1};
+        err = mtxvector_init_packed_integer_single(&y, mtxvector_base, size, nnz, idx, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float sdot;
+        err = mtxvector_sdot(&x, &y, &sdot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, sdot);
+        double ddot;
+        err = mtxvector_ddot(&x, &y, &ddot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, ddot);
+        float cdotu[2];
+        err = mtxvector_cdotu(&x, &y, &cdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
+        float cdotc[2];
+        err = mtxvector_cdotc(&x, &y, &cdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
+        double zdotu[2];
+        err = mtxvector_zdotu(&x, &y, &zdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
+        double zdotc[2];
+        err = mtxvector_zdotc(&x, &y, &zdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
+        mtxvector_free(&y);
+        mtxvector_free(&x);
+    }
+    {
+        int size = 12;
+        int nnz = 5;
+        int64_t idx[] = {1, 3, 5, 7, 9};
+        struct mtxvector x;
+        int64_t xdata[] = {1, 1, 1, 2, 3};
+        err = mtxvector_init_packed_integer_double(&x, mtxvector_base, size, nnz, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxvector y;
+        int64_t ydata[] = {3, 2, 1, 0, 1};
+        err = mtxvector_init_packed_integer_double(&y, mtxvector_base, size, nnz, idx, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float sdot;
+        err = mtxvector_sdot(&x, &y, &sdot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, sdot);
+        double ddot;
+        err = mtxvector_ddot(&x, &y, &ddot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, ddot);
+        float cdotu[2];
+        err = mtxvector_cdotu(&x, &y, &cdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
+        float cdotc[2];
+        err = mtxvector_cdotc(&x, &y, &cdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
+        double zdotu[2];
+        err = mtxvector_zdotu(&x, &y, &zdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
+        double zdotc[2];
+        err = mtxvector_zdotc(&x, &y, &zdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
+        mtxvector_free(&y);
+        mtxvector_free(&x);
+    }
     return TEST_SUCCESS;
 }
 
@@ -1917,6 +2472,80 @@ int test_mtxvector_base_nrm2(void)
         double data[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
         int size = sizeof(data) / sizeof(*data);
         err = mtxvector_init_complex_double(&x, mtxvector_base, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float snrm2;
+        err = mtxvector_snrm2(&x, &snrm2, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4.0f, snrm2);
+        double dnrm2;
+        err = mtxvector_dnrm2(&x, &dnrm2, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxvector_free(&x);
+    }
+
+    /* vectors in packed storage format */
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5, 6, 9};
+        float data[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        int64_t num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_packed_real_single(&x, mtxvector_base, size, num_nonzeros, idx, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float snrm2;
+        err = mtxvector_snrm2(&x, &snrm2, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4.0f, snrm2);
+        double dnrm2;
+        err = mtxvector_dnrm2(&x, &dnrm2, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5, 6, 9};
+        double data[] = {1.0, 1.0, 1.0, 2.0, 3.0};
+        int64_t num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_packed_real_double(&x, mtxvector_base, size, num_nonzeros, idx, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float snrm2;
+        err = mtxvector_snrm2(&x, &snrm2, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4.0f, snrm2);
+        double dnrm2;
+        err = mtxvector_dnrm2(&x, &dnrm2, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5};
+        float data[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        int64_t num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_packed_complex_single(&x, mtxvector_base, size, num_nonzeros, idx, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float snrm2;
+        err = mtxvector_snrm2(&x, &snrm2, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4.0f, snrm2);
+        double dnrm2;
+        err = mtxvector_dnrm2(&x, &dnrm2, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5};
+        double data[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
+        int64_t num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_packed_complex_double(&x, mtxvector_base, size, num_nonzeros, idx, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
         err = mtxvector_snrm2(&x, &snrm2, NULL);
@@ -2002,6 +2631,80 @@ int test_mtxvector_base_asum(void)
         TEST_ASSERT_EQ(8.0, dasum);
         mtxvector_free(&x);
     }
+
+    /* vectors in packed storage format */
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5, 6, 9};
+        float data[] = {-1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_packed_real_single(&x, mtxvector_base, size, num_nonzeros, idx, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float sasum;
+        err = mtxvector_sasum(&x, &sasum, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8.0f, sasum);
+        double dasum;
+        err = mtxvector_dasum(&x, &dasum, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8.0, dasum);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5, 6, 9};
+        double data[] = {-1.0, 1.0, 1.0, 2.0, 3.0};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_packed_real_double(&x, mtxvector_base, size, num_nonzeros, idx, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float sasum;
+        err = mtxvector_sasum(&x, &sasum, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8.0f, sasum);
+        double dasum;
+        err = mtxvector_dasum(&x, &dasum, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8.0, dasum);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5};
+        float data[][2] = {{-1.0f,-1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_packed_complex_single(&x, mtxvector_base, size, num_nonzeros, idx, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float sasum;
+        err = mtxvector_sasum(&x, &sasum, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8.0f, sasum);
+        double dasum;
+        err = mtxvector_dasum(&x, &dasum, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8.0, dasum);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5};
+        double data[][2] = {{-1.0,-1.0}, {1.0,2.0}, {3.0,0.0}};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_packed_complex_double(&x, mtxvector_base, size, num_nonzeros, idx, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float sasum;
+        err = mtxvector_sasum(&x, &sasum, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8.0f, sasum);
+        double dasum;
+        err = mtxvector_dasum(&x, &dasum, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8.0, dasum);
+        mtxvector_free(&x);
+    }
     return TEST_SUCCESS;
 }
 
@@ -2053,6 +2756,64 @@ int test_mtxvector_base_iamax(void)
         double data[][2] = {{-1.0,-1.0}, {1.0,2.0}, {3.0,0.0}};
         int size = sizeof(data) / sizeof(*data);
         err = mtxvector_init_complex_double(&x, mtxvector_base, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int iamax;
+        err = mtxvector_iamax(&x, &iamax);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(1, iamax);
+        mtxvector_free(&x);
+    }
+
+    /* vectors in packed storage format */
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5, 6, 9};
+        float data[] = {-1.0f, 1.0f, 3.0f, 2.0f, 3.0f};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_packed_real_single(&x, mtxvector_base, size, num_nonzeros, idx, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int iamax;
+        err = mtxvector_iamax(&x, &iamax);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(2, iamax);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5, 6, 9};
+        double data[] = {-1.0, 1.0, 3.0, 2.0, 3.0};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_packed_real_double(&x, mtxvector_base, size, num_nonzeros, idx, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int iamax;
+        err = mtxvector_iamax(&x, &iamax);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(2, iamax);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5, 6, 9};
+        float data[][2] = {{-1.0f,-1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_packed_complex_single(&x, mtxvector_base, size, num_nonzeros, idx, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int iamax;
+        err = mtxvector_iamax(&x, &iamax);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(1, iamax);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5, 6, 9};
+        double data[][2] = {{-1.0,-1.0}, {1.0,2.0}, {3.0,0.0}};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_packed_complex_double(&x, mtxvector_base, size, num_nonzeros, idx, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int iamax;
         err = mtxvector_iamax(&x, &iamax);
