@@ -23,7 +23,6 @@
 
 #include <libmtx/libmtx-config.h>
 
-#ifdef LIBMTX_HAVE_BLAS
 #include <libmtx/error.h>
 #include <libmtx/linalg/field.h>
 #include <libmtx/linalg/precision.h>
@@ -2401,6 +2400,7 @@ int mtxmatrix_blas_dgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * a = &A->a.base;
     if (x->type != mtxvector_base || y->type != mtxvector_base)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
@@ -2612,6 +2612,9 @@ int mtxmatrix_blas_dgemv(
         } else { return MTX_ERR_INVALID_FIELD; }
     } else { return MTX_ERR_INVALID_SYMMETRY; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -2643,6 +2646,7 @@ int mtxmatrix_blas_cgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * a = &A->a.base;
     if (x->type != mtxvector_base || y->type != mtxvector_base)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
@@ -2771,6 +2775,9 @@ int mtxmatrix_blas_cgemv(
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
     } else { return MTX_ERR_INVALID_SYMMETRY; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -2802,6 +2809,7 @@ int mtxmatrix_blas_zgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * a = &A->a.base;
     if (x->type != mtxvector_base || y->type != mtxvector_base)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
@@ -2930,5 +2938,7 @@ int mtxmatrix_blas_zgemv(
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
     } else { return MTX_ERR_INVALID_SYMMETRY; }
     return MTX_SUCCESS;
-}
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
+}

@@ -24,7 +24,6 @@
 
 #include <libmtx/libmtx-config.h>
 
-#ifdef LIBMTX_HAVE_BLAS
 #include <libmtx/error.h>
 #include <libmtx/linalg/precision.h>
 #include <libmtx/linalg/field.h>
@@ -920,6 +919,7 @@ int mtxvector_blas_swap(
     struct mtxvector_blas * xblas,
     struct mtxvector_blas * yblas)
 {
+#ifdef LIBMTX_HAVE_BLAS
     struct mtxvector_base * x = &xblas->base;
     struct mtxvector_base * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -953,6 +953,9 @@ int mtxvector_blas_swap(
         return mtxvector_base_swap(x, y);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -965,6 +968,7 @@ int mtxvector_blas_copy(
     struct mtxvector_blas * yblas,
     const struct mtxvector_blas * xblas)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     struct mtxvector_base * y = &yblas->base;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -998,6 +1002,9 @@ int mtxvector_blas_copy(
         return mtxvector_base_copy(y, x);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1009,6 +1016,7 @@ int mtxvector_blas_sscal(
     struct mtxvector_blas * xblas,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     struct mtxvector_base * x = &xblas->base;
     if (a == 1) return MTX_SUCCESS;
     if (x->field == mtx_field_real) {
@@ -1039,6 +1047,9 @@ int mtxvector_blas_sscal(
         return mtxvector_base_sscal(a, x, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1050,6 +1061,7 @@ int mtxvector_blas_dscal(
     struct mtxvector_blas * xblas,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     struct mtxvector_base * x = &xblas->base;
     if (a == 1) return MTX_SUCCESS;
     if (x->field == mtx_field_real) {
@@ -1080,6 +1092,9 @@ int mtxvector_blas_dscal(
         return mtxvector_base_dscal(a, x, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1091,6 +1106,7 @@ int mtxvector_blas_cscal(
     struct mtxvector_blas * xblas,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     struct mtxvector_base * x = &xblas->base;
     if (x->field != mtx_field_complex) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision == mtx_single) {
@@ -1106,6 +1122,9 @@ int mtxvector_blas_cscal(
         if (num_flops) *num_flops += 6*x->size;
     } else { return MTX_ERR_INVALID_PRECISION; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1117,6 +1136,7 @@ int mtxvector_blas_zscal(
     struct mtxvector_blas * xblas,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     struct mtxvector_base * x = &xblas->base;
     if (x->field != mtx_field_complex) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision == mtx_single) {
@@ -1132,6 +1152,9 @@ int mtxvector_blas_zscal(
         if (num_flops) *num_flops += 6*x->size;
     } else { return MTX_ERR_INVALID_PRECISION; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1147,6 +1170,7 @@ int mtxvector_blas_saxpy(
     struct mtxvector_blas * yblas,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     struct mtxvector_base * y = &yblas->base;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1184,6 +1208,9 @@ int mtxvector_blas_saxpy(
         return mtxvector_base_saxpy(a, x, y, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1199,6 +1226,7 @@ int mtxvector_blas_daxpy(
     struct mtxvector_blas * yblas,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     struct mtxvector_base * y = &yblas->base;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1236,6 +1264,9 @@ int mtxvector_blas_daxpy(
         return mtxvector_base_daxpy(a, x, y, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1319,6 +1350,7 @@ int mtxvector_blas_sdot(
     float * dot,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     const struct mtxvector_base * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1342,6 +1374,9 @@ int mtxvector_blas_sdot(
         return mtxvector_base_sdot(x, y, dot, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1357,6 +1392,7 @@ int mtxvector_blas_ddot(
     double * dot,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     const struct mtxvector_base * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1380,6 +1416,9 @@ int mtxvector_blas_ddot(
         return mtxvector_base_ddot(x, y, dot, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1396,6 +1435,7 @@ int mtxvector_blas_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     const struct mtxvector_base * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1422,6 +1462,9 @@ int mtxvector_blas_cdotu(
         return mtxvector_blas_sdot(xblas, yblas, &(*dot)[0], num_flops);
     }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1438,6 +1481,7 @@ int mtxvector_blas_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     const struct mtxvector_base * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1464,6 +1508,9 @@ int mtxvector_blas_zdotu(
         return mtxvector_blas_ddot(xblas, yblas, &(*dot)[0], num_flops);
     }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1479,6 +1526,7 @@ int mtxvector_blas_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     const struct mtxvector_base * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1505,6 +1553,9 @@ int mtxvector_blas_cdotc(
         return mtxvector_blas_sdot(xblas, yblas, &(*dot)[0], num_flops);
     }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1520,6 +1571,7 @@ int mtxvector_blas_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     const struct mtxvector_base * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1546,6 +1598,9 @@ int mtxvector_blas_zdotc(
         return mtxvector_blas_ddot(xblas, yblas, &(*dot)[0], num_flops);
     }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1557,6 +1612,7 @@ int mtxvector_blas_snrm2(
     float * nrm2,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1590,6 +1646,9 @@ int mtxvector_blas_snrm2(
         return mtxvector_base_snrm2(x, nrm2, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1601,6 +1660,7 @@ int mtxvector_blas_dnrm2(
     double * nrm2,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1634,6 +1694,9 @@ int mtxvector_blas_dnrm2(
         return mtxvector_base_dnrm2(x, nrm2, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1647,6 +1710,7 @@ int mtxvector_blas_sasum(
     float * asum,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1676,6 +1740,9 @@ int mtxvector_blas_sasum(
         return mtxvector_base_sasum(x, asum, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1689,6 +1756,7 @@ int mtxvector_blas_dasum(
     double * asum,
     int64_t * num_flops)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1718,6 +1786,9 @@ int mtxvector_blas_dasum(
         return mtxvector_base_dasum(x, asum, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /**
@@ -1730,6 +1801,7 @@ int mtxvector_blas_iamax(
     const struct mtxvector_blas * xblas,
     int * iamax)
 {
+#ifdef LIBMTX_HAVE_BLAS
     const struct mtxvector_base * x = &xblas->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1755,6 +1827,9 @@ int mtxvector_blas_iamax(
         return mtxvector_base_iamax(x, iamax);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+#else
+    return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 }
 
 /*
@@ -2067,5 +2142,4 @@ int mtxvector_blas_irecv(
     return mtxvector_base_irecv(
         &x->base, offset, count, sender, tag, comm, request, mpierrcode);
 }
-#endif
 #endif

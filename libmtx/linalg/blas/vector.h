@@ -27,7 +27,6 @@
 
 #include <libmtx/libmtx-config.h>
 
-#ifdef LIBMTX_HAVE_BLAS
 #include <libmtx/linalg/precision.h>
 #include <libmtx/linalg/field.h>
 #include <libmtx/mtxfile/header.h>
@@ -1252,7 +1251,6 @@ int mtxvector_blas_irecv(
     MPI_Comm comm,
     MPI_Request * request,
     int * mpierrcode);
-#endif
 #endif
 
 #endif

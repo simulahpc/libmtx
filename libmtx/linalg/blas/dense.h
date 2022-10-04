@@ -26,7 +26,6 @@
 
 #include <libmtx/libmtx-config.h>
 
-#ifdef LIBMTX_HAVE_BLAS
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/linalg/base/vector.h>
@@ -1285,5 +1284,4 @@ int mtxmatrix_blas_zgemv(
     struct mtxvector * y,
     int64_t * num_flops);
 
-#endif
 #endif
