@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-07-11
+ * Last modified: 2022-10-03
  *
  * Data structures and routines for dense vectors, where vector
  * operations do nothing. Note that this produces incorrect results,
@@ -25,24 +25,39 @@
  * measurements.
  */
 
+#ifndef LIBMTX_LINALG_NULL_VECTOR_H
+#define LIBMTX_LINALG_NULL_VECTOR_H
+
 #include <libmtx/libmtx-config.h>
 
-#include <libmtx/error.h>
 #include <libmtx/vector/precision.h>
 #include <libmtx/vector/field.h>
 #include <libmtx/mtxfile/header.h>
-#include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/linalg/base/vector.h>
-#include <libmtx/vector/null.h>
-#include <libmtx/vector/vector.h>
 
-#include <math.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
+struct mtxfile;
+struct mtxvector;
+
+/**
+ * ‘mtxvector_null’ represents a vector, where vector operations are
+ * implemented to do nothing.
+ *
+ * This produces incorrect results, so it is only useful for the
+ * purpose of eliminating vector operations while debugging and
+ * carrying out performance measurements.
+ */
+struct mtxvector_null
+{
+    /**
+     * ‘base’ is the underlying vector.
+     */
+    struct mtxvector_base base;
+};
 
 /*
  * vector properties
@@ -51,45 +66,30 @@
 /**
  * ‘mtxvector_null_field()’ gets the field of a vector.
  */
-enum mtxfield mtxvector_null_field(const struct mtxvector_null * x)
-{
-    return mtxvector_base_field(&x->base);
-}
+enum mtxfield mtxvector_null_field(const struct mtxvector_null * x);
 
 /**
  * ‘mtxvector_null_precision()’ gets the precision of a vector.
  */
-enum mtxprecision mtxvector_null_precision(const struct mtxvector_null * x)
-{
-    return mtxvector_base_precision(&x->base);
-}
+enum mtxprecision mtxvector_null_precision(const struct mtxvector_null * x);
 
 /**
  * ‘mtxvector_null_size()’ gets the size of a vector.
  */
-int64_t mtxvector_null_size(const struct mtxvector_null * x)
-{
-    return mtxvector_base_size(&x->base);
-}
+int64_t mtxvector_null_size(const struct mtxvector_null * x);
 
 /**
  * ‘mtxvector_null_num_nonzeros()’ gets the number of explicitly
  * stored vector entries.
  */
-int64_t mtxvector_null_num_nonzeros(const struct mtxvector_null * x)
-{
-    return mtxvector_base_num_nonzeros(&x->base);
-}
+int64_t mtxvector_null_num_nonzeros(const struct mtxvector_null * x);
 
 /**
  * ‘mtxvector_null_idx()’ gets a pointer to an array containing the
  * offset of each nonzero vector entry for a vector in packed storage
  * format.
  */
-int64_t * mtxvector_null_idx(const struct mtxvector_null * x)
-{
-    return mtxvector_base_idx(&x->base);
-}
+int64_t * mtxvector_null_idx(const struct mtxvector_null * x);
 
 /*
  * memory management
@@ -99,10 +99,7 @@ int64_t * mtxvector_null_idx(const struct mtxvector_null * x)
  * ‘mtxvector_null_free()’ frees storage allocated for a vector.
  */
 void mtxvector_null_free(
-    struct mtxvector_null * x)
-{
-    mtxvector_base_free(&x->base);
-}
+    struct mtxvector_null * x);
 
 /**
  * ‘mtxvector_null_alloc_copy()’ allocates a copy of a vector without
@@ -110,10 +107,7 @@ void mtxvector_null_free(
  */
 int mtxvector_null_alloc_copy(
     struct mtxvector_null * dst,
-    const struct mtxvector_null * src)
-{
-    return mtxvector_base_alloc_copy(&dst->base, &src->base);
-}
+    const struct mtxvector_null * src);
 
 /**
  * ‘mtxvector_null_init_copy()’ allocates a copy of a vector and also
@@ -121,10 +115,7 @@ int mtxvector_null_alloc_copy(
  */
 int mtxvector_null_init_copy(
     struct mtxvector_null * dst,
-    const struct mtxvector_null * src)
-{
-    return mtxvector_base_init_copy(&dst->base, &src->base);
-}
+    const struct mtxvector_null * src);
 
 /*
  * initialise vectors in full storage format
@@ -137,10 +128,7 @@ int mtxvector_null_alloc(
     struct mtxvector_null * x,
     enum mtxfield field,
     enum mtxprecision precision,
-    int64_t size)
-{
-    return mtxvector_base_alloc(&x->base, field, precision, size);
-}
+    int64_t size);
 
 /**
  * ‘mtxvector_null_init_real_single()’ allocates and initialises a
@@ -149,10 +137,7 @@ int mtxvector_null_alloc(
 int mtxvector_null_init_real_single(
     struct mtxvector_null * x,
     int64_t size,
-    const float * data)
-{
-    return mtxvector_base_init_real_single(&x->base, size, data);
-}
+    const float * data);
 
 /**
  * ‘mtxvector_null_init_real_double()’ allocates and initialises a
@@ -161,10 +146,7 @@ int mtxvector_null_init_real_single(
 int mtxvector_null_init_real_double(
     struct mtxvector_null * x,
     int64_t size,
-    const double * data)
-{
-    return mtxvector_base_init_real_double(&x->base, size, data);
-}
+    const double * data);
 
 /**
  * ‘mtxvector_null_init_complex_single()’ allocates and initialises a
@@ -173,10 +155,7 @@ int mtxvector_null_init_real_double(
 int mtxvector_null_init_complex_single(
     struct mtxvector_null * x,
     int64_t size,
-    const float (* data)[2])
-{
-    return mtxvector_base_init_complex_single(&x->base, size, data);
-}
+    const float (* data)[2]);
 
 /**
  * ‘mtxvector_null_init_complex_double()’ allocates and initialises a
@@ -185,10 +164,7 @@ int mtxvector_null_init_complex_single(
 int mtxvector_null_init_complex_double(
     struct mtxvector_null * x,
     int64_t size,
-    const double (* data)[2])
-{
-    return mtxvector_base_init_complex_double(&x->base, size, data);
-}
+    const double (* data)[2]);
 
 /**
  * ‘mtxvector_null_init_integer_single()’ allocates and initialises a
@@ -197,10 +173,7 @@ int mtxvector_null_init_complex_double(
 int mtxvector_null_init_integer_single(
     struct mtxvector_null * x,
     int64_t size,
-    const int32_t * data)
-{
-    return mtxvector_base_init_integer_single(&x->base, size, data);
-}
+    const int32_t * data);
 
 /**
  * ‘mtxvector_null_init_integer_double()’ allocates and initialises a
@@ -209,10 +182,7 @@ int mtxvector_null_init_integer_single(
 int mtxvector_null_init_integer_double(
     struct mtxvector_null * x,
     int64_t size,
-    const int64_t * data)
-{
-    return mtxvector_base_init_integer_double(&x->base, size, data);
-}
+    const int64_t * data);
 
 /**
  * ‘mtxvector_null_init_pattern()’ allocates and initialises a vector
@@ -220,10 +190,7 @@ int mtxvector_null_init_integer_double(
  */
 int mtxvector_null_init_pattern(
     struct mtxvector_null * x,
-    int64_t size)
-{
-    return mtxvector_base_init_pattern(&x->base, size);
-}
+    int64_t size);
 
 /*
  * initialise vectors in full storage format from strided arrays
@@ -237,10 +204,7 @@ int mtxvector_null_init_strided_real_single(
     struct mtxvector_null * x,
     int64_t size,
     int64_t stride,
-    const float * data)
-{
-    return mtxvector_base_init_strided_real_single(&x->base, size, stride, data);
-}
+    const float * data);
 
 /**
  * ‘mtxvector_null_init_strided_real_double()’ allocates and
@@ -250,10 +214,7 @@ int mtxvector_null_init_strided_real_double(
     struct mtxvector_null * x,
     int64_t size,
     int64_t stride,
-    const double * data)
-{
-    return mtxvector_base_init_strided_real_double(&x->base, size, stride, data);
-}
+    const double * data);
 
 /**
  * ‘mtxvector_null_init_strided_complex_single()’ allocates and
@@ -263,10 +224,7 @@ int mtxvector_null_init_strided_complex_single(
     struct mtxvector_null * x,
     int64_t size,
     int64_t stride,
-    const float (* data)[2])
-{
-    return mtxvector_base_init_strided_complex_single(&x->base, size, stride, data);
-}
+    const float (* data)[2]);
 
 /**
  * ‘mtxvector_null_init_strided_complex_double()’ allocates and
@@ -276,10 +234,7 @@ int mtxvector_null_init_strided_complex_double(
     struct mtxvector_null * x,
     int64_t size,
     int64_t stride,
-    const double (* data)[2])
-{
-    return mtxvector_base_init_strided_complex_double(&x->base, size, stride, data);
-}
+    const double (* data)[2]);
 
 /**
  * ‘mtxvector_null_init_strided_integer_single()’ allocates and
@@ -289,10 +244,7 @@ int mtxvector_null_init_strided_integer_single(
     struct mtxvector_null * x,
     int64_t size,
     int64_t stride,
-    const int32_t * data)
-{
-    return mtxvector_base_init_strided_integer_single(&x->base, size, stride, data);
-}
+    const int32_t * data);
 
 /**
  * ‘mtxvector_null_init_strided_integer_double()’ allocates and
@@ -302,10 +254,7 @@ int mtxvector_null_init_strided_integer_double(
     struct mtxvector_null * x,
     int64_t size,
     int64_t stride,
-    const int64_t * data)
-{
-    return mtxvector_base_init_strided_integer_double(&x->base, size, stride, data);
-}
+    const int64_t * data);
 
 /*
  * initialise vectors in packed storage format
@@ -321,10 +270,7 @@ int mtxvector_null_alloc_packed(
     enum mtxprecision precision,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx)
-{
-    return mtxvector_base_alloc_packed(&x->base, field, precision, size, num_nonzeros, idx);
-}
+    const int64_t * idx);
 
 /**
  * ‘mtxvector_null_init_packed_real_single()’ allocates and initialises a
@@ -335,10 +281,7 @@ int mtxvector_null_init_packed_real_single(
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
-    const float * data)
-{
-    return mtxvector_base_init_packed_real_single(&x->base, size, num_nonzeros, idx, data);
-}
+    const float * data);
 
 /**
  * ‘mtxvector_null_init_packed_real_double()’ allocates and initialises a
@@ -349,10 +292,7 @@ int mtxvector_null_init_packed_real_double(
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
-    const double * data)
-{
-    return mtxvector_base_init_packed_real_double(&x->base, size, num_nonzeros, idx, data);
-}
+    const double * data);
 
 /**
  * ‘mtxvector_null_init_packed_complex_single()’ allocates and initialises
@@ -363,10 +303,7 @@ int mtxvector_null_init_packed_complex_single(
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
-    const float (* data)[2])
-{
-    return mtxvector_base_init_packed_complex_single(&x->base, size, num_nonzeros, idx, data);
-}
+    const float (* data)[2]);
 
 /**
  * ‘mtxvector_null_init_packed_complex_double()’ allocates and initialises
@@ -377,10 +314,7 @@ int mtxvector_null_init_packed_complex_double(
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
-    const double (* data)[2])
-{
-    return mtxvector_base_init_packed_complex_double(&x->base, size, num_nonzeros, idx, data);
-}
+    const double (* data)[2]);
 
 /**
  * ‘mtxvector_null_init_packed_integer_single()’ allocates and initialises
@@ -391,10 +325,7 @@ int mtxvector_null_init_packed_integer_single(
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
-    const int32_t * data)
-{
-    return mtxvector_base_init_packed_integer_single(&x->base, size, num_nonzeros, idx, data);
-}
+    const int32_t * data);
 
 /**
  * ‘mtxvector_null_init_packed_integer_double()’ allocates and initialises
@@ -405,10 +336,7 @@ int mtxvector_null_init_packed_integer_double(
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
-    const int64_t * data)
-{
-    return mtxvector_base_init_packed_integer_double(&x->base, size, num_nonzeros, idx, data);
-}
+    const int64_t * data);
 
 /**
  * ‘mtxvector_null_init_packed_pattern()’ allocates and initialises a
@@ -418,10 +346,7 @@ int mtxvector_null_init_packed_pattern(
     struct mtxvector_null * x,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx)
-{
-    return mtxvector_base_init_packed_pattern(&x->base, size, num_nonzeros, idx);
-}
+    const int64_t * idx);
 
 /*
  * initialise vectors in packed storage format from strided arrays
@@ -439,10 +364,7 @@ int mtxvector_null_alloc_packed_strided(
     int64_t num_nonzeros,
     int idxstride,
     int idxbase,
-    const int64_t * idx)
-{
-    return mtxvector_base_alloc_packed_strided(&x->base, field, precision, size, num_nonzeros, idxstride, idxbase, idx);
-}
+    const int64_t * idx);
 
 /**
  * ‘mtxvector_null_init_packed_strided_real_single()’ allocates and
@@ -456,10 +378,7 @@ int mtxvector_null_init_packed_strided_real_single(
     int idxbase,
     const int64_t * idx,
     int datastride,
-    const float * data)
-{
-    return mtxvector_base_init_packed_strided_real_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
-}
+    const float * data);
 
 /**
  * ‘mtxvector_null_init_packed_strided_real_double()’ allocates and
@@ -473,10 +392,7 @@ int mtxvector_null_init_packed_strided_real_double(
     int idxbase,
     const int64_t * idx,
     int datastride,
-    const double * data)
-{
-    return mtxvector_base_init_packed_strided_real_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
-}
+    const double * data);
 
 /**
  * ‘mtxvector_null_init_packed_strided_complex_single()’ allocates and
@@ -490,10 +406,7 @@ int mtxvector_null_init_packed_strided_complex_single(
     int idxbase,
     const int64_t * idx,
     int datastride,
-    const float (* data)[2])
-{
-    return mtxvector_base_init_packed_strided_complex_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
-}
+    const float (* data)[2]);
 
 /**
  * ‘mtxvector_null_init_packed_strided_complex_double()’ allocates and
@@ -507,10 +420,7 @@ int mtxvector_null_init_packed_strided_complex_double(
     int idxbase,
     const int64_t * idx,
     int datastride,
-    const double (* data)[2])
-{
-    return mtxvector_base_init_packed_strided_complex_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
-}
+    const double (* data)[2]);
 
 /**
  * ‘mtxvector_null_init_packed_strided_integer_single()’ allocates and
@@ -524,10 +434,7 @@ int mtxvector_null_init_packed_strided_integer_single(
     int idxbase,
     const int64_t * idx,
     int datastride,
-    const int32_t * data)
-{
-    return mtxvector_base_init_packed_strided_integer_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
-}
+    const int32_t * data);
 
 /**
  * ‘mtxvector_null_init_packed_strided_integer_double()’ allocates and
@@ -541,10 +448,7 @@ int mtxvector_null_init_packed_strided_integer_double(
     int idxbase,
     const int64_t * idx,
     int datastride,
-    const int64_t * data)
-{
-    return mtxvector_base_init_packed_strided_integer_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
-}
+    const int64_t * data);
 
 /**
  * ‘mtxvector_null_init_packed_pattern()’ allocates and initialises a
@@ -557,10 +461,7 @@ int mtxvector_null_init_packed_strided_pattern(
     int64_t num_nonzeros,
     int idxstride,
     int idxbase,
-    const int64_t * idx)
-{
-    return mtxvector_base_init_packed_strided_pattern(&x->base, size, num_nonzeros, idxstride, idxbase, idx);
-}
+    const int64_t * idx);
 
 /*
  * accessing values
@@ -578,10 +479,7 @@ int mtxvector_null_get_real_single(
     const struct mtxvector_null * x,
     int64_t size,
     int stride,
-    float * a)
-{
-    return mtxvector_base_get_real_single(&x->base, size, stride, a);
-}
+    float * a);
 
 /**
  * ‘mtxvector_null_get_real_double()’ obtains the values of a vector
@@ -595,10 +493,7 @@ int mtxvector_null_get_real_double(
     const struct mtxvector_null * x,
     int64_t size,
     int stride,
-    double * a)
-{
-    return mtxvector_base_get_real_double(&x->base, size, stride, a);
-}
+    double * a);
 
 /**
  * ‘mtxvector_null_get_complex_single()’ obtains the values of a
@@ -612,10 +507,7 @@ int mtxvector_null_get_complex_single(
     struct mtxvector_null * x,
     int64_t size,
     int stride,
-    float (* a)[2])
-{
-    return mtxvector_base_get_complex_single(&x->base, size, stride, a);
-}
+    float (* a)[2]);
 
 /**
  * ‘mtxvector_null_get_complex_double()’ obtains the values of a
@@ -629,10 +521,7 @@ int mtxvector_null_get_complex_double(
     struct mtxvector_null * x,
     int64_t size,
     int stride,
-    double (* a)[2])
-{
-    return mtxvector_base_get_complex_double(&x->base, size, stride, a);
-}
+    double (* a)[2]);
 
 /**
  * ‘mtxvector_null_get_integer_single()’ obtains the values of a
@@ -646,10 +535,7 @@ int mtxvector_null_get_integer_single(
     struct mtxvector_null * x,
     int64_t size,
     int stride,
-    int32_t * a)
-{
-    return mtxvector_base_get_integer_single(&x->base, size, stride, a);
-}
+    int32_t * a);
 
 /**
  * ‘mtxvector_null_get_integer_double()’ obtains the values of a
@@ -663,23 +549,17 @@ int mtxvector_null_get_integer_double(
     struct mtxvector_null * x,
     int64_t size,
     int stride,
-    int64_t * a)
-{
-    return mtxvector_base_get_integer_double(&x->base, size, stride, a);
-}
+    int64_t * a);
 
 /*
- * Modifying values
+ * modifying values
  */
 
 /**
  * ‘mtxvector_null_setzero()’ sets every value of a vector to zero.
  */
 int mtxvector_null_setzero(
-    struct mtxvector_null * x)
-{
-    return mtxvector_base_setzero(&x->base);
-}
+    struct mtxvector_null * x);
 
 /**
  * ‘mtxvector_null_set_constant_real_single()’ sets every value of a
@@ -687,10 +567,7 @@ int mtxvector_null_setzero(
  */
 int mtxvector_null_set_constant_real_single(
     struct mtxvector_null * x,
-    float a)
-{
-    return mtxvector_base_set_constant_real_single(&x->base, a);
-}
+    float a);
 
 /**
  * ‘mtxvector_null_set_constant_real_double()’ sets every value of a
@@ -698,56 +575,41 @@ int mtxvector_null_set_constant_real_single(
  */
 int mtxvector_null_set_constant_real_double(
     struct mtxvector_null * x,
-    double a)
-{
-    return mtxvector_base_set_constant_real_double(&x->base, a);
-}
+    double a);
 
 /**
- * ‘mtxvector_null_set_constant_complex_single()’ sets every value of a
- * vector equal to a constant, single precision floating point complex
- * number.
+ * ‘mtxvector_null_set_constant_complex_single()’ sets every value of
+ * a vector equal to a constant, single precision floating point
+ * complex number.
  */
 int mtxvector_null_set_constant_complex_single(
     struct mtxvector_null * x,
-    float a[2])
-{
-    return mtxvector_base_set_constant_complex_single(&x->base, a);
-}
+    float a[2]);
 
 /**
- * ‘mtxvector_null_set_constant_complex_double()’ sets every value of a
- * vector equal to a constant, double precision floating point complex
- * number.
+ * ‘mtxvector_null_set_constant_complex_double()’ sets every value of
+ * a vector equal to a constant, double precision floating point
+ * complex number.
  */
 int mtxvector_null_set_constant_complex_double(
     struct mtxvector_null * x,
-    double a[2])
-{
-    return mtxvector_base_set_constant_complex_double(&x->base, a);
-}
+    double a[2]);
 
 /**
- * ‘mtxvector_null_set_constant_integer_single()’ sets every value of a
- * vector equal to a constant integer.
+ * ‘mtxvector_null_set_constant_integer_single()’ sets every value of
+ * a vector equal to a constant integer.
  */
 int mtxvector_null_set_constant_integer_single(
     struct mtxvector_null * x,
-    int32_t a)
-{
-    return mtxvector_base_set_constant_integer_single(&x->base, a);
-}
+    int32_t a);
 
 /**
- * ‘mtxvector_null_set_constant_integer_double()’ sets every value of a
- * vector equal to a constant integer.
+ * ‘mtxvector_null_set_constant_integer_double()’ sets every value of
+ * a vector equal to a constant integer.
  */
 int mtxvector_null_set_constant_integer_double(
     struct mtxvector_null * x,
-    int64_t a)
-{
-    return mtxvector_base_set_constant_integer_double(&x->base, a);
-}
+    int64_t a);
 
 /**
  * ‘mtxvector_null_set_real_single()’ sets values of a vector based on
@@ -757,10 +619,7 @@ int mtxvector_null_set_real_single(
     struct mtxvector_null * x,
     int64_t size,
     int stride,
-    const float * a)
-{
-    return mtxvector_base_set_real_single(&x->base, size, stride, a);
-}
+    const float * a);
 
 /**
  * ‘mtxvector_null_set_real_double()’ sets values of a vector based on
@@ -770,10 +629,7 @@ int mtxvector_null_set_real_double(
     struct mtxvector_null * x,
     int64_t size,
     int stride,
-    const double * a)
-{
-    return mtxvector_base_set_real_double(&x->base, size, stride, a);
-}
+    const double * a);
 
 /**
  * ‘mtxvector_null_set_complex_single()’ sets values of a vector based
@@ -783,10 +639,7 @@ int mtxvector_null_set_complex_single(
     struct mtxvector_null * x,
     int64_t size,
     int stride,
-    const float (*a)[2])
-{
-    return mtxvector_base_set_complex_single(&x->base, size, stride, a);
-}
+    const float (*a)[2]);
 
 /**
  * ‘mtxvector_null_set_complex_double()’ sets values of a vector based
@@ -796,10 +649,7 @@ int mtxvector_null_set_complex_double(
     struct mtxvector_null * x,
     int64_t size,
     int stride,
-    const double (*a)[2])
-{
-    return mtxvector_base_set_complex_double(&x->base, size, stride, a);
-}
+    const double (*a)[2]);
 
 /**
  * ‘mtxvector_null_set_integer_single()’ sets values of a vector based
@@ -809,10 +659,7 @@ int mtxvector_null_set_integer_single(
     struct mtxvector_null * x,
     int64_t size,
     int stride,
-    const int32_t * a)
-{
-    return mtxvector_base_set_integer_single(&x->base, size, stride, a);
-}
+    const int32_t * a);
 
 /**
  * ‘mtxvector_null_set_integer_double()’ sets values of a vector based
@@ -822,10 +669,7 @@ int mtxvector_null_set_integer_double(
     struct mtxvector_null * x,
     int64_t size,
     int stride,
-    const int64_t * a)
-{
-    return mtxvector_base_set_integer_double(&x->base, size, stride, a);
-}
+    const int64_t * a);
 
 /*
  * Convert to and from Matrix Market format
@@ -837,10 +681,7 @@ int mtxvector_null_set_integer_double(
  */
 int mtxvector_null_from_mtxfile(
     struct mtxvector_null * x,
-    const struct mtxfile * mtxfile)
-{
-    return mtxvector_base_from_mtxfile(&x->base, mtxfile);
-}
+    const struct mtxfile * mtxfile);
 
 /**
  * ‘mtxvector_null_to_mtxfile()’ converts a vector to a vector in
@@ -851,10 +692,7 @@ int mtxvector_null_to_mtxfile(
     const struct mtxvector_null * x,
     int64_t num_rows,
     const int64_t * idx,
-    enum mtxfileformat mtxfmt)
-{
-    return mtxvector_base_to_mtxfile(mtxfile, &x->base, num_rows, idx, mtxfmt);
-}
+    enum mtxfileformat mtxfmt);
 
 /*
  * Partitioning
@@ -892,17 +730,7 @@ int mtxvector_null_split(
     const struct mtxvector_null * src,
     int64_t size,
     int * parts,
-    int64_t * invperm)
-{
-    struct mtxvector_base ** basedsts = malloc(
-        num_parts * sizeof(struct mtxvector_base *));
-    if (!basedsts) return MTX_ERR_ERRNO;
-    for (int p = 0; p < num_parts; p++) basedsts[p] = &dsts[p]->base;
-    int err = mtxvector_base_split(
-        num_parts, basedsts, &src->base, size, parts, invperm);
-    free(basedsts);
-    return err;
-}
+    int64_t * invperm);
 
 /*
  * Level 1 BLAS operations
@@ -916,11 +744,8 @@ int mtxvector_null_split(
  * size.
  */
 int mtxvector_null_swap(
-    struct mtxvector_null * xnull,
-    struct mtxvector_null * ynull)
-{
-    return MTX_SUCCESS;
-}
+    struct mtxvector_null * x,
+    struct mtxvector_null * y);
 
 /**
  * ‘mtxvector_null_copy()’ copies values of a vector, ‘y = x’.
@@ -929,11 +754,8 @@ int mtxvector_null_swap(
  * size.
  */
 int mtxvector_null_copy(
-    struct mtxvector_null * ynull,
-    const struct mtxvector_null * xnull)
-{
-    return MTX_SUCCESS;
-}
+    struct mtxvector_null * y,
+    const struct mtxvector_null * x);
 
 /**
  * ‘mtxvector_null_sscal()’ scales a vector by a single precision
@@ -941,11 +763,8 @@ int mtxvector_null_copy(
  */
 int mtxvector_null_sscal(
     float a,
-    struct mtxvector_null * xnull,
-    int64_t * num_flops)
-{
-    return MTX_SUCCESS;
-}
+    struct mtxvector_null * x,
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_dscal()’ scales a vector by a double precision
@@ -953,11 +772,8 @@ int mtxvector_null_sscal(
  */
 int mtxvector_null_dscal(
     double a,
-    struct mtxvector_null * xnull,
-    int64_t * num_flops)
-{
-    return MTX_SUCCESS;
-}
+    struct mtxvector_null * x,
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_cscal()’ scales a vector by a complex, single
@@ -965,11 +781,8 @@ int mtxvector_null_dscal(
  */
 int mtxvector_null_cscal(
     float a[2],
-    struct mtxvector_null * xnull,
-    int64_t * num_flops)
-{
-    return MTX_SUCCESS;
-}
+    struct mtxvector_null * x,
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_zscal()’ scales a vector by a complex, double
@@ -977,11 +790,8 @@ int mtxvector_null_cscal(
  */
 int mtxvector_null_zscal(
     double a[2],
-    struct mtxvector_null * xnull,
-    int64_t * num_flops)
-{
-    return MTX_SUCCESS;
-}
+    struct mtxvector_null * x,
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_saxpy()’ adds a vector to another one multiplied by
@@ -992,12 +802,9 @@ int mtxvector_null_zscal(
  */
 int mtxvector_null_saxpy(
     float a,
-    const struct mtxvector_null * xnull,
-    struct mtxvector_null * ynull,
-    int64_t * num_flops)
-{
-    return MTX_SUCCESS;
-}
+    const struct mtxvector_null * x,
+    struct mtxvector_null * y,
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_daxpy()’ adds a vector to another one multiplied by
@@ -1008,12 +815,9 @@ int mtxvector_null_saxpy(
  */
 int mtxvector_null_daxpy(
     double a,
-    const struct mtxvector_null * xnull,
-    struct mtxvector_null * ynull,
-    int64_t * num_flops)
-{
-    return MTX_SUCCESS;
-}
+    const struct mtxvector_null * x,
+    struct mtxvector_null * y,
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_saypx()’ multiplies a vector by a single precision
@@ -1024,12 +828,9 @@ int mtxvector_null_daxpy(
  */
 int mtxvector_null_saypx(
     float a,
-    struct mtxvector_null * ynull,
-    const struct mtxvector_null * xnull,
-    int64_t * num_flops)
-{
-    return MTX_SUCCESS;
-}
+    struct mtxvector_null * y,
+    const struct mtxvector_null * x,
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_daypx()’ multiplies a vector by a double precision
@@ -1040,12 +841,9 @@ int mtxvector_null_saypx(
  */
 int mtxvector_null_daypx(
     double a,
-    struct mtxvector_null * ynull,
-    const struct mtxvector_null * xnull,
-    int64_t * num_flops)
-{
-    return MTX_SUCCESS;
-}
+    struct mtxvector_null * y,
+    const struct mtxvector_null * x,
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_sdot()’ computes the Euclidean dot product of two
@@ -1055,14 +853,10 @@ int mtxvector_null_daypx(
  * size.
  */
 int mtxvector_null_sdot(
-    const struct mtxvector_null * xnull,
-    const struct mtxvector_null * ynull,
+    const struct mtxvector_null * x,
+    const struct mtxvector_null * y,
     float * dot,
-    int64_t * num_flops)
-{
-    *dot = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_ddot()’ computes the Euclidean dot product of two
@@ -1072,14 +866,10 @@ int mtxvector_null_sdot(
  * size.
  */
 int mtxvector_null_ddot(
-    const struct mtxvector_null * xnull,
-    const struct mtxvector_null * ynull,
+    const struct mtxvector_null * x,
+    const struct mtxvector_null * y,
     double * dot,
-    int64_t * num_flops)
-{
-    *dot = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_cdotu()’ computes the product of the transpose of a
@@ -1090,14 +880,10 @@ int mtxvector_null_ddot(
  * size.
  */
 int mtxvector_null_cdotu(
-    const struct mtxvector_null * xnull,
-    const struct mtxvector_null * ynull,
+    const struct mtxvector_null * x,
+    const struct mtxvector_null * y,
     float (* dot)[2],
-    int64_t * num_flops)
-{
-    (*dot)[0] = (*dot)[1] = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_zdotu()’ computes the product of the transpose of a
@@ -1108,14 +894,10 @@ int mtxvector_null_cdotu(
  * size.
  */
 int mtxvector_null_zdotu(
-    const struct mtxvector_null * xnull,
-    const struct mtxvector_null * ynull,
+    const struct mtxvector_null * x,
+    const struct mtxvector_null * y,
     double (* dot)[2],
-    int64_t * num_flops)
-{
-    (*dot)[0] = (*dot)[1] = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_cdotc()’ computes the Euclidean dot product of two
@@ -1125,14 +907,10 @@ int mtxvector_null_zdotu(
  * size.
  */
 int mtxvector_null_cdotc(
-    const struct mtxvector_null * xnull,
-    const struct mtxvector_null * ynull,
+    const struct mtxvector_null * x,
+    const struct mtxvector_null * y,
     float (* dot)[2],
-    int64_t * num_flops)
-{
-    (*dot)[0] = (*dot)[1] = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_zdotc()’ computes the Euclidean dot product of two
@@ -1142,40 +920,28 @@ int mtxvector_null_cdotc(
  * size.
  */
 int mtxvector_null_zdotc(
-    const struct mtxvector_null * xnull,
-    const struct mtxvector_null * ynull,
+    const struct mtxvector_null * x,
+    const struct mtxvector_null * y,
     double (* dot)[2],
-    int64_t * num_flops)
-{
-    (*dot)[0] = (*dot)[1] = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_snrm2()’ computes the Euclidean norm of a vector in
  * single precision floating point.
  */
 int mtxvector_null_snrm2(
-    const struct mtxvector_null * xnull,
+    const struct mtxvector_null * x,
     float * nrm2,
-    int64_t * num_flops)
-{
-    *nrm2 = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_dnrm2()’ computes the Euclidean norm of a vector in
  * double precision floating point.
  */
 int mtxvector_null_dnrm2(
-    const struct mtxvector_null * xnull,
+    const struct mtxvector_null * x,
     double * nrm2,
-    int64_t * num_flops)
-{
-    *nrm2 = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_sasum()’ computes the sum of absolute values
@@ -1184,13 +950,9 @@ int mtxvector_null_dnrm2(
  * the real and imaginary parts is computed.
  */
 int mtxvector_null_sasum(
-    const struct mtxvector_null * xnull,
+    const struct mtxvector_null * x,
     float * asum,
-    int64_t * num_flops)
-{
-    *asum = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_dasum()’ computes the sum of absolute values
@@ -1199,27 +961,20 @@ int mtxvector_null_sasum(
  * the real and imaginary parts is computed.
  */
 int mtxvector_null_dasum(
-    const struct mtxvector_null * xnull,
+    const struct mtxvector_null * x,
     double * asum,
-    int64_t * num_flops)
-{
-    *asum = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
- * ‘mtxvector_null_iamax()’ finds the index of the first element having
- * the maximum absolute value.  If the vector is complex-valued, then
- * the index points to the first element having the maximum sum of the
- * absolute values of the real and imaginary parts.
+ * ‘mtxvector_null_iamax()’ finds the index of the first element
+ * having the maximum absolute value.  If the vector is
+ * complex-valued, then the index points to the first element having
+ * the maximum sum of the absolute values of the real and imaginary
+ * parts.
  */
 int mtxvector_null_iamax(
     const struct mtxvector_null * x,
-    int * iamax)
-{
-    *iamax = 0;
-    return MTX_SUCCESS;
-}
+    int * iamax);
 
 /*
  * Level 1 Sparse BLAS operations.
@@ -1242,11 +997,7 @@ int mtxvector_null_ussdot(
     const struct mtxvector_null * x,
     const struct mtxvector_null * y,
     float * dot,
-    int64_t * num_flops)
-{
-    *dot = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_usddot()’ computes the Euclidean dot product of two
@@ -1261,11 +1012,7 @@ int mtxvector_null_usddot(
     const struct mtxvector_null * x,
     const struct mtxvector_null * y,
     double * dot,
-    int64_t * num_flops)
-{
-    *dot = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_uscdotu()’ computes the product of the transpose of
@@ -1281,11 +1028,7 @@ int mtxvector_null_uscdotu(
     const struct mtxvector_null * x,
     const struct mtxvector_null * y,
     float (* dot)[2],
-    int64_t * num_flops)
-{
-    (*dot)[0] = (*dot)[1] = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_uszdotu()’ computes the product of the transpose of
@@ -1301,11 +1044,7 @@ int mtxvector_null_uszdotu(
     const struct mtxvector_null * x,
     const struct mtxvector_null * y,
     double (* dot)[2],
-    int64_t * num_flops)
-{
-    (*dot)[0] = (*dot)[1] = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_uscdotc()’ computes the Euclidean dot product of two
@@ -1320,11 +1059,7 @@ int mtxvector_null_uscdotc(
     const struct mtxvector_null * x,
     const struct mtxvector_null * y,
     float (* dot)[2],
-    int64_t * num_flops)
-{
-    (*dot)[0] = (*dot)[1] = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_uszdotc()’ computes the Euclidean dot product of two
@@ -1339,11 +1074,7 @@ int mtxvector_null_uszdotc(
     const struct mtxvector_null * x,
     const struct mtxvector_null * y,
     double (* dot)[2],
-    int64_t * num_flops)
-{
-    (*dot)[0] = (*dot)[1] = 0;
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_ussaxpy()’ performs a sparse vector update,
@@ -1358,10 +1089,7 @@ int mtxvector_null_ussaxpy(
     float alpha,
     const struct mtxvector_null * x,
     struct mtxvector_null * y,
-    int64_t * num_flops)
-{
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_usdaxpy()’ performs a sparse vector update,
@@ -1376,10 +1104,7 @@ int mtxvector_null_usdaxpy(
     double alpha,
     const struct mtxvector_null * x,
     struct mtxvector_null * y,
-    int64_t * num_flops)
-{
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_uscaxpy()’ performs a sparse vector update,
@@ -1394,10 +1119,7 @@ int mtxvector_null_uscaxpy(
     float alpha[2],
     const struct mtxvector_null * x,
     struct mtxvector_null * y,
-    int64_t * num_flops)
-{
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_uszaxpy()’ performs a sparse vector update,
@@ -1412,10 +1134,7 @@ int mtxvector_null_uszaxpy(
     double alpha[2],
     const struct mtxvector_null * x,
     struct mtxvector_null * y,
-    int64_t * num_flops)
-{
-    return MTX_SUCCESS;
-}
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_null_usga()’ performs a gather operation from a vector
@@ -1424,10 +1143,7 @@ int mtxvector_null_uszaxpy(
  */
 int mtxvector_null_usga(
     struct mtxvector_null * x,
-    const struct mtxvector_null * y)
-{
-    return MTX_SUCCESS;
-}
+    const struct mtxvector_null * y);
 
 /**
  * ‘mtxvector_null_usgz()’ performs a gather operation from a vector
@@ -1437,10 +1153,7 @@ int mtxvector_null_usga(
  */
 int mtxvector_null_usgz(
     struct mtxvector_null * x,
-    struct mtxvector_null * y)
-{
-    return MTX_SUCCESS;
-}
+    struct mtxvector_null * y);
 
 /**
  * ‘mtxvector_null_ussc()’ performs a scatter operation to a vector
@@ -1450,10 +1163,7 @@ int mtxvector_null_usgz(
  */
 int mtxvector_null_ussc(
     struct mtxvector_null * y,
-    const struct mtxvector_null * x)
-{
-    return MTX_SUCCESS;
-}
+    const struct mtxvector_null * x);
 
 /*
  * Level 1 BLAS-like extensions
@@ -1468,10 +1178,7 @@ int mtxvector_null_ussc(
  */
 int mtxvector_null_usscga(
     struct mtxvector_null * z,
-    const struct mtxvector_null * x)
-{
-    return MTX_SUCCESS;
-}
+    const struct mtxvector_null * x);
 
 /*
  * MPI functions
@@ -1491,11 +1198,7 @@ int mtxvector_null_send(
     int recipient,
     int tag,
     MPI_Comm comm,
-    int * mpierrcode)
-{
-    return mtxvector_base_send(
-        &x->base, offset, count, recipient, tag, comm, mpierrcode);
-}
+    int * mpierrcode);
 
 /**
  * ‘mtxvector_null_recv()’ receives a vector from another MPI process.
@@ -1511,11 +1214,7 @@ int mtxvector_null_recv(
     int tag,
     MPI_Comm comm,
     MPI_Status * status,
-    int * mpierrcode)
-{
-    return mtxvector_base_recv(
-        &x->base, offset, count, sender, tag, comm, status, mpierrcode);
-}
+    int * mpierrcode);
 
 /**
  * ‘mtxvector_null_irecv()’ performs a non-blocking receive of a
@@ -1532,9 +1231,7 @@ int mtxvector_null_irecv(
     int tag,
     MPI_Comm comm,
     MPI_Request * request,
-    int * mpierrcode)
-{
-    return mtxvector_base_irecv(
-        &x->base, offset, count, sender, tag, comm, request, mpierrcode);
-}
+    int * mpierrcode);
+#endif
+
 #endif

@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-20
+ * Last modified: 2022-10-03
  *
  * Main Libmtx header file.
  */
@@ -31,11 +31,12 @@
 #include <libmtx/linalg/base/csr.h>
 #include <libmtx/linalg/base/dense.h>
 #include <libmtx/linalg/base/vector.h>
+#include <libmtx/linalg/null/coo.h>
+#include <libmtx/linalg/null/vector.h>
 #include <libmtx/matrix/blas/dense.h>
 #include <libmtx/matrix/dist.h>
 #include <libmtx/matrix/gemvoverlap.h>
 #include <libmtx/matrix/matrix.h>
-#include <libmtx/matrix/null/coo.h>
 #include <libmtx/matrix/partition.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
@@ -46,7 +47,6 @@
 #include <libmtx/vector/blas.h>
 #include <libmtx/vector/dist.h>
 #include <libmtx/vector/field.h>
-#include <libmtx/vector/null.h>
 #include <libmtx/vector/omp.h>
 #include <libmtx/vector/precision.h>
 #include <libmtx/vector/vector.h>

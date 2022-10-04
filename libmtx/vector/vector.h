@@ -30,7 +30,7 @@
 #include <libmtx/vector/field.h>
 #include <libmtx/linalg/base/vector.h>
 #include <libmtx/vector/blas.h>
-#include <libmtx/vector/null.h>
+#include <libmtx/linalg/null/vector.h>
 #include <libmtx/vector/omp.h>
 
 #ifdef LIBMTX_HAVE_LIBZ

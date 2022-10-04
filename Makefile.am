@@ -16,7 +16,7 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-05-28
+# Last modified: 2022-10-03
 #
 # Makefile for the top-level directory of Libmtx.
 #
@@ -61,11 +61,12 @@ libmtx_la_SOURCES = \
 	libmtx/linalg/base/csr.c \
 	libmtx/linalg/base/dense.c \
 	libmtx/linalg/base/vector.c \
+	libmtx/linalg/null/coo.c \
+	libmtx/linalg/null/vector.c \
 	libmtx/matrix/blas/dense.c \
 	libmtx/matrix/dist.c \
 	libmtx/matrix/gemvoverlap.c \
 	libmtx/matrix/matrix.c \
-	libmtx/matrix/null/coo.c \
 	libmtx/matrix/omp/csr.c \
 	libmtx/matrix/partition.c \
 	libmtx/matrix/symmetry.c \
@@ -97,7 +98,6 @@ libmtx_la_SOURCES = \
 	libmtx/vector/blas.c \
 	libmtx/vector/dist.c \
 	libmtx/vector/field.c \
-	libmtx/vector/null.c \
 	libmtx/vector/omp.c \
 	libmtx/vector/packed.c \
 	libmtx/vector/precision.c \
@@ -112,11 +112,12 @@ nobase_include_HEADERS = \
 	libmtx/linalg/base/csr.h \
 	libmtx/linalg/base/dense.h \
 	libmtx/linalg/base/vector.h \
+	libmtx/linalg/null/coo.h \
+	libmtx/linalg/null/vector.h \
 	libmtx/matrix/blas/dense.h \
 	libmtx/matrix/dist.h \
 	libmtx/matrix/gemvoverlap.h \
 	libmtx/matrix/matrix.h \
-	libmtx/matrix/null/coo.h \
 	libmtx/matrix/omp/csr.h \
 	libmtx/matrix/partition.h \
 	libmtx/matrix/symmetry.h \
@@ -132,7 +133,6 @@ nobase_include_HEADERS = \
 	libmtx/vector/blas.h \
 	libmtx/vector/dist.h \
 	libmtx/vector/field.h \
-	libmtx/vector/null.h \
 	libmtx/vector/omp.h \
 	libmtx/vector/packed.h \
 	libmtx/vector/precision.h \
