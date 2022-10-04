@@ -271,11 +271,11 @@ TESTS += tests/test_mtxblasvector
 endif
 
 if HAVE_OPENMP
-tests_test_mtxvector_omp_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxvector_omp_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxvector_omp_SOURCES = tests/test_mtxvector_omp.c tests/test.h
-check_PROGRAMS += tests/test_mtxvector_omp
-TESTS += tests/test_mtxvector_omp
+tests_test_mtxompvector_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxompvector_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxompvector_SOURCES = tests/test_mtxompvector.c tests/test.h
+check_PROGRAMS += tests/test_mtxompvector
+TESTS += tests/test_mtxompvector
 endif
 
 if HAVE_MPI

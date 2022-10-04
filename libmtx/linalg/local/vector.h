@@ -56,7 +56,7 @@ enum mtxvectortype
                            * performed by an external BLAS library */
     mtxnullvector,        /* vectors where vector operations do
                            * nothing (for debugging purposes) */
-    mtxvector_omp,        /* vectors using OpenMP for shared
+    mtxompvector,         /* vectors using OpenMP for shared
                            * memory parallel operations */
 };
 
@@ -119,7 +119,7 @@ struct mtxvector
         struct mtxblasvector blas;
         struct mtxnullvector null;
 #ifdef LIBMTX_HAVE_OPENMP
-        struct mtxvector_omp omp;
+        struct mtxompvector omp;
 #endif
     } storage;
 };

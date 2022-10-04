@@ -99,12 +99,12 @@ struct mtxmatrix_ompcsr
     /**
      * ‘a’ is a vector storing the underlying nonzero matrix entries.
      */
-    struct mtxvector_omp a;
+    struct mtxompvector a;
 
     /**
      * ‘diag’ is a vector storing the diagonal nonzero matrix entries.
      */
-    struct mtxvector_omp diag;
+    struct mtxompvector diag;
 };
 
 /*

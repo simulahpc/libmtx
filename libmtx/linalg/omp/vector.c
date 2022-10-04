@@ -48,44 +48,44 @@
  */
 
 /**
- * ‘mtxvector_omp_field()’ gets the field of a vector.
+ * ‘mtxompvector_field()’ gets the field of a vector.
  */
-enum mtxfield mtxvector_omp_field(const struct mtxvector_omp * x)
+enum mtxfield mtxompvector_field(const struct mtxompvector * x)
 {
     return mtxvector_base_field(&x->base);
 }
 
 /**
- * ‘mtxvector_omp_precision()’ gets the precision of a vector.
+ * ‘mtxompvector_precision()’ gets the precision of a vector.
  */
-enum mtxprecision mtxvector_omp_precision(const struct mtxvector_omp * x)
+enum mtxprecision mtxompvector_precision(const struct mtxompvector * x)
 {
     return mtxvector_base_precision(&x->base);
 }
 
 /**
- * ‘mtxvector_omp_size()’ gets the size of a vector.
+ * ‘mtxompvector_size()’ gets the size of a vector.
  */
-int64_t mtxvector_omp_size(const struct mtxvector_omp * x)
+int64_t mtxompvector_size(const struct mtxompvector * x)
 {
     return mtxvector_base_size(&x->base);
 }
 
 /**
- * ‘mtxvector_omp_num_nonzeros()’ gets the number of explicitly stored
+ * ‘mtxompvector_num_nonzeros()’ gets the number of explicitly stored
  * vector entries.
  */
-int64_t mtxvector_omp_num_nonzeros(const struct mtxvector_omp * x)
+int64_t mtxompvector_num_nonzeros(const struct mtxompvector * x)
 {
     return mtxvector_base_num_nonzeros(&x->base);
 }
 
 /**
- * ‘mtxvector_omp_idx()’ gets a pointer to an array containing the
+ * ‘mtxompvector_idx()’ gets a pointer to an array containing the
  * offset of each nonzero vector entry for a vector in packed storage
  * format.
  */
-int64_t * mtxvector_omp_idx(const struct mtxvector_omp * x)
+int64_t * mtxompvector_idx(const struct mtxompvector * x)
 {
     return mtxvector_base_idx(&x->base);
 }
@@ -95,22 +95,22 @@ int64_t * mtxvector_omp_idx(const struct mtxvector_omp * x)
  */
 
 /**
- * ‘mtxvector_omp_free()’ frees storage allocated for a vector.
+ * ‘mtxompvector_free()’ frees storage allocated for a vector.
  */
-void mtxvector_omp_free(
-    struct mtxvector_omp * x)
+void mtxompvector_free(
+    struct mtxompvector * x)
 {
     mtxvector_base_free(&x->base);
     free(x->offsets);
 }
 
 /**
- * ‘mtxvector_omp_alloc_copy()’ allocates a copy of a vector without
+ * ‘mtxompvector_alloc_copy()’ allocates a copy of a vector without
  * initialising the values.
  */
-int mtxvector_omp_alloc_copy(
-    struct mtxvector_omp * dst,
-    const struct mtxvector_omp * src)
+int mtxompvector_alloc_copy(
+    struct mtxompvector * dst,
+    const struct mtxompvector * src)
 {
     dst->num_threads = src->num_threads;
     if (src->offsets) {
@@ -138,12 +138,12 @@ int mtxvector_omp_alloc_copy(
 }
 
 /**
- * ‘mtxvector_omp_init_copy()’ allocates a copy of a vector and also
+ * ‘mtxompvector_init_copy()’ allocates a copy of a vector and also
  * copies the values.
  */
-int mtxvector_omp_init_copy(
-    struct mtxvector_omp * dst,
-    const struct mtxvector_omp * src)
+int mtxompvector_init_copy(
+    struct mtxompvector * dst,
+    const struct mtxompvector * src)
 {
     dst->num_threads = src->num_threads;
     if (src->offsets) {
@@ -175,10 +175,10 @@ int mtxvector_omp_init_copy(
  */
 
 /**
- * ‘mtxvector_omp_alloc()’ allocates a vector.
+ * ‘mtxompvector_alloc()’ allocates a vector.
  */
-int mtxvector_omp_alloc(
-    struct mtxvector_omp * x,
+int mtxompvector_alloc(
+    struct mtxompvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
     int64_t size)
@@ -191,15 +191,15 @@ int mtxvector_omp_alloc(
 }
 
 /**
- * ‘mtxvector_omp_init_real_single()’ allocates and initialises a
+ * ‘mtxompvector_init_real_single()’ allocates and initialises a
  * vector with real, single precision coefficients.
  */
-int mtxvector_omp_init_real_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_real_single(
+    struct mtxompvector * x,
     int64_t size,
     const float * data)
 {
-    int err = mtxvector_omp_alloc(
+    int err = mtxompvector_alloc(
         x, mtx_field_real, mtx_single, size);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
@@ -210,15 +210,15 @@ int mtxvector_omp_init_real_single(
 }
 
 /**
- * ‘mtxvector_omp_init_real_double()’ allocates and initialises a
+ * ‘mtxompvector_init_real_double()’ allocates and initialises a
  * vector with real, double precision coefficients.
  */
-int mtxvector_omp_init_real_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_real_double(
+    struct mtxompvector * x,
     int64_t size,
     const double * data)
 {
-    int err = mtxvector_omp_alloc(
+    int err = mtxompvector_alloc(
         x, mtx_field_real, mtx_double, size);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
@@ -229,15 +229,15 @@ int mtxvector_omp_init_real_double(
 }
 
 /**
- * ‘mtxvector_omp_init_complex_single()’ allocates and initialises a
+ * ‘mtxompvector_init_complex_single()’ allocates and initialises a
  * vector with complex, single precision coefficients.
  */
-int mtxvector_omp_init_complex_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_complex_single(
+    struct mtxompvector * x,
     int64_t size,
     const float (* data)[2])
 {
-    int err = mtxvector_omp_alloc(
+    int err = mtxompvector_alloc(
         x, mtx_field_complex, mtx_single, size);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
@@ -250,15 +250,15 @@ int mtxvector_omp_init_complex_single(
 }
 
 /**
- * ‘mtxvector_omp_init_complex_double()’ allocates and initialises a
+ * ‘mtxompvector_init_complex_double()’ allocates and initialises a
  * vector with complex, double precision coefficients.
  */
-int mtxvector_omp_init_complex_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_complex_double(
+    struct mtxompvector * x,
     int64_t size,
     const double (* data)[2])
 {
-    int err = mtxvector_omp_alloc(
+    int err = mtxompvector_alloc(
         x, mtx_field_complex, mtx_double, size);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
@@ -271,15 +271,15 @@ int mtxvector_omp_init_complex_double(
 }
 
 /**
- * ‘mtxvector_omp_init_integer_single()’ allocates and initialises a
+ * ‘mtxompvector_init_integer_single()’ allocates and initialises a
  * vector with integer, single precision coefficients.
  */
-int mtxvector_omp_init_integer_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_integer_single(
+    struct mtxompvector * x,
     int64_t size,
     const int32_t * data)
 {
-    int err = mtxvector_omp_alloc(
+    int err = mtxompvector_alloc(
         x, mtx_field_integer, mtx_single, size);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
@@ -290,15 +290,15 @@ int mtxvector_omp_init_integer_single(
 }
 
 /**
- * ‘mtxvector_omp_init_integer_double()’ allocates and initialises a
+ * ‘mtxompvector_init_integer_double()’ allocates and initialises a
  * vector with integer, double precision coefficients.
  */
-int mtxvector_omp_init_integer_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_integer_double(
+    struct mtxompvector * x,
     int64_t size,
     const int64_t * data)
 {
-    int err = mtxvector_omp_alloc(
+    int err = mtxompvector_alloc(
         x, mtx_field_integer, mtx_double, size);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
@@ -309,14 +309,14 @@ int mtxvector_omp_init_integer_double(
 }
 
 /**
- * ‘mtxvector_omp_init_pattern()’ allocates and initialises a vector
+ * ‘mtxompvector_init_pattern()’ allocates and initialises a vector
  * of ones.
  */
-int mtxvector_omp_init_pattern(
-    struct mtxvector_omp * x,
+int mtxompvector_init_pattern(
+    struct mtxompvector * x,
     int64_t size)
 {
-    return mtxvector_omp_alloc(
+    return mtxompvector_alloc(
         x, mtx_field_pattern, mtx_single, size);
 }
 
@@ -325,16 +325,16 @@ int mtxvector_omp_init_pattern(
  */
 
 /**
- * ‘mtxvector_omp_init_strided_real_single()’ allocates and
+ * ‘mtxompvector_init_strided_real_single()’ allocates and
  * initialises a vector with real, single precision coefficients.
  */
-int mtxvector_omp_init_strided_real_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_strided_real_single(
+    struct mtxompvector * x,
     int64_t size,
     int64_t stride,
     const float * data)
 {
-    int err = mtxvector_omp_alloc(x, mtx_field_real, mtx_single, size);
+    int err = mtxompvector_alloc(x, mtx_field_real, mtx_single, size);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
     #pragma omp parallel for
@@ -344,16 +344,16 @@ int mtxvector_omp_init_strided_real_single(
 }
 
 /**
- * ‘mtxvector_omp_init_strided_real_double()’ allocates and
+ * ‘mtxompvector_init_strided_real_double()’ allocates and
  * initialises a vector with real, double precision coefficients.
  */
-int mtxvector_omp_init_strided_real_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_strided_real_double(
+    struct mtxompvector * x,
     int64_t size,
     int64_t stride,
     const double * data)
 {
-    int err = mtxvector_omp_alloc(x, mtx_field_real, mtx_double, size);
+    int err = mtxompvector_alloc(x, mtx_field_real, mtx_double, size);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
     #pragma omp parallel for
@@ -363,16 +363,16 @@ int mtxvector_omp_init_strided_real_double(
 }
 
 /**
- * ‘mtxvector_omp_init_strided_complex_single()’ allocates and
+ * ‘mtxompvector_init_strided_complex_single()’ allocates and
  * initialises a vector with complex, single precision coefficients.
  */
-int mtxvector_omp_init_strided_complex_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_strided_complex_single(
+    struct mtxompvector * x,
     int64_t size,
     int64_t stride,
     const float (* data)[2])
 {
-    int err = mtxvector_omp_alloc(x, mtx_field_complex, mtx_single, size);
+    int err = mtxompvector_alloc(x, mtx_field_complex, mtx_single, size);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
     #pragma omp parallel for
@@ -385,16 +385,16 @@ int mtxvector_omp_init_strided_complex_single(
 }
 
 /**
- * ‘mtxvector_omp_init_strided_complex_double()’ allocates and
+ * ‘mtxompvector_init_strided_complex_double()’ allocates and
  * initialises a vector with complex, double precision coefficients.
  */
-int mtxvector_omp_init_strided_complex_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_strided_complex_double(
+    struct mtxompvector * x,
     int64_t size,
     int64_t stride,
     const double (* data)[2])
 {
-    int err = mtxvector_omp_alloc(x, mtx_field_complex, mtx_double, size);
+    int err = mtxompvector_alloc(x, mtx_field_complex, mtx_double, size);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
     #pragma omp parallel for
@@ -407,16 +407,16 @@ int mtxvector_omp_init_strided_complex_double(
 }
 
 /**
- * ‘mtxvector_omp_init_strided_integer_single()’ allocates and
+ * ‘mtxompvector_init_strided_integer_single()’ allocates and
  * initialises a vector with integer, single precision coefficients.
  */
-int mtxvector_omp_init_strided_integer_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_strided_integer_single(
+    struct mtxompvector * x,
     int64_t size,
     int64_t stride,
     const int32_t * data)
 {
-    int err = mtxvector_omp_alloc(x, mtx_field_integer, mtx_single, size);
+    int err = mtxompvector_alloc(x, mtx_field_integer, mtx_single, size);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
     #pragma omp parallel for
@@ -426,16 +426,16 @@ int mtxvector_omp_init_strided_integer_single(
 }
 
 /**
- * ‘mtxvector_omp_init_strided_integer_double()’ allocates and
+ * ‘mtxompvector_init_strided_integer_double()’ allocates and
  * initialises a vector with integer, double precision coefficients.
  */
-int mtxvector_omp_init_strided_integer_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_strided_integer_double(
+    struct mtxompvector * x,
     int64_t size,
     int64_t stride,
     const int64_t * data)
 {
-    int err = mtxvector_omp_alloc(x, mtx_field_integer, mtx_double, size);
+    int err = mtxompvector_alloc(x, mtx_field_integer, mtx_double, size);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
     #pragma omp parallel for
@@ -449,7 +449,7 @@ int mtxvector_omp_init_strided_integer_double(
  */
 
 /**
- * ‘mtxvector_omp_alloc_custom()’ allocates a vector with a
+ * ‘mtxompvector_alloc_custom()’ allocates a vector with a
  * user-defined schedule for parallel loops.
  *
  * If ‘offsets’ is ‘NULL’, then it is ignored. In this case, parallel
@@ -462,8 +462,8 @@ int mtxvector_omp_init_strided_integer_double(
  * assigned to each thread. Moreover, ‘offsets[num_threads]’ must be
  * equal to the total number of vector elements.
  */
-int mtxvector_omp_alloc_custom(
-    struct mtxvector_omp * x,
+int mtxompvector_alloc_custom(
+    struct mtxompvector * x,
     int num_threads,
     const int64_t * offsets,
     omp_sched_t sched,
@@ -501,13 +501,13 @@ int mtxvector_omp_alloc_custom(
 }
 
 /**
- * ‘mtxvector_omp_init_custom_real_single()’ allocates and initialises
+ * ‘mtxompvector_init_custom_real_single()’ allocates and initialises
  * a vector with real, single precision coefficients.
  *
- * See also ‘mtxvector_omp_alloc_custom()’.
+ * See also ‘mtxompvector_alloc_custom()’.
  */
-int mtxvector_omp_init_custom_real_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_custom_real_single(
+    struct mtxompvector * x,
     int num_threads,
     const int64_t * offsets,
     omp_sched_t sched,
@@ -516,22 +516,22 @@ int mtxvector_omp_init_custom_real_single(
     int stride,
     const float * data)
 {
-    int err = mtxvector_omp_alloc_custom(
+    int err = mtxompvector_alloc_custom(
         x, num_threads, offsets, sched, chunk_size, mtx_field_real, mtx_single, size);
     if (err) return err;
-    err = mtxvector_omp_set_real_single(x, size, stride, data);
-    if (err) { mtxvector_omp_free(x); return err; }
+    err = mtxompvector_set_real_single(x, size, stride, data);
+    if (err) { mtxompvector_free(x); return err; }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_init_custom_real_double()’ allocates and initialises
+ * ‘mtxompvector_init_custom_real_double()’ allocates and initialises
  * a vector with real, double precision coefficients.
  *
- * See also ‘mtxvector_omp_alloc_custom()’.
+ * See also ‘mtxompvector_alloc_custom()’.
  */
-int mtxvector_omp_init_custom_real_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_custom_real_double(
+    struct mtxompvector * x,
     int num_threads,
     const int64_t * offsets,
     omp_sched_t sched,
@@ -540,22 +540,22 @@ int mtxvector_omp_init_custom_real_double(
     int stride,
     const double * data)
 {
-    int err = mtxvector_omp_alloc_custom(
+    int err = mtxompvector_alloc_custom(
         x, num_threads, offsets, sched, chunk_size, mtx_field_real, mtx_double, size);
     if (err) return err;
-    err = mtxvector_omp_set_real_double(x, size, stride, data);
-    if (err) { mtxvector_omp_free(x); return err; }
+    err = mtxompvector_set_real_double(x, size, stride, data);
+    if (err) { mtxompvector_free(x); return err; }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_init_custom_complex_single()’ allocates and
+ * ‘mtxompvector_init_custom_complex_single()’ allocates and
  * initialises a vector with complex, single precision coefficients.
  *
- * See also ‘mtxvector_omp_alloc_custom()’.
+ * See also ‘mtxompvector_alloc_custom()’.
  */
-int mtxvector_omp_init_custom_complex_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_custom_complex_single(
+    struct mtxompvector * x,
     int num_threads,
     const int64_t * offsets,
     omp_sched_t sched,
@@ -564,22 +564,22 @@ int mtxvector_omp_init_custom_complex_single(
     int stride,
     const float (* data)[2])
 {
-    int err = mtxvector_omp_alloc_custom(
+    int err = mtxompvector_alloc_custom(
         x, num_threads, offsets, sched, chunk_size, mtx_field_complex, mtx_single, size);
     if (err) return err;
-    err = mtxvector_omp_set_complex_single(x, size, stride, data);
-    if (err) { mtxvector_omp_free(x); return err; }
+    err = mtxompvector_set_complex_single(x, size, stride, data);
+    if (err) { mtxompvector_free(x); return err; }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_init_custom_complex_double()’ allocates and
+ * ‘mtxompvector_init_custom_complex_double()’ allocates and
  * initialises a vector with complex, double precision coefficients.
  *
- * See also ‘mtxvector_omp_alloc_custom()’.
+ * See also ‘mtxompvector_alloc_custom()’.
  */
-int mtxvector_omp_init_custom_complex_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_custom_complex_double(
+    struct mtxompvector * x,
     int num_threads,
     const int64_t * offsets,
     omp_sched_t sched,
@@ -588,22 +588,22 @@ int mtxvector_omp_init_custom_complex_double(
     int stride,
     const double (* data)[2])
 {
-    int err = mtxvector_omp_alloc_custom(
+    int err = mtxompvector_alloc_custom(
         x, num_threads, offsets, sched, chunk_size, mtx_field_complex, mtx_double, size);
     if (err) return err;
-    err = mtxvector_omp_set_complex_double(x, size, stride, data);
-    if (err) { mtxvector_omp_free(x); return err; }
+    err = mtxompvector_set_complex_double(x, size, stride, data);
+    if (err) { mtxompvector_free(x); return err; }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_init_custom_integer_single()’ allocates and
+ * ‘mtxompvector_init_custom_integer_single()’ allocates and
  * initialises a vector with integer, single precision coefficients.
  *
- * See also ‘mtxvector_omp_alloc_custom()’.
+ * See also ‘mtxompvector_alloc_custom()’.
  */
-int mtxvector_omp_init_custom_integer_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_custom_integer_single(
+    struct mtxompvector * x,
     int num_threads,
     const int64_t * offsets,
     omp_sched_t sched,
@@ -612,22 +612,22 @@ int mtxvector_omp_init_custom_integer_single(
     int stride,
     const int32_t * data)
 {
-    int err = mtxvector_omp_alloc_custom(
+    int err = mtxompvector_alloc_custom(
         x, num_threads, offsets, sched, chunk_size, mtx_field_integer, mtx_single, size);
     if (err) return err;
-    err = mtxvector_omp_set_integer_single(x, size, stride, data);
-    if (err) { mtxvector_omp_free(x); return err; }
+    err = mtxompvector_set_integer_single(x, size, stride, data);
+    if (err) { mtxompvector_free(x); return err; }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_init_custom_integer_double()’ allocates and
+ * ‘mtxompvector_init_custom_integer_double()’ allocates and
  * initialises a vector with integer, double precision coefficients.
  *
- * See also ‘mtxvector_omp_alloc_custom()’.
+ * See also ‘mtxompvector_alloc_custom()’.
  */
-int mtxvector_omp_init_custom_integer_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_custom_integer_double(
+    struct mtxompvector * x,
     int num_threads,
     const int64_t * offsets,
     omp_sched_t sched,
@@ -636,11 +636,11 @@ int mtxvector_omp_init_custom_integer_double(
     int stride,
     const int64_t * data)
 {
-    int err = mtxvector_omp_alloc_custom(
+    int err = mtxompvector_alloc_custom(
         x, num_threads, offsets, sched, chunk_size, mtx_field_integer, mtx_double, size);
     if (err) return err;
-    err = mtxvector_omp_set_integer_double(x, size, stride, data);
-    if (err) { mtxvector_omp_free(x); return err; }
+    err = mtxompvector_set_integer_double(x, size, stride, data);
+    if (err) { mtxompvector_free(x); return err; }
     return MTX_SUCCESS;
 }
 
@@ -650,11 +650,11 @@ int mtxvector_omp_init_custom_integer_double(
  */
 
 /**
- * ‘mtxvector_omp_alloc_packed()’ allocates a vector in packed
+ * ‘mtxompvector_alloc_packed()’ allocates a vector in packed
  * storage format.
  */
-int mtxvector_omp_alloc_packed(
-    struct mtxvector_omp * x,
+int mtxompvector_alloc_packed(
+    struct mtxompvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
     int64_t size,
@@ -683,17 +683,17 @@ int mtxvector_omp_alloc_packed(
 }
 
 /**
- * ‘mtxvector_omp_init_packed_real_single()’ allocates and initialises a
+ * ‘mtxompvector_init_packed_real_single()’ allocates and initialises a
  * vector with real, single precision coefficients.
  */
-int mtxvector_omp_init_packed_real_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_real_single(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
     const float * data)
 {
-    int err = mtxvector_omp_alloc_packed(
+    int err = mtxompvector_alloc_packed(
         x, mtx_field_real, mtx_single, size, num_nonzeros, idx);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
@@ -704,17 +704,17 @@ int mtxvector_omp_init_packed_real_single(
 }
 
 /**
- * ‘mtxvector_omp_init_packed_real_double()’ allocates and initialises a
+ * ‘mtxompvector_init_packed_real_double()’ allocates and initialises a
  * vector with real, double precision coefficients.
  */
-int mtxvector_omp_init_packed_real_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_real_double(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
     const double * data)
 {
-    int err = mtxvector_omp_alloc_packed(
+    int err = mtxompvector_alloc_packed(
         x, mtx_field_real, mtx_double, size, num_nonzeros, idx);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
@@ -725,17 +725,17 @@ int mtxvector_omp_init_packed_real_double(
 }
 
 /**
- * ‘mtxvector_omp_init_packed_complex_single()’ allocates and initialises
+ * ‘mtxompvector_init_packed_complex_single()’ allocates and initialises
  * a vector with complex, single precision coefficients.
  */
-int mtxvector_omp_init_packed_complex_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_complex_single(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
     const float (* data)[2])
 {
-    int err = mtxvector_omp_alloc_packed(
+    int err = mtxompvector_alloc_packed(
         x, mtx_field_complex, mtx_single, size, num_nonzeros, idx);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
@@ -748,17 +748,17 @@ int mtxvector_omp_init_packed_complex_single(
 }
 
 /**
- * ‘mtxvector_omp_init_packed_complex_double()’ allocates and initialises
+ * ‘mtxompvector_init_packed_complex_double()’ allocates and initialises
  * a vector with complex, double precision coefficients.
  */
-int mtxvector_omp_init_packed_complex_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_complex_double(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
     const double (* data)[2])
 {
-    int err = mtxvector_omp_alloc_packed(
+    int err = mtxompvector_alloc_packed(
         x, mtx_field_complex, mtx_double, size, num_nonzeros, idx);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
@@ -771,17 +771,17 @@ int mtxvector_omp_init_packed_complex_double(
 }
 
 /**
- * ‘mtxvector_omp_init_packed_integer_single()’ allocates and initialises
+ * ‘mtxompvector_init_packed_integer_single()’ allocates and initialises
  * a vector with integer, single precision coefficients.
  */
-int mtxvector_omp_init_packed_integer_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_integer_single(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
     const int32_t * data)
 {
-    int err = mtxvector_omp_alloc_packed(
+    int err = mtxompvector_alloc_packed(
         x, mtx_field_integer, mtx_single, size, num_nonzeros, idx);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
@@ -792,17 +792,17 @@ int mtxvector_omp_init_packed_integer_single(
 }
 
 /**
- * ‘mtxvector_omp_init_packed_integer_double()’ allocates and initialises
+ * ‘mtxompvector_init_packed_integer_double()’ allocates and initialises
  * a vector with integer, double precision coefficients.
  */
-int mtxvector_omp_init_packed_integer_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_integer_double(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx,
     const int64_t * data)
 {
-    int err = mtxvector_omp_alloc_packed(
+    int err = mtxompvector_alloc_packed(
         x, mtx_field_integer, mtx_double, size, num_nonzeros, idx);
     if (err) return err;
     struct mtxvector_base * base = &x->base;
@@ -813,16 +813,16 @@ int mtxvector_omp_init_packed_integer_double(
 }
 
 /**
- * ‘mtxvector_omp_init_packed_pattern()’ allocates and initialises a
+ * ‘mtxompvector_init_packed_pattern()’ allocates and initialises a
  * binary pattern vector, where every entry has a value of one.
  */
-int mtxvector_omp_init_packed_pattern(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_pattern(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     const int64_t * idx)
 {
-    return mtxvector_omp_alloc_packed(
+    return mtxompvector_alloc_packed(
         x, mtx_field_pattern, mtx_single, size, num_nonzeros, idx);
 }
 
@@ -831,11 +831,11 @@ int mtxvector_omp_init_packed_pattern(
  */
 
 /**
- * ‘mtxvector_omp_alloc_packed_strided()’ allocates a vector in
+ * ‘mtxompvector_alloc_packed_strided()’ allocates a vector in
  * packed storage format.
  */
-int mtxvector_omp_alloc_packed_strided(
-    struct mtxvector_omp * x,
+int mtxompvector_alloc_packed_strided(
+    struct mtxompvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
     int64_t size,
@@ -867,11 +867,11 @@ int mtxvector_omp_alloc_packed_strided(
 }
 
 /**
- * ‘mtxvector_omp_init_packed_strided_real_single()’ allocates and
+ * ‘mtxompvector_init_packed_strided_real_single()’ allocates and
  * initialises a vector with real, single precision coefficients.
  */
-int mtxvector_omp_init_packed_strided_real_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_strided_real_single(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -880,20 +880,20 @@ int mtxvector_omp_init_packed_strided_real_single(
     int datastride,
     const float * data)
 {
-    int err = mtxvector_omp_alloc_packed_strided(
+    int err = mtxompvector_alloc_packed_strided(
         x, mtx_field_real, mtx_single, size, num_nonzeros, idxstride, idxbase, idx);
     if (err) return err;
-    err = mtxvector_omp_set_real_single(x, num_nonzeros, datastride, data);
-    if (err) { mtxvector_omp_free(x); return err; }
+    err = mtxompvector_set_real_single(x, num_nonzeros, datastride, data);
+    if (err) { mtxompvector_free(x); return err; }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_init_packed_strided_real_double()’ allocates and
+ * ‘mtxompvector_init_packed_strided_real_double()’ allocates and
  * initialises a vector with real, double precision coefficients.
  */
-int mtxvector_omp_init_packed_strided_real_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_strided_real_double(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -902,20 +902,20 @@ int mtxvector_omp_init_packed_strided_real_double(
     int datastride,
     const double * data)
 {
-    int err = mtxvector_omp_alloc_packed_strided(
+    int err = mtxompvector_alloc_packed_strided(
         x, mtx_field_real, mtx_double, size, num_nonzeros, idxstride, idxbase, idx);
     if (err) return err;
-    err = mtxvector_omp_set_real_double(x, num_nonzeros, datastride, data);
-    if (err) { mtxvector_omp_free(x); return err; }
+    err = mtxompvector_set_real_double(x, num_nonzeros, datastride, data);
+    if (err) { mtxompvector_free(x); return err; }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_init_packed_strided_complex_single()’ allocates and
+ * ‘mtxompvector_init_packed_strided_complex_single()’ allocates and
  * initialises a vector with complex, single precision coefficients.
  */
-int mtxvector_omp_init_packed_strided_complex_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_strided_complex_single(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -924,20 +924,20 @@ int mtxvector_omp_init_packed_strided_complex_single(
     int datastride,
     const float (* data)[2])
 {
-    int err = mtxvector_omp_alloc_packed_strided(
+    int err = mtxompvector_alloc_packed_strided(
         x, mtx_field_complex, mtx_single, size, num_nonzeros, idxstride, idxbase, idx);
     if (err) return err;
-    err = mtxvector_omp_set_complex_single(x, num_nonzeros, datastride, data);
-    if (err) { mtxvector_omp_free(x); return err; }
+    err = mtxompvector_set_complex_single(x, num_nonzeros, datastride, data);
+    if (err) { mtxompvector_free(x); return err; }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_init_packed_strided_complex_double()’ allocates and
+ * ‘mtxompvector_init_packed_strided_complex_double()’ allocates and
  * initialises a vector with complex, double precision coefficients.
  */
-int mtxvector_omp_init_packed_strided_complex_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_strided_complex_double(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -946,20 +946,20 @@ int mtxvector_omp_init_packed_strided_complex_double(
     int datastride,
     const double (* data)[2])
 {
-    int err = mtxvector_omp_alloc_packed_strided(
+    int err = mtxompvector_alloc_packed_strided(
         x, mtx_field_complex, mtx_double, size, num_nonzeros, idxstride, idxbase, idx);
     if (err) return err;
-    err = mtxvector_omp_set_complex_double(x, num_nonzeros, datastride, data);
-    if (err) { mtxvector_omp_free(x); return err; }
+    err = mtxompvector_set_complex_double(x, num_nonzeros, datastride, data);
+    if (err) { mtxompvector_free(x); return err; }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_init_packed_strided_integer_single()’ allocates and
+ * ‘mtxompvector_init_packed_strided_integer_single()’ allocates and
  * initialises a vector with integer, single precision coefficients.
  */
-int mtxvector_omp_init_packed_strided_integer_single(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_strided_integer_single(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -968,20 +968,20 @@ int mtxvector_omp_init_packed_strided_integer_single(
     int datastride,
     const int32_t * data)
 {
-    int err = mtxvector_omp_alloc_packed_strided(
+    int err = mtxompvector_alloc_packed_strided(
         x, mtx_field_integer, mtx_single, size, num_nonzeros, idxstride, idxbase, idx);
     if (err) return err;
-    err = mtxvector_omp_set_integer_single(x, num_nonzeros, datastride, data);
-    if (err) { mtxvector_omp_free(x); return err; }
+    err = mtxompvector_set_integer_single(x, num_nonzeros, datastride, data);
+    if (err) { mtxompvector_free(x); return err; }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_init_packed_strided_integer_double()’ allocates and
+ * ‘mtxompvector_init_packed_strided_integer_double()’ allocates and
  * initialises a vector with integer, double precision coefficients.
  */
-int mtxvector_omp_init_packed_strided_integer_double(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_strided_integer_double(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
@@ -990,28 +990,28 @@ int mtxvector_omp_init_packed_strided_integer_double(
     int datastride,
     const int64_t * data)
 {
-    int err = mtxvector_omp_alloc_packed_strided(
+    int err = mtxompvector_alloc_packed_strided(
         x, mtx_field_integer, mtx_double, size, num_nonzeros, idxstride, idxbase, idx);
     if (err) return err;
-    err = mtxvector_omp_set_integer_double(x, num_nonzeros, datastride, data);
-    if (err) { mtxvector_omp_free(x); return err; }
+    err = mtxompvector_set_integer_double(x, num_nonzeros, datastride, data);
+    if (err) { mtxompvector_free(x); return err; }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_init_packed_pattern()’ allocates and initialises a
+ * ‘mtxompvector_init_packed_pattern()’ allocates and initialises a
  * binary pattern vector, where every nonzero entry has a value of
  * one.
  */
-int mtxvector_omp_init_packed_strided_pattern(
-    struct mtxvector_omp * x,
+int mtxompvector_init_packed_strided_pattern(
+    struct mtxompvector * x,
     int64_t size,
     int64_t num_nonzeros,
     int idxstride,
     int idxbase,
     const int64_t * idx)
 {
-    return mtxvector_omp_alloc_packed_strided(
+    return mtxompvector_alloc_packed_strided(
         x, mtx_field_pattern, mtx_single, size, num_nonzeros, idxstride, idxbase, idx);
 }
 
@@ -1020,15 +1020,15 @@ int mtxvector_omp_init_packed_strided_pattern(
  */
 
 /**
- * ‘mtxvector_omp_get_real_single()’ obtains the values of a vector
+ * ‘mtxompvector_get_real_single()’ obtains the values of a vector
  * of single precision floating point numbers.
  *
  * The array ‘a’ must be large enough to store ‘size’ elements
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_omp_get_real_single(
-    const struct mtxvector_omp * x,
+int mtxompvector_get_real_single(
+    const struct mtxompvector * x,
     int64_t size,
     int stride,
     float * a)
@@ -1053,15 +1053,15 @@ int mtxvector_omp_get_real_single(
 }
 
 /**
- * ‘mtxvector_omp_get_real_double()’ obtains the values of a vector
+ * ‘mtxompvector_get_real_double()’ obtains the values of a vector
  * of double precision floating point numbers.
  *
  * The array ‘a’ must be large enough to store ‘size’ elements
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_omp_get_real_double(
-    const struct mtxvector_omp * x,
+int mtxompvector_get_real_double(
+    const struct mtxompvector * x,
     int64_t size,
     int stride,
     double * a)
@@ -1086,15 +1086,15 @@ int mtxvector_omp_get_real_double(
 }
 
 /**
- * ‘mtxvector_omp_get_complex_single()’ obtains the values of a
+ * ‘mtxompvector_get_complex_single()’ obtains the values of a
  * vector of single precision floating point complex numbers.
  *
  * The array ‘a’ must be large enough to store ‘size’ elements
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_omp_get_complex_single(
-    struct mtxvector_omp * x,
+int mtxompvector_get_complex_single(
+    struct mtxompvector * x,
     int64_t size,
     int stride,
     float (* a)[2])
@@ -1123,15 +1123,15 @@ int mtxvector_omp_get_complex_single(
 }
 
 /**
- * ‘mtxvector_omp_get_complex_double()’ obtains the values of a
+ * ‘mtxompvector_get_complex_double()’ obtains the values of a
  * vector of double precision floating point complex numbers.
  *
  * The array ‘a’ must be large enough to store ‘size’ elements
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_omp_get_complex_double(
-    struct mtxvector_omp * x,
+int mtxompvector_get_complex_double(
+    struct mtxompvector * x,
     int64_t size,
     int stride,
     double (* a)[2])
@@ -1160,15 +1160,15 @@ int mtxvector_omp_get_complex_double(
 }
 
 /**
- * ‘mtxvector_omp_get_integer_single()’ obtains the values of a
+ * ‘mtxompvector_get_integer_single()’ obtains the values of a
  * vector of single precision integers.
  *
  * The array ‘a’ must be large enough to store ‘size’ elements
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_omp_get_integer_single(
-    struct mtxvector_omp * x,
+int mtxompvector_get_integer_single(
+    struct mtxompvector * x,
     int64_t size,
     int stride,
     int32_t * a)
@@ -1193,15 +1193,15 @@ int mtxvector_omp_get_integer_single(
 }
 
 /**
- * ‘mtxvector_omp_get_integer_double()’ obtains the values of a
+ * ‘mtxompvector_get_integer_double()’ obtains the values of a
  * vector of double precision integers.
  *
  * The array ‘a’ must be large enough to store ‘size’ elements
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_omp_get_integer_double(
-    struct mtxvector_omp * x,
+int mtxompvector_get_integer_double(
+    struct mtxompvector * x,
     int64_t size,
     int stride,
     int64_t * a)
@@ -1230,10 +1230,10 @@ int mtxvector_omp_get_integer_double(
  */
 
 /**
- * ‘mtxvector_omp_setzero()’ sets every value of a vector to zero.
+ * ‘mtxompvector_setzero()’ sets every value of a vector to zero.
  */
-int mtxvector_omp_setzero(
-    struct mtxvector_omp * xomp)
+int mtxompvector_setzero(
+    struct mtxompvector * xomp)
 {
     struct mtxvector_base * x = &xomp->base;
     if (x->field == mtx_field_real) {
@@ -1333,11 +1333,11 @@ int mtxvector_omp_setzero(
 }
 
 /**
- * ‘mtxvector_omp_set_constant_real_single()’ sets every value of a
+ * ‘mtxompvector_set_constant_real_single()’ sets every value of a
  * vector equal to a constant, single precision floating point number.
  */
-int mtxvector_omp_set_constant_real_single(
-    struct mtxvector_omp * xomp,
+int mtxompvector_set_constant_real_single(
+    struct mtxompvector * xomp,
     float a)
 {
     struct mtxvector_base * x = &xomp->base;
@@ -1438,11 +1438,11 @@ int mtxvector_omp_set_constant_real_single(
 }
 
 /**
- * ‘mtxvector_omp_set_constant_real_double()’ sets every value of a
+ * ‘mtxompvector_set_constant_real_double()’ sets every value of a
  * vector equal to a constant, double precision floating point number.
  */
-int mtxvector_omp_set_constant_real_double(
-    struct mtxvector_omp * xomp,
+int mtxompvector_set_constant_real_double(
+    struct mtxompvector * xomp,
     double a)
 {
     struct mtxvector_base * x = &xomp->base;
@@ -1543,12 +1543,12 @@ int mtxvector_omp_set_constant_real_double(
 }
 
 /**
- * ‘mtxvector_omp_set_constant_complex_single()’ sets every value of a
+ * ‘mtxompvector_set_constant_complex_single()’ sets every value of a
  * vector equal to a constant, single precision floating point complex
  * number.
  */
-int mtxvector_omp_set_constant_complex_single(
-    struct mtxvector_omp * xomp,
+int mtxompvector_set_constant_complex_single(
+    struct mtxompvector * xomp,
     float a[2])
 {
     struct mtxvector_base * x = &xomp->base;
@@ -1593,12 +1593,12 @@ int mtxvector_omp_set_constant_complex_single(
 }
 
 /**
- * ‘mtxvector_omp_set_constant_complex_double()’ sets every value of a
+ * ‘mtxompvector_set_constant_complex_double()’ sets every value of a
  * vector equal to a constant, double precision floating point complex
  * number.
  */
-int mtxvector_omp_set_constant_complex_double(
-    struct mtxvector_omp * xomp,
+int mtxompvector_set_constant_complex_double(
+    struct mtxompvector * xomp,
     double a[2])
 {
     struct mtxvector_base * x = &xomp->base;
@@ -1643,11 +1643,11 @@ int mtxvector_omp_set_constant_complex_double(
 }
 
 /**
- * ‘mtxvector_omp_set_constant_integer_single()’ sets every value of a
+ * ‘mtxompvector_set_constant_integer_single()’ sets every value of a
  * vector equal to a constant integer.
  */
-int mtxvector_omp_set_constant_integer_single(
-    struct mtxvector_omp * xomp,
+int mtxompvector_set_constant_integer_single(
+    struct mtxompvector * xomp,
     int32_t a)
 {
     struct mtxvector_base * x = &xomp->base;
@@ -1748,11 +1748,11 @@ int mtxvector_omp_set_constant_integer_single(
 }
 
 /**
- * ‘mtxvector_omp_set_constant_integer_double()’ sets every value of a
+ * ‘mtxompvector_set_constant_integer_double()’ sets every value of a
  * vector equal to a constant integer.
  */
-int mtxvector_omp_set_constant_integer_double(
-    struct mtxvector_omp * xomp,
+int mtxompvector_set_constant_integer_double(
+    struct mtxompvector * xomp,
     int64_t a)
 {
     struct mtxvector_base * x = &xomp->base;
@@ -1853,11 +1853,11 @@ int mtxvector_omp_set_constant_integer_double(
 }
 
 /**
- * ‘mtxvector_omp_set_real_single()’ sets values of a vector based on
+ * ‘mtxompvector_set_real_single()’ sets values of a vector based on
  * an array of single precision floating point numbers.
  */
-int mtxvector_omp_set_real_single(
-    struct mtxvector_omp * x,
+int mtxompvector_set_real_single(
+    struct mtxompvector * x,
     int64_t size,
     int stride,
     const float * a)
@@ -1882,11 +1882,11 @@ int mtxvector_omp_set_real_single(
 }
 
 /**
- * ‘mtxvector_omp_set_real_double()’ sets values of a vector based on
+ * ‘mtxompvector_set_real_double()’ sets values of a vector based on
  * an array of double precision floating point numbers.
  */
-int mtxvector_omp_set_real_double(
-    struct mtxvector_omp * x,
+int mtxompvector_set_real_double(
+    struct mtxompvector * x,
     int64_t size,
     int stride,
     const double * a)
@@ -1911,11 +1911,11 @@ int mtxvector_omp_set_real_double(
 }
 
 /**
- * ‘mtxvector_omp_set_complex_single()’ sets values of a vector based
+ * ‘mtxompvector_set_complex_single()’ sets values of a vector based
  * on an array of single precision floating point complex numbers.
  */
-int mtxvector_omp_set_complex_single(
-    struct mtxvector_omp * x,
+int mtxompvector_set_complex_single(
+    struct mtxompvector * x,
     int64_t size,
     int stride,
     const float (*a)[2])
@@ -1944,11 +1944,11 @@ int mtxvector_omp_set_complex_single(
 }
 
 /**
- * ‘mtxvector_omp_set_complex_double()’ sets values of a vector based
+ * ‘mtxompvector_set_complex_double()’ sets values of a vector based
  * on an array of double precision floating point complex numbers.
  */
-int mtxvector_omp_set_complex_double(
-    struct mtxvector_omp * x,
+int mtxompvector_set_complex_double(
+    struct mtxompvector * x,
     int64_t size,
     int stride,
     const double (*a)[2])
@@ -1977,11 +1977,11 @@ int mtxvector_omp_set_complex_double(
 }
 
 /**
- * ‘mtxvector_omp_set_integer_single()’ sets values of a vector based
+ * ‘mtxompvector_set_integer_single()’ sets values of a vector based
  * on an array of integers.
  */
-int mtxvector_omp_set_integer_single(
-    struct mtxvector_omp * x,
+int mtxompvector_set_integer_single(
+    struct mtxompvector * x,
     int64_t size,
     int stride,
     const int32_t * a)
@@ -2006,11 +2006,11 @@ int mtxvector_omp_set_integer_single(
 }
 
 /**
- * ‘mtxvector_omp_set_integer_double()’ sets values of a vector based
+ * ‘mtxompvector_set_integer_double()’ sets values of a vector based
  * on an array of integers.
  */
-int mtxvector_omp_set_integer_double(
-    struct mtxvector_omp * x,
+int mtxompvector_set_integer_double(
+    struct mtxompvector * x,
     int64_t size,
     int stride,
     const int64_t * a)
@@ -2039,11 +2039,11 @@ int mtxvector_omp_set_integer_double(
  */
 
 /**
- * ‘mtxvector_omp_from_mtxfile()’ converts a vector in Matrix Market
+ * ‘mtxompvector_from_mtxfile()’ converts a vector in Matrix Market
  * format to a vector.
  */
-int mtxvector_omp_from_mtxfile(
-    struct mtxvector_omp * x,
+int mtxompvector_from_mtxfile(
+    struct mtxompvector * x,
     const struct mtxfile * mtxfile)
 {
     x->num_threads = 0;
@@ -2054,12 +2054,12 @@ int mtxvector_omp_from_mtxfile(
 }
 
 /**
- * ‘mtxvector_omp_to_mtxfile()’ converts a vector to a vector in
+ * ‘mtxompvector_to_mtxfile()’ converts a vector to a vector in
  * Matrix Market format.
  */
-int mtxvector_omp_to_mtxfile(
+int mtxompvector_to_mtxfile(
     struct mtxfile * mtxfile,
-    const struct mtxvector_omp * x,
+    const struct mtxompvector * x,
     int64_t num_rows,
     const int64_t * idx,
     enum mtxfileformat mtxfmt)
@@ -2072,7 +2072,7 @@ int mtxvector_omp_to_mtxfile(
  */
 
 /**
- * ‘mtxvector_omp_split()’ splits a vector into multiple vectors
+ * ‘mtxompvector_split()’ splits a vector into multiple vectors
  * according to a given assignment of parts to each vector element.
  *
  * The partitioning of the vector elements is specified by the array
@@ -2082,7 +2082,7 @@ int mtxvector_omp_to_mtxfile(
  * which the corresponding vector element belongs.
  *
  * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
- * of type ‘struct mtxvector_omp’. If successful, then ‘dsts[p]’
+ * of type ‘struct mtxompvector’. If successful, then ‘dsts[p]’
  * points to a vector consisting of elements from ‘src’ that belong to
  * the ‘p’th part, as designated by the ‘parts’ array.
  *
@@ -2094,13 +2094,13 @@ int mtxvector_omp_to_mtxfile(
  * sorting) of the vector element that now occupies the ‘i’th position
  * among the sorted elements.
  *
- * The caller is responsible for calling ‘mtxvector_omp_free()’ to
+ * The caller is responsible for calling ‘mtxompvector_free()’ to
  * free storage allocated for each vector in the ‘dsts’ array.
  */
-int mtxvector_omp_split(
+int mtxompvector_split(
     int num_parts,
-    struct mtxvector_omp ** dsts,
-    const struct mtxvector_omp * src,
+    struct mtxompvector ** dsts,
+    const struct mtxompvector * src,
     int64_t size,
     int * parts,
     int64_t * invperm)
@@ -2125,15 +2125,15 @@ int mtxvector_omp_split(
  */
 
 /**
- * ‘mtxvector_omp_swap()’ swaps values of two vectors, simultaneously
+ * ‘mtxompvector_swap()’ swaps values of two vectors, simultaneously
  * performing ‘y <- x’ and ‘x <- y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_swap(
-    struct mtxvector_omp * xomp,
-    struct mtxvector_omp * yomp)
+int mtxompvector_swap(
+    struct mtxompvector * xomp,
+    struct mtxompvector * yomp)
 {
     struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
@@ -2277,14 +2277,14 @@ int mtxvector_omp_swap(
 }
 
 /**
- * ‘mtxvector_omp_copy()’ copies values of a vector, ‘y = x’.
+ * ‘mtxompvector_copy()’ copies values of a vector, ‘y = x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_copy(
-    struct mtxvector_omp * yomp,
-    const struct mtxvector_omp * xomp)
+int mtxompvector_copy(
+    struct mtxompvector * yomp,
+    const struct mtxompvector * xomp)
 {
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
@@ -2414,12 +2414,12 @@ int mtxvector_omp_copy(
 }
 
 /**
- * ‘mtxvector_omp_sscal()’ scales a vector by a single precision
+ * ‘mtxompvector_sscal()’ scales a vector by a single precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxvector_omp_sscal(
+int mtxompvector_sscal(
     float a,
-    struct mtxvector_omp * xomp,
+    struct mtxompvector * xomp,
     int64_t * num_flops)
 {
     struct mtxvector_base * x = &xomp->base;
@@ -2529,12 +2529,12 @@ int mtxvector_omp_sscal(
 }
 
 /**
- * ‘mtxvector_omp_dscal()’ scales a vector by a double precision
+ * ‘mtxompvector_dscal()’ scales a vector by a double precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxvector_omp_dscal(
+int mtxompvector_dscal(
     double a,
-    struct mtxvector_omp * xomp,
+    struct mtxompvector * xomp,
     int64_t * num_flops)
 {
     struct mtxvector_base * x = &xomp->base;
@@ -2644,12 +2644,12 @@ int mtxvector_omp_dscal(
 }
 
 /**
- * ‘mtxvector_omp_cscal()’ scales a vector by a complex, single
+ * ‘mtxompvector_cscal()’ scales a vector by a complex, single
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxvector_omp_cscal(
+int mtxompvector_cscal(
     float a[2],
-    struct mtxvector_omp * xomp,
+    struct mtxompvector * xomp,
     int64_t * num_flops)
 {
     struct mtxvector_base * x = &xomp->base;
@@ -2705,12 +2705,12 @@ int mtxvector_omp_cscal(
 }
 
 /**
- * ‘mtxvector_omp_zscal()’ scales a vector by a complex, double
+ * ‘mtxompvector_zscal()’ scales a vector by a complex, double
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxvector_omp_zscal(
+int mtxompvector_zscal(
     double a[2],
-    struct mtxvector_omp * xomp,
+    struct mtxompvector * xomp,
     int64_t * num_flops)
 {
     struct mtxvector_base * x = &xomp->base;
@@ -2766,16 +2766,16 @@ int mtxvector_omp_zscal(
 }
 
 /**
- * ‘mtxvector_omp_saxpy()’ adds a vector to another one multiplied by
+ * ‘mtxompvector_saxpy()’ adds a vector to another one multiplied by
  * a single precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_saxpy(
+int mtxompvector_saxpy(
     float a,
-    const struct mtxvector_omp * xomp,
-    struct mtxvector_omp * yomp,
+    const struct mtxompvector * xomp,
+    struct mtxompvector * yomp,
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
@@ -2899,16 +2899,16 @@ int mtxvector_omp_saxpy(
 }
 
 /**
- * ‘mtxvector_omp_daxpy()’ adds a vector to another one multiplied by
+ * ‘mtxompvector_daxpy()’ adds a vector to another one multiplied by
  * a double precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_daxpy(
+int mtxompvector_daxpy(
     double a,
-    const struct mtxvector_omp * xomp,
-    struct mtxvector_omp * yomp,
+    const struct mtxompvector * xomp,
+    struct mtxompvector * yomp,
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
@@ -3032,48 +3032,48 @@ int mtxvector_omp_daxpy(
 }
 
 /**
- * ‘mtxvector_omp_caxpy()’ adds a vector to another one multiplied by
+ * ‘mtxompvector_caxpy()’ adds a vector to another one multiplied by
  * a single precision floating point complex number, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_caxpy(
+int mtxompvector_caxpy(
     float a[2],
-    const struct mtxvector_omp * x,
-    struct mtxvector_omp * y,
+    const struct mtxompvector * x,
+    struct mtxompvector * y,
     int64_t * num_flops)
 {
     return MTX_ERR_NOT_SUPPORTED;
 }
 
 /**
- * ‘mtxvector_omp_zaxpy()’ adds a vector to another one multiplied by
+ * ‘mtxompvector_zaxpy()’ adds a vector to another one multiplied by
  * a double precision floating point complex number, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_zaxpy(
+int mtxompvector_zaxpy(
     double a[2],
-    const struct mtxvector_omp * x,
-    struct mtxvector_omp * y,
+    const struct mtxompvector * x,
+    struct mtxompvector * y,
     int64_t * num_flops)
 {
     return MTX_ERR_NOT_SUPPORTED;
 }
 
 /**
- * ‘mtxvector_omp_saypx()’ multiplies a vector by a single precision
+ * ‘mtxompvector_saypx()’ multiplies a vector by a single precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_saypx(
+int mtxompvector_saypx(
     float a,
-    struct mtxvector_omp * yomp,
-    const struct mtxvector_omp * xomp,
+    struct mtxompvector * yomp,
+    const struct mtxompvector * xomp,
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
@@ -3197,16 +3197,16 @@ int mtxvector_omp_saypx(
 }
 
 /**
- * ‘mtxvector_omp_daypx()’ multiplies a vector by a double precision
+ * ‘mtxompvector_daypx()’ multiplies a vector by a double precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_daypx(
+int mtxompvector_daypx(
     double a,
-    struct mtxvector_omp * yomp,
-    const struct mtxvector_omp * xomp,
+    struct mtxompvector * yomp,
+    const struct mtxompvector * xomp,
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
@@ -3330,15 +3330,15 @@ int mtxvector_omp_daypx(
 }
 
 /**
- * ‘mtxvector_omp_sdot()’ computes the Euclidean dot product of two
+ * ‘mtxompvector_sdot()’ computes the Euclidean dot product of two
  * vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_sdot(
-    const struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp,
+int mtxompvector_sdot(
+    const struct mtxompvector * xomp,
+    const struct mtxompvector * yomp,
     float * dot,
     int64_t * num_flops)
 {
@@ -3423,15 +3423,15 @@ int mtxvector_omp_sdot(
 }
 
 /**
- * ‘mtxvector_omp_ddot()’ computes the Euclidean dot product of two
+ * ‘mtxompvector_ddot()’ computes the Euclidean dot product of two
  * vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_ddot(
-    const struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp,
+int mtxompvector_ddot(
+    const struct mtxompvector * xomp,
+    const struct mtxompvector * yomp,
     double * dot,
     int64_t * num_flops)
 {
@@ -3516,16 +3516,16 @@ int mtxvector_omp_ddot(
 }
 
 /**
- * ‘mtxvector_omp_cdotu()’ computes the product of the transpose of a
+ * ‘mtxompvector_cdotu()’ computes the product of the transpose of a
  * complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_cdotu(
-    const struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp,
+int mtxompvector_cdotu(
+    const struct mtxompvector * xomp,
+    const struct mtxompvector * yomp,
     float (* dot)[2],
     int64_t * num_flops)
 {
@@ -3580,23 +3580,23 @@ int mtxvector_omp_cdotu(
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else {
         (*dot)[1] = 0;
-        return mtxvector_omp_sdot(xomp, yomp, &(*dot)[0], num_flops);
+        return mtxompvector_sdot(xomp, yomp, &(*dot)[0], num_flops);
     }
     (*dot)[0] = c0; (*dot)[1] = c1;
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_zdotu()’ computes the product of the transpose of a
+ * ‘mtxompvector_zdotu()’ computes the product of the transpose of a
  * complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_zdotu(
-    const struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp,
+int mtxompvector_zdotu(
+    const struct mtxompvector * xomp,
+    const struct mtxompvector * yomp,
     double (* dot)[2],
     int64_t * num_flops)
 {
@@ -3651,22 +3651,22 @@ int mtxvector_omp_zdotu(
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else {
         (*dot)[1] = 0;
-        return mtxvector_omp_ddot(xomp, yomp, &(*dot)[0], num_flops);
+        return mtxompvector_ddot(xomp, yomp, &(*dot)[0], num_flops);
     }
     (*dot)[0] = c0; (*dot)[1] = c1;
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_cdotc()’ computes the Euclidean dot product of two
+ * ‘mtxompvector_cdotc()’ computes the Euclidean dot product of two
  * complex vectors in single precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_cdotc(
-    const struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp,
+int mtxompvector_cdotc(
+    const struct mtxompvector * xomp,
+    const struct mtxompvector * yomp,
     float (* dot)[2],
     int64_t * num_flops)
 {
@@ -3721,22 +3721,22 @@ int mtxvector_omp_cdotc(
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else {
         (*dot)[1] = 0;
-        return mtxvector_omp_sdot(xomp, yomp, &(*dot)[0], num_flops);
+        return mtxompvector_sdot(xomp, yomp, &(*dot)[0], num_flops);
     }
     (*dot)[0] = c0; (*dot)[1] = c1;
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_zdotc()’ computes the Euclidean dot product of two
+ * ‘mtxompvector_zdotc()’ computes the Euclidean dot product of two
  * complex vectors in double precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
  */
-int mtxvector_omp_zdotc(
-    const struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp,
+int mtxompvector_zdotc(
+    const struct mtxompvector * xomp,
+    const struct mtxompvector * yomp,
     double (* dot)[2],
     int64_t * num_flops)
 {
@@ -3791,18 +3791,18 @@ int mtxvector_omp_zdotc(
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else {
         (*dot)[1] = 0;
-        return mtxvector_omp_ddot(xomp, yomp, &(*dot)[0], num_flops);
+        return mtxompvector_ddot(xomp, yomp, &(*dot)[0], num_flops);
     }
     (*dot)[0] = c0; (*dot)[1] = c1;
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_snrm2()’ computes the Euclidean norm of a vector in
+ * ‘mtxompvector_snrm2()’ computes the Euclidean norm of a vector in
  * single precision floating point.
  */
-int mtxvector_omp_snrm2(
-    const struct mtxvector_omp * xomp,
+int mtxompvector_snrm2(
+    const struct mtxompvector * xomp,
     float * nrm2,
     int64_t * num_flops)
 {
@@ -3910,11 +3910,11 @@ int mtxvector_omp_snrm2(
 }
 
 /**
- * ‘mtxvector_omp_dnrm2()’ computes the Euclidean norm of a vector in
+ * ‘mtxompvector_dnrm2()’ computes the Euclidean norm of a vector in
  * double precision floating point.
  */
-int mtxvector_omp_dnrm2(
-    const struct mtxvector_omp * xomp,
+int mtxompvector_dnrm2(
+    const struct mtxompvector * xomp,
     double * nrm2,
     int64_t * num_flops)
 {
@@ -4022,13 +4022,13 @@ int mtxvector_omp_dnrm2(
 }
 
 /**
- * ‘mtxvector_omp_sasum()’ computes the sum of absolute values
+ * ‘mtxompvector_sasum()’ computes the sum of absolute values
  * (1-norm) of a vector in single precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
  */
-int mtxvector_omp_sasum(
-    const struct mtxvector_omp * xomp,
+int mtxompvector_sasum(
+    const struct mtxompvector * xomp,
     float * asum,
     int64_t * num_flops)
 {
@@ -4136,13 +4136,13 @@ int mtxvector_omp_sasum(
 }
 
 /**
- * ‘mtxvector_omp_dasum()’ computes the sum of absolute values
+ * ‘mtxompvector_dasum()’ computes the sum of absolute values
  * (1-norm) of a vector in double precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
  */
-int mtxvector_omp_dasum(
-    const struct mtxvector_omp * xomp,
+int mtxompvector_dasum(
+    const struct mtxompvector * xomp,
     double * asum,
     int64_t * num_flops)
 {
@@ -4250,13 +4250,13 @@ int mtxvector_omp_dasum(
 }
 
 /**
- * ‘mtxvector_omp_iamax()’ finds the index of the first element having
+ * ‘mtxompvector_iamax()’ finds the index of the first element having
  * the maximum absolute value.  If the vector is complex-valued, then
  * the index points to the first element having the maximum sum of the
  * absolute values of the real and imaginary parts.
  */
-int mtxvector_omp_iamax(
-    const struct mtxvector_omp * xomp,
+int mtxompvector_iamax(
+    const struct mtxompvector * xomp,
     int * iamax)
 {
     const struct mtxvector_base * x = &xomp->base;
@@ -4272,7 +4272,7 @@ int mtxvector_omp_iamax(
  */
 
 /**
- * ‘mtxvector_omp_ussdot()’ computes the Euclidean dot product of two
+ * ‘mtxompvector_ussdot()’ computes the Euclidean dot product of two
  * vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -4280,15 +4280,15 @@ int mtxvector_omp_iamax(
  * indices in the packed vector are not allowed, otherwise the result
  * is undefined.
  */
-int mtxvector_omp_ussdot(
-    const struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp,
+int mtxompvector_ussdot(
+    const struct mtxompvector * xomp,
+    const struct mtxompvector * yomp,
     float * dot,
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    if (!x->idx) return mtxvector_omp_sdot(xomp, yomp, dot, num_flops);
+    if (!x->idx) return mtxompvector_sdot(xomp, yomp, dot, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
@@ -4369,7 +4369,7 @@ int mtxvector_omp_ussdot(
 }
 
 /**
- * ‘mtxvector_omp_usddot()’ computes the Euclidean dot product of two
+ * ‘mtxompvector_usddot()’ computes the Euclidean dot product of two
  * vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -4377,15 +4377,15 @@ int mtxvector_omp_ussdot(
  * indices in the packed vector are not allowed, otherwise the result
  * is undefined.
  */
-int mtxvector_omp_usddot(
-    const struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp,
+int mtxompvector_usddot(
+    const struct mtxompvector * xomp,
+    const struct mtxompvector * yomp,
     double * dot,
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    if (!x->idx) return mtxvector_omp_ddot(xomp, yomp, dot, num_flops);
+    if (!x->idx) return mtxompvector_ddot(xomp, yomp, dot, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
@@ -4466,7 +4466,7 @@ int mtxvector_omp_usddot(
 }
 
 /**
- * ‘mtxvector_omp_uscdotu()’ computes the product of the transpose of
+ * ‘mtxompvector_uscdotu()’ computes the product of the transpose of
  * a complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -4475,15 +4475,15 @@ int mtxvector_omp_usddot(
  * indices in the packed vector are not allowed, otherwise the result
  * is undefined.
  */
-int mtxvector_omp_uscdotu(
-    const struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp,
+int mtxompvector_uscdotu(
+    const struct mtxompvector * xomp,
+    const struct mtxompvector * yomp,
     float (* dot)[2],
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    if (!x->idx) return mtxvector_omp_cdotu(xomp, yomp, dot, num_flops);
+    if (!x->idx) return mtxompvector_cdotu(xomp, yomp, dot, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
@@ -4535,13 +4535,13 @@ int mtxvector_omp_uscdotu(
         (*dot)[0] = c0; (*dot)[1] = c1;
     } else {
         (*dot)[1] = 0;
-        return mtxvector_omp_ussdot(xomp, yomp, &(*dot)[0], num_flops);
+        return mtxompvector_ussdot(xomp, yomp, &(*dot)[0], num_flops);
     }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_uszdotu()’ computes the product of the transpose of
+ * ‘mtxompvector_uszdotu()’ computes the product of the transpose of
  * a complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -4550,15 +4550,15 @@ int mtxvector_omp_uscdotu(
  * indices in the packed vector are not allowed, otherwise the result
  * is undefined.
  */
-int mtxvector_omp_uszdotu(
-    const struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp,
+int mtxompvector_uszdotu(
+    const struct mtxompvector * xomp,
+    const struct mtxompvector * yomp,
     double (* dot)[2],
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    if (!x->idx) return mtxvector_omp_zdotu(xomp, yomp, dot, num_flops);
+    if (!x->idx) return mtxompvector_zdotu(xomp, yomp, dot, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
@@ -4610,13 +4610,13 @@ int mtxvector_omp_uszdotu(
         (*dot)[0] = c0; (*dot)[1] = c1;
     } else {
         (*dot)[1] = 0;
-        return mtxvector_omp_usddot(xomp, yomp, &(*dot)[0], num_flops);
+        return mtxompvector_usddot(xomp, yomp, &(*dot)[0], num_flops);
     }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_uscdotc()’ computes the Euclidean dot product of two
+ * ‘mtxompvector_uscdotc()’ computes the Euclidean dot product of two
  * complex vectors in single precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -4624,15 +4624,15 @@ int mtxvector_omp_uszdotu(
  * indices in the packed vector are not allowed, otherwise the result
  * is undefined.
  */
-int mtxvector_omp_uscdotc(
-    const struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp,
+int mtxompvector_uscdotc(
+    const struct mtxompvector * xomp,
+    const struct mtxompvector * yomp,
     float (* dot)[2],
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    if (!x->idx) return mtxvector_omp_cdotc(xomp, yomp, dot, num_flops);
+    if (!x->idx) return mtxompvector_cdotc(xomp, yomp, dot, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
@@ -4684,13 +4684,13 @@ int mtxvector_omp_uscdotc(
         (*dot)[0] = c0; (*dot)[1] = c1;
     } else {
         (*dot)[1] = 0;
-        return mtxvector_omp_ussdot(xomp, yomp, &(*dot)[0], num_flops);
+        return mtxompvector_ussdot(xomp, yomp, &(*dot)[0], num_flops);
     }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_uszdotc()’ computes the Euclidean dot product of two
+ * ‘mtxompvector_uszdotc()’ computes the Euclidean dot product of two
  * complex vectors in double precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -4698,15 +4698,15 @@ int mtxvector_omp_uscdotc(
  * indices in the packed vector are not allowed, otherwise the result
  * is undefined.
  */
-int mtxvector_omp_uszdotc(
-    const struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp,
+int mtxompvector_uszdotc(
+    const struct mtxompvector * xomp,
+    const struct mtxompvector * yomp,
     double (* dot)[2],
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    if (!x->idx) return mtxvector_omp_zdotc(xomp, yomp, dot, num_flops);
+    if (!x->idx) return mtxompvector_zdotc(xomp, yomp, dot, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
@@ -4758,13 +4758,13 @@ int mtxvector_omp_uszdotc(
         (*dot)[0] = c0; (*dot)[1] = c1;
     } else {
         (*dot)[1] = 0;
-        return mtxvector_omp_usddot(xomp, yomp, &(*dot)[0], num_flops);
+        return mtxompvector_usddot(xomp, yomp, &(*dot)[0], num_flops);
     }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_omp_ussaxpy()’ performs a sparse vector update,
+ * ‘mtxompvector_ussaxpy()’ performs a sparse vector update,
  * multiplying a sparse vector ‘x’ in packed form by a scalar ‘alpha’
  * and adding the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
  *
@@ -4772,15 +4772,15 @@ int mtxvector_omp_uszdotc(
  * size. Repeated indices in the packed vector are not allowed,
  * otherwise the result is undefined.
  */
-int mtxvector_omp_ussaxpy(
+int mtxompvector_ussaxpy(
     float alpha,
-    const struct mtxvector_omp * xomp,
-    struct mtxvector_omp * yomp,
+    const struct mtxompvector * xomp,
+    struct mtxompvector * yomp,
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
-    if (!x->idx) return mtxvector_omp_saxpy(alpha, xomp, yomp, num_flops);
+    if (!x->idx) return mtxompvector_saxpy(alpha, xomp, yomp, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
@@ -4901,7 +4901,7 @@ int mtxvector_omp_ussaxpy(
 }
 
 /**
- * ‘mtxvector_omp_usdaxpy()’ performs a sparse vector update,
+ * ‘mtxompvector_usdaxpy()’ performs a sparse vector update,
  * multiplying a sparse vector ‘x’ in packed form by a scalar ‘alpha’
  * and adding the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
  *
@@ -4909,15 +4909,15 @@ int mtxvector_omp_ussaxpy(
  * size. Repeated indices in the packed vector are not allowed,
  * otherwise the result is undefined.
  */
-int mtxvector_omp_usdaxpy(
+int mtxompvector_usdaxpy(
     double alpha,
-    const struct mtxvector_omp * xomp,
-    struct mtxvector_omp * yomp,
+    const struct mtxompvector * xomp,
+    struct mtxompvector * yomp,
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
-    if (!x->idx) return mtxvector_omp_daxpy(alpha, xomp, yomp, num_flops);
+    if (!x->idx) return mtxompvector_daxpy(alpha, xomp, yomp, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
@@ -5038,7 +5038,7 @@ int mtxvector_omp_usdaxpy(
 }
 
 /**
- * ‘mtxvector_omp_uscaxpy()’ performs a sparse vector update,
+ * ‘mtxompvector_uscaxpy()’ performs a sparse vector update,
  * multiplying a sparse vector ‘x’ in packed form by a scalar ‘alpha’
  * and adding the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
  *
@@ -5046,15 +5046,15 @@ int mtxvector_omp_usdaxpy(
  * size. Repeated indices in the packed vector are not allowed,
  * otherwise the result is undefined.
  */
-int mtxvector_omp_uscaxpy(
+int mtxompvector_uscaxpy(
     float alpha[2],
-    const struct mtxvector_omp * xomp,
-    struct mtxvector_omp * yomp,
+    const struct mtxompvector * xomp,
+    struct mtxompvector * yomp,
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
-    if (!x->idx) return mtxvector_omp_caxpy(alpha, xomp, yomp, num_flops);
+    if (!x->idx) return mtxompvector_caxpy(alpha, xomp, yomp, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
@@ -5107,7 +5107,7 @@ int mtxvector_omp_uscaxpy(
 }
 
 /**
- * ‘mtxvector_omp_uszaxpy()’ performs a sparse vector update,
+ * ‘mtxompvector_uszaxpy()’ performs a sparse vector update,
  * multiplying a sparse vector ‘x’ in packed form by a scalar ‘alpha’
  * and adding the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
  *
@@ -5115,15 +5115,15 @@ int mtxvector_omp_uscaxpy(
  * size. Repeated indices in the packed vector are not allowed,
  * otherwise the result is undefined.
  */
-int mtxvector_omp_uszaxpy(
+int mtxompvector_uszaxpy(
     double alpha[2],
-    const struct mtxvector_omp * xomp,
-    struct mtxvector_omp * yomp,
+    const struct mtxompvector * xomp,
+    struct mtxompvector * yomp,
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
-    if (!x->idx) return mtxvector_omp_zaxpy(alpha, xomp, yomp, num_flops);
+    if (!x->idx) return mtxompvector_zaxpy(alpha, xomp, yomp, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
@@ -5176,13 +5176,13 @@ int mtxvector_omp_uszaxpy(
 }
 
 /**
- * ‘mtxvector_omp_usga()’ performs a gather operation from a vector
+ * ‘mtxompvector_usga()’ performs a gather operation from a vector
  * ‘y’ into a sparse vector ‘x’ in packed form. Repeated indices in
  * the packed vector are allowed.
  */
-int mtxvector_omp_usga(
-    struct mtxvector_omp * xomp,
-    const struct mtxvector_omp * yomp)
+int mtxompvector_usga(
+    struct mtxompvector * xomp,
+    const struct mtxompvector * yomp)
 {
     struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
@@ -5300,14 +5300,14 @@ int mtxvector_omp_usga(
 }
 
 /**
- * ‘mtxvector_omp_usgz()’ performs a gather operation from a vector
+ * ‘mtxompvector_usgz()’ performs a gather operation from a vector
  * ‘y’ into a sparse vector ‘x’ in packed form, while zeroing the
  * values of the source vector ‘y’ that were copied to ‘x’. Repeated
  * indices in the packed vector are allowed.
  */
-int mtxvector_omp_usgz(
-    struct mtxvector_omp * xomp,
-    struct mtxvector_omp * yomp)
+int mtxompvector_usgz(
+    struct mtxompvector * xomp,
+    struct mtxompvector * yomp)
 {
     struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
@@ -5433,13 +5433,13 @@ int mtxvector_omp_usgz(
 }
 
 /**
- * ‘mtxvector_omp_ussc()’ performs a scatter operation to a vector ‘y’
+ * ‘mtxompvector_ussc()’ performs a scatter operation to a vector ‘y’
  * from a sparse vector ‘x’ in packed form. Repeated indices in the
  * packed vector are not allowed, otherwise the result is undefined.
  */
-int mtxvector_omp_ussc(
-    struct mtxvector_omp * yomp,
-    const struct mtxvector_omp * xomp)
+int mtxompvector_ussc(
+    struct mtxompvector * yomp,
+    const struct mtxompvector * xomp)
 {
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
@@ -5563,15 +5563,15 @@ int mtxvector_omp_ussc(
  */
 
 /**
- * ‘mtxvector_omp_usscga()’ performs a combined scatter-gather
+ * ‘mtxompvector_usscga()’ performs a combined scatter-gather
  * operation from a sparse vector ‘x’ in packed form into another
  * sparse vector ‘z’ in packed form. Repeated indices in the packed
  * vector ‘x’ are not allowed, otherwise the result is undefined. They
  * are, however, allowed in the packed vector ‘z’.
  */
-int mtxvector_omp_usscga(
-    struct mtxvector_omp * zomp,
-    const struct mtxvector_omp * xomp)
+int mtxompvector_usscga(
+    struct mtxompvector * zomp,
+    const struct mtxompvector * xomp)
 {
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * z = &zomp->base;
@@ -5580,16 +5580,16 @@ int mtxvector_omp_usscga(
     if (x->precision != z->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != z->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     const int64_t * idx = x->idx;
-    struct mtxvector_omp y;
-    int err = mtxvector_omp_alloc(&y, x->field, x->precision, x->size);
+    struct mtxompvector y;
+    int err = mtxompvector_alloc(&y, x->field, x->precision, x->size);
     if (err) return err;
-    err = mtxvector_omp_setzero(&y);
-    if (err) { mtxvector_omp_free(&y); return err; }
-    err = mtxvector_omp_ussc(&y, xomp);
-    if (err) { mtxvector_omp_free(&y); return err; }
-    err = mtxvector_omp_usga(zomp, &y);
-    if (err) { mtxvector_omp_free(&y); return err; }
-    mtxvector_omp_free(&y);
+    err = mtxompvector_setzero(&y);
+    if (err) { mtxompvector_free(&y); return err; }
+    err = mtxompvector_ussc(&y, xomp);
+    if (err) { mtxompvector_free(&y); return err; }
+    err = mtxompvector_usga(zomp, &y);
+    if (err) { mtxompvector_free(&y); return err; }
+    mtxompvector_free(&y);
     return MTX_SUCCESS;
 }
 
@@ -5599,13 +5599,13 @@ int mtxvector_omp_usscga(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * ‘mtxvector_omp_send()’ sends a vector to another MPI process.
+ * ‘mtxompvector_send()’ sends a vector to another MPI process.
  *
  * This is analogous to ‘MPI_Send()’ and requires the receiving
- * process to perform a matching call to ‘mtxvector_omp_recv()’.
+ * process to perform a matching call to ‘mtxompvector_recv()’.
  */
-int mtxvector_omp_send(
-    const struct mtxvector_omp * x,
+int mtxompvector_send(
+    const struct mtxompvector * x,
     int64_t offset,
     int count,
     int recipient,
@@ -5618,13 +5618,13 @@ int mtxvector_omp_send(
 }
 
 /**
- * ‘mtxvector_omp_recv()’ receives a vector from another MPI process.
+ * ‘mtxompvector_recv()’ receives a vector from another MPI process.
  *
  * This is analogous to ‘MPI_Recv()’ and requires the sending process
- * to perform a matching call to ‘mtxvector_omp_send()’.
+ * to perform a matching call to ‘mtxompvector_send()’.
  */
-int mtxvector_omp_recv(
-    struct mtxvector_omp * x,
+int mtxompvector_recv(
+    struct mtxompvector * x,
     int64_t offset,
     int count,
     int sender,
@@ -5638,14 +5638,14 @@ int mtxvector_omp_recv(
 }
 
 /**
- * ‘mtxvector_omp_irecv()’ performs a non-blocking receive of a
+ * ‘mtxompvector_irecv()’ performs a non-blocking receive of a
  * vector from another MPI process.
  *
  * This is analogous to ‘MPI_Irecv()’ and requires the sending process
- * to perform a matching call to ‘mtxvector_omp_send()’.
+ * to perform a matching call to ‘mtxompvector_send()’.
  */
-int mtxvector_omp_irecv(
-    struct mtxvector_omp * x,
+int mtxompvector_irecv(
+    struct mtxompvector * x,
     int64_t offset,
     int count,
     int sender,
