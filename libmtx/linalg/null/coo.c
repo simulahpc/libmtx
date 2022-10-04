@@ -47,7 +47,7 @@
  */
 enum mtxfield mtxnullcoo_field(const struct mtxnullcoo * A)
 {
-    return mtxmatrix_coo_field(&A->base);
+    return mtxbasecoo_field(&A->base);
 }
 
 /**
@@ -55,7 +55,7 @@ enum mtxfield mtxnullcoo_field(const struct mtxnullcoo * A)
  */
 enum mtxprecision mtxnullcoo_precision(const struct mtxnullcoo * A)
 {
-    return mtxmatrix_coo_precision(&A->base);
+    return mtxbasecoo_precision(&A->base);
 }
 
 /**
@@ -63,7 +63,7 @@ enum mtxprecision mtxnullcoo_precision(const struct mtxnullcoo * A)
  */
 enum mtxsymmetry mtxnullcoo_symmetry(const struct mtxnullcoo * A)
 {
-    return mtxmatrix_coo_symmetry(&A->base);
+    return mtxbasecoo_symmetry(&A->base);
 }
 
 /**
@@ -71,7 +71,7 @@ enum mtxsymmetry mtxnullcoo_symmetry(const struct mtxnullcoo * A)
  */
 int mtxnullcoo_num_rows(const struct mtxnullcoo * A)
 {
-    return mtxmatrix_coo_num_rows(&A->base);
+    return mtxbasecoo_num_rows(&A->base);
 }
 
 /**
@@ -79,7 +79,7 @@ int mtxnullcoo_num_rows(const struct mtxnullcoo * A)
  */
 int mtxnullcoo_num_columns(const struct mtxnullcoo * A)
 {
-    return mtxmatrix_coo_num_columns(&A->base);
+    return mtxbasecoo_num_columns(&A->base);
 }
 
 /**
@@ -89,7 +89,7 @@ int mtxnullcoo_num_columns(const struct mtxnullcoo * A)
  */
 int64_t mtxnullcoo_num_nonzeros(const struct mtxnullcoo * A)
 {
-    return mtxmatrix_coo_num_nonzeros(&A->base);
+    return mtxbasecoo_num_nonzeros(&A->base);
 }
 
 /**
@@ -98,7 +98,7 @@ int64_t mtxnullcoo_num_nonzeros(const struct mtxnullcoo * A)
  */
 int64_t mtxnullcoo_size(const struct mtxnullcoo * A)
 {
-    return mtxmatrix_coo_size(&A->base);
+    return mtxbasecoo_size(&A->base);
 }
 
 /**
@@ -114,7 +114,7 @@ int mtxnullcoo_rowcolidx(
     int * rowidx,
     int * colidx)
 {
-    return mtxmatrix_coo_rowcolidx(&A->base, size, rowidx, colidx);
+    return mtxbasecoo_rowcolidx(&A->base, size, rowidx, colidx);
 }
 
 /*
@@ -127,7 +127,7 @@ int mtxnullcoo_rowcolidx(
 void mtxnullcoo_free(
     struct mtxnullcoo * A)
 {
-    mtxmatrix_coo_free(&A->base);
+    mtxbasecoo_free(&A->base);
 }
 
 /**
@@ -138,7 +138,7 @@ int mtxnullcoo_alloc_copy(
     struct mtxnullcoo * dst,
     const struct mtxnullcoo * src)
 {
-    return mtxmatrix_coo_alloc_copy(&dst->base, &src->base);
+    return mtxbasecoo_alloc_copy(&dst->base, &src->base);
 }
 
 /**
@@ -149,7 +149,7 @@ int mtxnullcoo_init_copy(
     struct mtxnullcoo * dst,
     const struct mtxnullcoo * src)
 {
-    return mtxmatrix_coo_init_copy(&dst->base, &src->base);
+    return mtxbasecoo_init_copy(&dst->base, &src->base);
 }
 
 /*
@@ -173,7 +173,7 @@ int mtxnullcoo_alloc_entries(
     const int * rowidx,
     const int * colidx)
 {
-    return mtxmatrix_coo_alloc_entries(
+    return mtxbasecoo_alloc_entries(
         &A->base, field, precision, symmetry, num_rows, num_columns, size,
         idxstride, idxbase, rowidx, colidx);
 }
@@ -193,7 +193,7 @@ int mtxnullcoo_init_entries_real_single(
     const int * colidx,
     const float * data)
 {
-    return mtxmatrix_coo_init_entries_real_single(
+    return mtxbasecoo_init_entries_real_single(
         &A->base, symmetry, num_rows, num_columns, size, rowidx, colidx, data);
 }
 
@@ -212,7 +212,7 @@ int mtxnullcoo_init_entries_real_double(
     const int * colidx,
     const double * data)
 {
-    return mtxmatrix_coo_init_entries_real_double(
+    return mtxbasecoo_init_entries_real_double(
         &A->base, symmetry, num_rows, num_columns, size, rowidx, colidx, data);
 }
 
@@ -231,7 +231,7 @@ int mtxnullcoo_init_entries_complex_single(
     const int * colidx,
     const float (* data)[2])
 {
-    return mtxmatrix_coo_init_entries_complex_single(
+    return mtxbasecoo_init_entries_complex_single(
         &A->base, symmetry, num_rows, num_columns, size, rowidx, colidx, data);
 }
 
@@ -250,7 +250,7 @@ int mtxnullcoo_init_entries_complex_double(
     const int * colidx,
     const double (* data)[2])
 {
-    return mtxmatrix_coo_init_entries_complex_double(
+    return mtxbasecoo_init_entries_complex_double(
         &A->base, symmetry, num_rows, num_columns, size, rowidx, colidx, data);
 }
 
@@ -269,7 +269,7 @@ int mtxnullcoo_init_entries_integer_single(
     const int * colidx,
     const int32_t * data)
 {
-    return mtxmatrix_coo_init_entries_integer_single(
+    return mtxbasecoo_init_entries_integer_single(
         &A->base, symmetry, num_rows, num_columns, size, rowidx, colidx, data);
 }
 
@@ -288,7 +288,7 @@ int mtxnullcoo_init_entries_integer_double(
     const int * colidx,
     const int64_t * data)
 {
-    return mtxmatrix_coo_init_entries_integer_double(
+    return mtxbasecoo_init_entries_integer_double(
         &A->base, symmetry, num_rows, num_columns, size, rowidx, colidx, data);
 }
 
@@ -306,7 +306,7 @@ int mtxnullcoo_init_entries_pattern(
     const int * rowidx,
     const int * colidx)
 {
-    return mtxmatrix_coo_init_entries_pattern(
+    return mtxbasecoo_init_entries_pattern(
         &A->base, symmetry, num_rows, num_columns, size, rowidx, colidx);
 }
 
@@ -457,7 +457,7 @@ int mtxnullcoo_alloc_rows(
     const int64_t * rowptr,
     const int * colidx)
 {
-    return mtxmatrix_coo_alloc_rows(
+    return mtxbasecoo_alloc_rows(
         &A->base, field, precision, symmetry,
         num_rows, num_columns, rowptr, colidx);
 }
@@ -476,7 +476,7 @@ int mtxnullcoo_init_rows_real_single(
     const int * colidx,
     const float * data)
 {
-    return mtxmatrix_coo_init_rows_real_single(
+    return mtxbasecoo_init_rows_real_single(
         &A->base, symmetry, num_rows, num_columns, rowptr, colidx, data);
 }
 
@@ -494,7 +494,7 @@ int mtxnullcoo_init_rows_real_double(
     const int * colidx,
     const double * data)
 {
-    return mtxmatrix_coo_init_rows_real_double(
+    return mtxbasecoo_init_rows_real_double(
         &A->base, symmetry, num_rows, num_columns, rowptr, colidx, data);
 }
 
@@ -512,7 +512,7 @@ int mtxnullcoo_init_rows_complex_single(
     const int * colidx,
     const float (* data)[2])
 {
-    return mtxmatrix_coo_init_rows_complex_single(
+    return mtxbasecoo_init_rows_complex_single(
         &A->base, symmetry, num_rows, num_columns, rowptr, colidx, data);
 }
 
@@ -530,7 +530,7 @@ int mtxnullcoo_init_rows_complex_double(
     const int * colidx,
     const double (* data)[2])
 {
-    return mtxmatrix_coo_init_rows_complex_double(
+    return mtxbasecoo_init_rows_complex_double(
         &A->base, symmetry, num_rows, num_columns, rowptr, colidx, data);
 }
 
@@ -548,7 +548,7 @@ int mtxnullcoo_init_rows_integer_single(
     const int * colidx,
     const int32_t * data)
 {
-    return mtxmatrix_coo_init_rows_integer_single(
+    return mtxbasecoo_init_rows_integer_single(
         &A->base, symmetry, num_rows, num_columns, rowptr, colidx, data);
 }
 
@@ -566,7 +566,7 @@ int mtxnullcoo_init_rows_integer_double(
     const int * colidx,
     const int64_t * data)
 {
-    return mtxmatrix_coo_init_rows_integer_double(
+    return mtxbasecoo_init_rows_integer_double(
         &A->base, symmetry, num_rows, num_columns, rowptr, colidx, data);
 }
 
@@ -583,7 +583,7 @@ int mtxnullcoo_init_rows_pattern(
     const int64_t * rowptr,
     const int * colidx)
 {
-    return mtxmatrix_coo_init_rows_pattern(
+    return mtxbasecoo_init_rows_pattern(
         &A->base, symmetry, num_rows, num_columns, rowptr, colidx);
 }
 
@@ -843,7 +843,7 @@ int mtxnullcoo_init_cliques_pattern(
 int mtxnullcoo_setzero(
     struct mtxnullcoo * A)
 {
-    return mtxmatrix_coo_setzero(&A->base);
+    return mtxbasecoo_setzero(&A->base);
 }
 
 /**
@@ -856,7 +856,7 @@ int mtxnullcoo_set_real_single(
     int stride,
     const float * a)
 {
-    return mtxmatrix_coo_set_real_single(&A->base, size, stride, a);
+    return mtxbasecoo_set_real_single(&A->base, size, stride, a);
 }
 
 /**
@@ -869,7 +869,7 @@ int mtxnullcoo_set_real_double(
     int stride,
     const double * a)
 {
-    return mtxmatrix_coo_set_real_double(&A->base, size, stride, a);
+    return mtxbasecoo_set_real_double(&A->base, size, stride, a);
 }
 
 /**
@@ -882,7 +882,7 @@ int mtxnullcoo_set_complex_single(
     int stride,
     const float (*a)[2])
 {
-    return mtxmatrix_coo_set_complex_single(&A->base, size, stride, a);
+    return mtxbasecoo_set_complex_single(&A->base, size, stride, a);
 }
 
 /**
@@ -895,7 +895,7 @@ int mtxnullcoo_set_complex_double(
     int stride,
     const double (*a)[2])
 {
-    return mtxmatrix_coo_set_complex_double(&A->base, size, stride, a);
+    return mtxbasecoo_set_complex_double(&A->base, size, stride, a);
 }
 
 /**
@@ -908,7 +908,7 @@ int mtxnullcoo_set_integer_single(
     int stride,
     const int32_t * a)
 {
-    return mtxmatrix_coo_set_integer_single(&A->base, size, stride, a);
+    return mtxbasecoo_set_integer_single(&A->base, size, stride, a);
 }
 
 /**
@@ -921,7 +921,7 @@ int mtxnullcoo_set_integer_double(
     int stride,
     const int64_t * a)
 {
-    return mtxmatrix_coo_set_integer_double(&A->base, size, stride, a);
+    return mtxbasecoo_set_integer_double(&A->base, size, stride, a);
 }
 
 /*
@@ -938,7 +938,7 @@ int mtxnullcoo_alloc_row_vector(
     struct mtxvector * x,
     enum mtxvectortype vectortype)
 {
-    return mtxmatrix_coo_alloc_row_vector(&A->base, x, vectortype);
+    return mtxbasecoo_alloc_row_vector(&A->base, x, vectortype);
 }
 
 /**
@@ -951,7 +951,7 @@ int mtxnullcoo_alloc_column_vector(
     struct mtxvector * y,
     enum mtxvectortype vectortype)
 {
-    return mtxmatrix_coo_alloc_column_vector(&A->base, y, vectortype);
+    return mtxbasecoo_alloc_column_vector(&A->base, y, vectortype);
 }
 
 /*
@@ -966,7 +966,7 @@ int mtxnullcoo_from_mtxfile(
     struct mtxnullcoo * A,
     const struct mtxfile * mtxfile)
 {
-    return mtxmatrix_coo_from_mtxfile(&A->base, mtxfile);
+    return mtxbasecoo_from_mtxfile(&A->base, mtxfile);
 }
 
 /**
@@ -982,7 +982,7 @@ int mtxnullcoo_to_mtxfile(
     const int64_t * colidx,
     enum mtxfileformat mtxfmt)
 {
-    return mtxmatrix_coo_to_mtxfile(
+    return mtxbasecoo_to_mtxfile(
         mtxfile, &A->base, num_rows, rowidx, num_columns, colidx, mtxfmt);
 }
 
@@ -1025,7 +1025,7 @@ int mtxnullcoo_partition_rowwise(
     int * dstrowpart,
     int64_t * dstrowpartsizes)
 {
-    return mtxmatrix_coo_partition_rowwise(
+    return mtxbasecoo_partition_rowwise(
         &A->base, parttype, num_parts, partsizes, blksize, parts,
         dstnzpart, dstnzpartsizes, dstrowpart, dstrowpartsizes);
 }
@@ -1065,7 +1065,7 @@ int mtxnullcoo_partition_columnwise(
     int * dstcolpart,
     int64_t * dstcolpartsizes)
 {
-    return mtxmatrix_coo_partition_columnwise(
+    return mtxbasecoo_partition_columnwise(
         &A->base, parttype, num_parts, partsizes, blksize, parts,
         dstnzpart, dstnzpartsizes, dstcolpart, dstcolpartsizes);
 }
@@ -1113,7 +1113,7 @@ int mtxnullcoo_partition_2d(
     int * dstcolpart,
     int64_t * dstcolpartsizes)
 {
-    return mtxmatrix_coo_partition_2d(
+    return mtxbasecoo_partition_2d(
         &A->base,
         rowparttype, num_row_parts, rowpartsizes, rowblksize, rowparts,
         colparttype, num_col_parts, colpartsizes, colblksize, colparts,
@@ -1149,11 +1149,11 @@ int mtxnullcoo_split(
     int64_t size,
     int * parts)
 {
-    struct mtxmatrix_coo ** coodsts = malloc(
-        num_parts * sizeof(struct mtxmatrix_coo *));
+    struct mtxbasecoo ** coodsts = malloc(
+        num_parts * sizeof(struct mtxbasecoo *));
     if (!coodsts) return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) coodsts[p] = &dsts[p]->base;
-    int err = mtxmatrix_coo_split(num_parts, coodsts, &src->base, size, parts);
+    int err = mtxbasecoo_split(num_parts, coodsts, &src->base, size, parts);
     free(coodsts);
     return err;
 }

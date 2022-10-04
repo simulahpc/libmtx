@@ -611,7 +611,7 @@ struct mtxmatrix @{
     enum mtxmatrixtype type;
     union @{
         struct mtxmatrix_array array;
-        struct mtxmatrix_coo coordinate;
+        struct mtxbasecoo coordinate;
     @} storage;
 @};
 @end example
@@ -631,7 +631,7 @@ formats.
 enum mtxmatrixtype @{
     mtxmatrix_auto,       /* automatic selection of matrix type */
     mtxmatrix_array,      /* array format for dense matrices */
-    mtxmatrix_coo, /* coordinate format for sparse matrices */
+    mtxbasecoo, /* coordinate format for sparse matrices */
 @};
 @end example
 
@@ -849,7 +849,7 @@ format or implementation for @code{mtxmatrix}. If @code{type} is
 @samp{mtxmatrix_auto}, then the type of @code{mtxmatrix} is chosen to
 match the type of @code{mtxfile}. That is, @samp{mtxmatrix_array} is
 used if @code{mtxfile} is a matrix in array format, and
-@samp{mtxmatrix_coo} is used if @code{mtxfile} is a matrix in
+@samp{mtxbasecoo} is used if @code{mtxfile} is a matrix in
 coordinate format.
 
 Conversely, having performed the necessary computations, it is

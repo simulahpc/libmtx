@@ -61,7 +61,7 @@ struct mtxvector;
 enum mtxmatrixtype
 {
     mtxblasdense,         /* dense matrices with BLAS-accelerated operations */
-    mtxmatrix_coo,        /* coordinate format */
+    mtxbasecoo,           /* coordinate format */
     mtxmatrix_csr,        /* compressed sparse row */
     mtxbasedense,         /* dense matrices */
     mtxnullcoo,           /* coordinate format where matrix operations
@@ -128,7 +128,7 @@ struct mtxmatrix
 #ifdef LIBMTX_HAVE_BLAS
         struct mtxblasdense blas;
 #endif
-        struct mtxmatrix_coo coo;
+        struct mtxbasecoo coo;
         struct mtxmatrix_csr csr;
         struct mtxbasedense dense;
         struct mtxnullcoo nullcoo;

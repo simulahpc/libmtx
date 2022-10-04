@@ -53,7 +53,7 @@ struct mtxmatrix;
  */
 struct mtxnullcoo
 {
-    struct mtxmatrix_coo base;
+    struct mtxbasecoo base;
 };
 
 

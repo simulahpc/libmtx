@@ -83,7 +83,7 @@ static int program_options_init(
     args->x_path = NULL;
     args->format = NULL;
     args->precision = mtx_double;
-    args->matrix_type = mtxmatrix_coo;
+    args->matrix_type = mtxbasecoo;
     args->vector_type = mtxbasevector;
     args->atol = 0;
     args->rtol = 1e-6;

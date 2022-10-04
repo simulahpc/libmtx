@@ -1299,8 +1299,8 @@ int mtxompcsr_from_mtxfile(
     struct mtxompcsr * A,
     const struct mtxfile * mtxfile)
 {
-    struct mtxmatrix_coo coo;
-    int err = mtxmatrix_coo_from_mtxfile(&coo, mtxfile);
+    struct mtxbasecoo coo;
+    int err = mtxbasecoo_from_mtxfile(&coo, mtxfile);
     if (err) return err;
     if (mtxfile->header.field == mtxfile_real) {
         if (mtxfile->precision == mtx_single) {
@@ -1311,7 +1311,7 @@ int mtxompcsr_from_mtxfile(
             err = mtxompcsr_init_entries_real_double(
                 A, coo.symmetry, coo.num_rows, coo.num_columns,
                 coo.size, coo.rowidx, coo.colidx, coo.a.data.real_double);
-        } else { mtxmatrix_coo_free(&coo); return MTX_ERR_INVALID_PRECISION; }
+        } else { mtxbasecoo_free(&coo); return MTX_ERR_INVALID_PRECISION; }
     } else if (mtxfile->header.field == mtxfile_complex) {
         if (mtxfile->precision == mtx_single) {
             err = mtxompcsr_init_entries_complex_single(
@@ -1321,7 +1321,7 @@ int mtxompcsr_from_mtxfile(
             err = mtxompcsr_init_entries_complex_double(
                 A, coo.symmetry, coo.num_rows, coo.num_columns,
                 coo.size, coo.rowidx, coo.colidx, coo.a.data.complex_double);
-        } else { mtxmatrix_coo_free(&coo); return MTX_ERR_INVALID_PRECISION; }
+        } else { mtxbasecoo_free(&coo); return MTX_ERR_INVALID_PRECISION; }
     } else if (mtxfile->header.field == mtxfile_integer) {
         if (mtxfile->precision == mtx_single) {
             err = mtxompcsr_init_entries_integer_single(
@@ -1331,14 +1331,14 @@ int mtxompcsr_from_mtxfile(
             err = mtxompcsr_init_entries_integer_double(
                 A, coo.symmetry, coo.num_rows, coo.num_columns,
                 coo.size, coo.rowidx, coo.colidx, coo.a.data.integer_double);
-        } else { mtxmatrix_coo_free(&coo); return MTX_ERR_INVALID_PRECISION; }
+        } else { mtxbasecoo_free(&coo); return MTX_ERR_INVALID_PRECISION; }
     } else if (mtxfile->header.field == mtxfile_pattern) {
         err = mtxompcsr_init_entries_pattern(
             A, coo.symmetry, coo.num_rows, coo.num_columns,
             coo.size, coo.rowidx, coo.colidx);
-    } else { mtxmatrix_coo_free(&coo); return MTX_ERR_INVALID_MTX_FIELD; }
-    if (err) { mtxmatrix_coo_free(&coo); return err; }
-    mtxmatrix_coo_free(&coo);
+    } else { mtxbasecoo_free(&coo); return MTX_ERR_INVALID_MTX_FIELD; }
+    if (err) { mtxbasecoo_free(&coo); return err; }
+    mtxbasecoo_free(&coo);
     return MTX_SUCCESS;
 }
 
