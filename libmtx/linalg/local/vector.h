@@ -16,13 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-07-11
+ * Last modified: 2022-10-03
  *
  * Data structures for vectors.
  */
 
-#ifndef LIBMTX_VECTOR_VECTOR_H
-#define LIBMTX_VECTOR_VECTOR_H
+#ifndef LIBMTX_LINALG_LOCAL_VECTOR_H
+#define LIBMTX_LINALG_LOCAL_VECTOR_H
 
 #include <libmtx/libmtx-config.h>
 
