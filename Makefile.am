@@ -263,11 +263,11 @@ check_PROGRAMS += tests/test_mtxvector_base
 TESTS += tests/test_mtxvector_base
 
 if HAVE_BLAS
-tests_test_mtxvector_blas_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxvector_blas_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxvector_blas_SOURCES = tests/test_mtxvector_blas.c tests/test.h
-check_PROGRAMS += tests/test_mtxvector_blas
-TESTS += tests/test_mtxvector_blas
+tests_test_mtxblasvector_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxblasvector_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxblasvector_SOURCES = tests/test_mtxblasvector.c tests/test.h
+check_PROGRAMS += tests/test_mtxblasvector
+TESTS += tests/test_mtxblasvector
 endif
 
 if HAVE_OPENMP

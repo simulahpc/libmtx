@@ -51,12 +51,12 @@
  */
 enum mtxvectortype
 {
-    mtxvector_base,       /* basic dense vectors */
-    mtxvector_blas,       /* dense vectors with vector operations
+    mtxvector_base,       /* basic vectors */
+    mtxblasvector,        /* vectors with vector operations
                            * performed by an external BLAS library */
-    mtxnullvector,        /* dense vectors where vector operations do
+    mtxnullvector,        /* vectors where vector operations do
                            * nothing (for debugging purposes) */
-    mtxvector_omp,        /* dense vectors using OpenMP for shared
+    mtxvector_omp,        /* vectors using OpenMP for shared
                            * memory parallel operations */
 };
 
@@ -116,9 +116,7 @@ struct mtxvector
     union
     {
         struct mtxvector_base base;
-#ifdef LIBMTX_HAVE_BLAS
-        struct mtxvector_blas blas;
-#endif
+        struct mtxblasvector blas;
         struct mtxnullvector null;
 #ifdef LIBMTX_HAVE_OPENMP
         struct mtxvector_omp omp;

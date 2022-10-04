@@ -82,7 +82,7 @@ struct mtxmatrix_blas
     /**
      * ‘a’ is a vector storing the underlying nonzero matrix entries.
      */
-    struct mtxvector_blas a;
+    struct mtxblasvector a;
 };
 
 /*

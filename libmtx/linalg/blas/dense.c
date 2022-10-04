@@ -54,7 +54,7 @@
  */
 enum mtxfield mtxmatrix_blas_field(const struct mtxmatrix_blas * A)
 {
-    return mtxvector_blas_field(&A->a);
+    return mtxblasvector_field(&A->a);
 }
 
 /**
@@ -62,7 +62,7 @@ enum mtxfield mtxmatrix_blas_field(const struct mtxmatrix_blas * A)
  */
 enum mtxprecision mtxmatrix_blas_precision(const struct mtxmatrix_blas * A)
 {
-    return mtxvector_blas_precision(&A->a);
+    return mtxblasvector_precision(&A->a);
 }
 
 /**
@@ -161,7 +161,7 @@ int mtxmatrix_blas_rowcolidx(
 void mtxmatrix_blas_free(
     struct mtxmatrix_blas * A)
 {
-    mtxvector_blas_free(&A->a);
+    mtxblasvector_free(&A->a);
 }
 
 /**
@@ -235,7 +235,7 @@ int mtxmatrix_blas_alloc_entries(
         A->num_nonzeros = num_entries-num_rows;
         A->size = num_rows*(num_columns-1)/2;
     } else { return MTX_ERR_INVALID_SYMMETRY; }
-    return mtxvector_blas_alloc(&A->a, field, precision, A->size);
+    return mtxblasvector_alloc(&A->a, field, precision, A->size);
 }
 
 static int mtxmatrix_blas_init_entries_idx(
@@ -303,14 +303,14 @@ int mtxmatrix_blas_init_entries_real_single(
     err = mtxmatrix_blas_init_entries_idx(
         A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
-    struct mtxvector_blas x;
-    err = mtxvector_blas_init_packed_real_single(
+    struct mtxblasvector x;
+    err = mtxblasvector_init_packed_real_single(
         &x, A->size, size, idx, data);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
     free(idx);
-    err = mtxvector_blas_ussc(&A->a, &x);
-    if (err) { mtxvector_blas_free(&x); mtxmatrix_blas_free(A); return err; }
-    mtxvector_blas_free(&x);
+    err = mtxblasvector_ussc(&A->a, &x);
+    if (err) { mtxblasvector_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxblasvector_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -340,14 +340,14 @@ int mtxmatrix_blas_init_entries_real_double(
     err = mtxmatrix_blas_init_entries_idx(
         A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
-    struct mtxvector_blas x;
-    err = mtxvector_blas_init_packed_real_double(
+    struct mtxblasvector x;
+    err = mtxblasvector_init_packed_real_double(
         &x, A->size, size, idx, data);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
     free(idx);
-    err = mtxvector_blas_ussc(&A->a, &x);
-    if (err) { mtxvector_blas_free(&x); mtxmatrix_blas_free(A); return err; }
-    mtxvector_blas_free(&x);
+    err = mtxblasvector_ussc(&A->a, &x);
+    if (err) { mtxblasvector_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxblasvector_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -377,14 +377,14 @@ int mtxmatrix_blas_init_entries_complex_single(
     err = mtxmatrix_blas_init_entries_idx(
         A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
-    struct mtxvector_blas x;
-    err = mtxvector_blas_init_packed_complex_single(
+    struct mtxblasvector x;
+    err = mtxblasvector_init_packed_complex_single(
         &x, A->size, size, idx, data);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
     free(idx);
-    err = mtxvector_blas_ussc(&A->a, &x);
-    if (err) { mtxvector_blas_free(&x); mtxmatrix_blas_free(A); return err; }
-    mtxvector_blas_free(&x);
+    err = mtxblasvector_ussc(&A->a, &x);
+    if (err) { mtxblasvector_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxblasvector_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -414,14 +414,14 @@ int mtxmatrix_blas_init_entries_complex_double(
     err = mtxmatrix_blas_init_entries_idx(
         A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
-    struct mtxvector_blas x;
-    err = mtxvector_blas_init_packed_complex_double(
+    struct mtxblasvector x;
+    err = mtxblasvector_init_packed_complex_double(
         &x, A->size, size, idx, data);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
     free(idx);
-    err = mtxvector_blas_ussc(&A->a, &x);
-    if (err) { mtxvector_blas_free(&x); mtxmatrix_blas_free(A); return err; }
-    mtxvector_blas_free(&x);
+    err = mtxblasvector_ussc(&A->a, &x);
+    if (err) { mtxblasvector_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxblasvector_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -451,14 +451,14 @@ int mtxmatrix_blas_init_entries_integer_single(
     err = mtxmatrix_blas_init_entries_idx(
         A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
-    struct mtxvector_blas x;
-    err = mtxvector_blas_init_packed_integer_single(
+    struct mtxblasvector x;
+    err = mtxblasvector_init_packed_integer_single(
         &x, A->size, size, idx, data);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
     free(idx);
-    err = mtxvector_blas_ussc(&A->a, &x);
-    if (err) { mtxvector_blas_free(&x); mtxmatrix_blas_free(A); return err; }
-    mtxvector_blas_free(&x);
+    err = mtxblasvector_ussc(&A->a, &x);
+    if (err) { mtxblasvector_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxblasvector_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -488,14 +488,14 @@ int mtxmatrix_blas_init_entries_integer_double(
     err = mtxmatrix_blas_init_entries_idx(
         A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
-    struct mtxvector_blas x;
-    err = mtxvector_blas_init_packed_integer_double(
+    struct mtxblasvector x;
+    err = mtxblasvector_init_packed_integer_double(
         &x, A->size, size, idx, data);
     if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
     free(idx);
-    err = mtxvector_blas_ussc(&A->a, &x);
-    if (err) { mtxvector_blas_free(&x); mtxmatrix_blas_free(A); return err; }
-    mtxvector_blas_free(&x);
+    err = mtxblasvector_ussc(&A->a, &x);
+    if (err) { mtxblasvector_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxblasvector_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -1016,7 +1016,7 @@ int mtxmatrix_blas_init_cliques_pattern(
 int mtxmatrix_blas_setzero(
     struct mtxmatrix_blas * A)
 {
-    return mtxvector_blas_setzero(&A->a);
+    return mtxblasvector_setzero(&A->a);
 }
 
 /**
@@ -1029,7 +1029,7 @@ int mtxmatrix_blas_set_real_single(
     int stride,
     const float * a)
 {
-    return mtxvector_blas_set_real_single(&A->a, size, stride, a);
+    return mtxblasvector_set_real_single(&A->a, size, stride, a);
 }
 
 /**
@@ -1042,7 +1042,7 @@ int mtxmatrix_blas_set_real_double(
     int stride,
     const double * a)
 {
-    return mtxvector_blas_set_real_double(&A->a, size, stride, a);
+    return mtxblasvector_set_real_double(&A->a, size, stride, a);
 }
 
 /**
@@ -1056,7 +1056,7 @@ int mtxmatrix_blas_set_complex_single(
     int stride,
     const float (*a)[2])
 {
-    return mtxvector_blas_set_complex_single(&A->a, size, stride, a);
+    return mtxblasvector_set_complex_single(&A->a, size, stride, a);
 }
 
 /**
@@ -1070,7 +1070,7 @@ int mtxmatrix_blas_set_complex_double(
     int stride,
     const double (*a)[2])
 {
-    return mtxvector_blas_set_complex_double(&A->a, size, stride, a);
+    return mtxblasvector_set_complex_double(&A->a, size, stride, a);
 }
 
 /**
@@ -1083,7 +1083,7 @@ int mtxmatrix_blas_set_integer_single(
     int stride,
     const int32_t * a)
 {
-    return mtxvector_blas_set_integer_single(&A->a, size, stride, a);
+    return mtxblasvector_set_integer_single(&A->a, size, stride, a);
 }
 
 /**
@@ -1096,7 +1096,7 @@ int mtxmatrix_blas_set_integer_double(
     int stride,
     const int64_t * a)
 {
-    return mtxvector_blas_set_integer_double(&A->a, size, stride, a);
+    return mtxblasvector_set_integer_double(&A->a, size, stride, a);
 }
 
 /*
@@ -1718,7 +1718,7 @@ int mtxmatrix_blas_swap(
     struct mtxmatrix_blas * x,
     struct mtxmatrix_blas * y)
 {
-    return mtxvector_blas_swap(&x->a, &y->a);
+    return mtxblasvector_swap(&x->a, &y->a);
 }
 
 /**
@@ -1732,7 +1732,7 @@ int mtxmatrix_blas_copy(
     struct mtxmatrix_blas * y,
     const struct mtxmatrix_blas * x)
 {
-    return mtxvector_blas_copy(&y->a, &x->a);
+    return mtxblasvector_copy(&y->a, &x->a);
 }
 
 /**
@@ -1744,7 +1744,7 @@ int mtxmatrix_blas_sscal(
     struct mtxmatrix_blas * x,
     int64_t * num_flops)
 {
-    return mtxvector_blas_sscal(a, &x->a, num_flops);
+    return mtxblasvector_sscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1756,7 +1756,7 @@ int mtxmatrix_blas_dscal(
     struct mtxmatrix_blas * x,
     int64_t * num_flops)
 {
-    return mtxvector_blas_dscal(a, &x->a, num_flops);
+    return mtxblasvector_dscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1768,7 +1768,7 @@ int mtxmatrix_blas_cscal(
     struct mtxmatrix_blas * x,
     int64_t * num_flops)
 {
-    return mtxvector_blas_cscal(a, &x->a, num_flops);
+    return mtxblasvector_cscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1780,7 +1780,7 @@ int mtxmatrix_blas_zscal(
     struct mtxmatrix_blas * x,
     int64_t * num_flops)
 {
-    return mtxvector_blas_zscal(a, &x->a, num_flops);
+    return mtxblasvector_zscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1797,7 +1797,7 @@ int mtxmatrix_blas_saxpy(
     struct mtxmatrix_blas * y,
     int64_t * num_flops)
 {
-    return mtxvector_blas_saxpy(a, &x->a, &y->a, num_flops);
+    return mtxblasvector_saxpy(a, &x->a, &y->a, num_flops);
 }
 
 /**
@@ -1814,7 +1814,7 @@ int mtxmatrix_blas_daxpy(
     struct mtxmatrix_blas * y,
     int64_t * num_flops)
 {
-    return mtxvector_blas_daxpy(a, &x->a, &y->a, num_flops);
+    return mtxblasvector_daxpy(a, &x->a, &y->a, num_flops);
 }
 
 /**
@@ -1831,7 +1831,7 @@ int mtxmatrix_blas_saypx(
     const struct mtxmatrix_blas * x,
     int64_t * num_flops)
 {
-    return mtxvector_blas_saypx(a, &y->a, &x->a, num_flops);
+    return mtxblasvector_saypx(a, &y->a, &x->a, num_flops);
 }
 
 /**
@@ -1848,7 +1848,7 @@ int mtxmatrix_blas_daypx(
     const struct mtxmatrix_blas * x,
     int64_t * num_flops)
 {
-    return mtxvector_blas_daypx(a, &y->a, &x->a, num_flops);
+    return mtxblasvector_daypx(a, &y->a, &x->a, num_flops);
 }
 
 /**
@@ -1865,7 +1865,7 @@ int mtxmatrix_blas_sdot(
     float * dot,
     int64_t * num_flops)
 {
-    return mtxvector_blas_sdot(&x->a, &y->a, dot, num_flops);
+    return mtxblasvector_sdot(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1882,7 +1882,7 @@ int mtxmatrix_blas_ddot(
     double * dot,
     int64_t * num_flops)
 {
-    return mtxvector_blas_ddot(&x->a, &y->a, dot, num_flops);
+    return mtxblasvector_ddot(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1900,7 +1900,7 @@ int mtxmatrix_blas_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_blas_cdotu(&x->a, &y->a, dot, num_flops);
+    return mtxblasvector_cdotu(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1918,7 +1918,7 @@ int mtxmatrix_blas_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_blas_zdotu(&x->a, &y->a, dot, num_flops);
+    return mtxblasvector_zdotu(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1936,7 +1936,7 @@ int mtxmatrix_blas_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_blas_cdotc(&x->a, &y->a, dot, num_flops);
+    return mtxblasvector_cdotc(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1954,7 +1954,7 @@ int mtxmatrix_blas_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_blas_zdotc(&x->a, &y->a, dot, num_flops);
+    return mtxblasvector_zdotc(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1966,7 +1966,7 @@ int mtxmatrix_blas_snrm2(
     float * nrm2,
     int64_t * num_flops)
 {
-    return mtxvector_blas_snrm2(&x->a, nrm2, num_flops);
+    return mtxblasvector_snrm2(&x->a, nrm2, num_flops);
 }
 
 /**
@@ -1978,7 +1978,7 @@ int mtxmatrix_blas_dnrm2(
     double * nrm2,
     int64_t * num_flops)
 {
-    return mtxvector_blas_dnrm2(&x->a, nrm2, num_flops);
+    return mtxblasvector_dnrm2(&x->a, nrm2, num_flops);
 }
 
 /**
@@ -1992,7 +1992,7 @@ int mtxmatrix_blas_sasum(
     float * asum,
     int64_t * num_flops)
 {
-    return mtxvector_blas_sasum(&x->a, asum, num_flops);
+    return mtxblasvector_sasum(&x->a, asum, num_flops);
 }
 
 /**
@@ -2006,7 +2006,7 @@ int mtxmatrix_blas_dasum(
     double * asum,
     int64_t * num_flops)
 {
-    return mtxvector_blas_dasum(&x->a, asum, num_flops);
+    return mtxblasvector_dasum(&x->a, asum, num_flops);
 }
 
 /**
@@ -2020,7 +2020,7 @@ int mtxmatrix_blas_iamax(
     const struct mtxmatrix_blas * x,
     int * iamax)
 {
-    return mtxvector_blas_iamax(&x->a, iamax);
+    return mtxblasvector_iamax(&x->a, iamax);
 }
 
 /*
