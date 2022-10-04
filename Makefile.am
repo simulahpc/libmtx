@@ -288,21 +288,21 @@ tests/test_mtxmpivector_parallel:  tests/test_mtxmpivector
 endif
 
 # matrix
-tests_test_mtxmatrix_base_coo_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxmatrix_base_coo_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxmatrix_base_coo_SOURCES = tests/test_mtxmatrix_base_coo.c tests/test.h
-check_PROGRAMS += tests/test_mtxmatrix_base_coo
-TESTS += tests/test_mtxmatrix_base_coo
-tests_test_mtxmatrix_base_csr_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxmatrix_base_csr_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxmatrix_base_csr_SOURCES = tests/test_mtxmatrix_base_csr.c tests/test.h
-check_PROGRAMS += tests/test_mtxmatrix_base_csr
-TESTS += tests/test_mtxmatrix_base_csr
-tests_test_mtxmatrix_base_dense_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxmatrix_base_dense_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxmatrix_base_dense_SOURCES = tests/test_mtxmatrix_base_dense.c tests/test.h
-check_PROGRAMS += tests/test_mtxmatrix_base_dense
-TESTS += tests/test_mtxmatrix_base_dense
+tests_test_mtxbasecoo_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxbasecoo_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxbasecoo_SOURCES = tests/test_mtxbasecoo.c tests/test.h
+check_PROGRAMS += tests/test_mtxbasecoo
+TESTS += tests/test_mtxbasecoo
+tests_test_mtxbasecsr_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxbasecsr_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxbasecsr_SOURCES = tests/test_mtxbasecsr.c tests/test.h
+check_PROGRAMS += tests/test_mtxbasecsr
+TESTS += tests/test_mtxbasecsr
+tests_test_mtxbasedense_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxbasedense_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxbasedense_SOURCES = tests/test_mtxbasedense.c tests/test.h
+check_PROGRAMS += tests/test_mtxbasedense
+TESTS += tests/test_mtxbasedense
 if HAVE_BLAS
 tests_test_mtxblasdense_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxblasdense_LDADD = $(top_builddir)/libmtx.la
