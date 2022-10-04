@@ -24,7 +24,7 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/vector/field.h>
+#include <libmtx/linalg/field.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/linalg/base/csr.h>
 #include <libmtx/mtxfile/mtxfile.h>

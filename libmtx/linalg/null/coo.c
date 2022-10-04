@@ -30,7 +30,7 @@
 #include <libmtx/linalg/null/coo.h>
 #include <libmtx/linalg/base/coo.h>
 #include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/vector/field.h>
+#include <libmtx/linalg/field.h>
 #include <libmtx/linalg/precision.h>
 #include <libmtx/vector/vector.h>
 #include <libmtx/util/partition.h>

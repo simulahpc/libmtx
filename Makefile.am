@@ -63,6 +63,7 @@ libmtx_la_SOURCES = \
 	libmtx/linalg/base/vector.c \
 	libmtx/linalg/blas/dense.c \
 	libmtx/linalg/blas/vector.c \
+	libmtx/linalg/field.c \
 	libmtx/linalg/null/coo.c \
 	libmtx/linalg/null/vector.c \
 	libmtx/linalg/omp/csr.c \
@@ -99,7 +100,6 @@ libmtx_la_SOURCES = \
 	libmtx/util/sort.c \
 	libmtx/util/sort.h \
 	libmtx/vector/dist.c \
-	libmtx/vector/field.c \
 	libmtx/vector/vector.c \
 	libmtx/version.c
 
@@ -113,6 +113,7 @@ nobase_include_HEADERS = \
 	libmtx/linalg/base/vector.h \
 	libmtx/linalg/blas/dense.h \
 	libmtx/linalg/blas/vector.h \
+	libmtx/linalg/field.h \
 	libmtx/linalg/null/coo.h \
 	libmtx/linalg/null/vector.h \
 	libmtx/linalg/omp/csr.h \
@@ -133,7 +134,6 @@ nobase_include_HEADERS = \
 	libmtx/solver/cg.h \
 	libmtx/util/partition.h \
 	libmtx/vector/dist.h \
-	libmtx/vector/field.h \
 	libmtx/vector/vector.h \
 	libmtx/version.h
 

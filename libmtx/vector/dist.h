@@ -29,7 +29,7 @@
 
 #ifdef LIBMTX_HAVE_MPI
 #include <libmtx/linalg/precision.h>
-#include <libmtx/vector/field.h>
+#include <libmtx/linalg/field.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/vector/vector.h>
 

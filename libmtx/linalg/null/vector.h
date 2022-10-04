@@ -31,7 +31,7 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/linalg/precision.h>
-#include <libmtx/vector/field.h>
+#include <libmtx/linalg/field.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/linalg/base/vector.h>
 

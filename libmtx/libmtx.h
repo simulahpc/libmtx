@@ -46,7 +46,7 @@
 #include <libmtx/util/partition.h>
 #include <libmtx/linalg/blas/vector.h>
 #include <libmtx/vector/dist.h>
-#include <libmtx/vector/field.h>
+#include <libmtx/linalg/field.h>
 #include <libmtx/linalg/omp/vector.h>
 #include <libmtx/linalg/precision.h>
 #include <libmtx/vector/vector.h>
