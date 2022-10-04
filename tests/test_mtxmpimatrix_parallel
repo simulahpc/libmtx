@@ -17,9 +17,12 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-01-22
+# Last modified: 2022-10-03
 #
 # Unit tests for distributed matrices.
 
-timeout --kill-after=60 60 \
-	mpirun --tag-output -np 2 tests/test_mtxmatrix_dist
+if ! timeout --kill-after=60 60 \
+     mpirun --tag-output -np 2 tests/test_mtxmpimatrix; then
+    exit 1
+fi
+exit 0

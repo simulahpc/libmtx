@@ -45,7 +45,7 @@ EXTRA_DIST = \
 	tests/test_distsort_parallel \
 	tests/test_mtxdistfile_parallel \
 	tests/test_mtxfile_mpi_parallel \
-	tests/test_mtxmatrix_dist_parallel \
+	tests/test_mtxmpimatrix_parallel \
 	tests/test_mtxmpivector_parallel
 
 # Matrix Market library
@@ -318,12 +318,12 @@ check_PROGRAMS += tests/test_mtxompcsr
 TESTS += tests/test_mtxompcsr
 endif
 if HAVE_MPI
-tests_test_mtxmatrix_dist_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxmatrix_dist_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxmatrix_dist_SOURCES = tests/test_mtxmatrix_dist.c tests/test.h
-check_PROGRAMS += tests/test_mtxmatrix_dist
-TESTS += tests/test_mtxmatrix_dist_parallel
-tests/test_mtxmatrix_dist_parallel:  tests/test_mtxmatrix_dist
+tests_test_mtxmpimatrix_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxmpimatrix_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxmpimatrix_SOURCES = tests/test_mtxmpimatrix.c tests/test.h
+check_PROGRAMS += tests/test_mtxmpimatrix
+TESTS += tests/test_mtxmpimatrix_parallel
+tests/test_mtxmpimatrix_parallel:  tests/test_mtxmpimatrix
 endif
 
 # solver

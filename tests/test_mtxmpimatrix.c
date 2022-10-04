@@ -39,13 +39,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-const char * program_invocation_short_name = "test_mtxmatrix_dist";
+const char * program_invocation_short_name = "test_mtxmpimatrix";
 
 /**
- * ‘test_mtxmatrix_dist_from_mtxfile()’ tests converting Matrix
+ * ‘test_mtxmpimatrix_from_mtxfile()’ tests converting Matrix
  *  Market files to matrices.
  */
-int test_mtxmatrix_dist_from_mtxfile(void)
+int test_mtxmpimatrix_from_mtxfile(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -84,8 +84,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns,
             num_nonzeros, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxmatrix_dist A;
-        err = mtxmatrix_dist_from_mtxfile(
+        struct mtxmpimatrix A;
+        err = mtxmpimatrix_from_mtxfile(
             &A, &mtxfile, mtxbasecoo, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
         TEST_ASSERT_EQ(3, A.num_rows);
@@ -133,7 +133,7 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(7.0f, a[0]);
             TEST_ASSERT_EQ(9.0f, a[1]);
         }
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
         mtxfile_free(&mtxfile);
     }
     {
@@ -147,8 +147,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns,
             num_nonzeros, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxmatrix_dist A;
-        err = mtxmatrix_dist_from_mtxfile(
+        struct mtxmpimatrix A;
+        err = mtxmpimatrix_from_mtxfile(
             &A, &mtxfile, mtxbasecoo, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
         TEST_ASSERT_EQ(3, A.num_rows);
@@ -196,7 +196,7 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(7.0, a[0]);
             TEST_ASSERT_EQ(9.0, a[1]);
         }
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
         mtxfile_free(&mtxfile);
     }
     {
@@ -210,8 +210,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns,
             num_nonzeros, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxmatrix_dist A;
-        err = mtxmatrix_dist_from_mtxfile(
+        struct mtxmpimatrix A;
+        err = mtxmpimatrix_from_mtxfile(
             &A, &mtxfile, mtxbasecoo, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
         TEST_ASSERT_EQ(3, A.num_rows);
@@ -259,7 +259,7 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(7.0f, a[0][0]); TEST_ASSERT_EQ(-7.0f, a[0][1]);
             TEST_ASSERT_EQ(9.0f, a[1][0]); TEST_ASSERT_EQ(-9.0f, a[1][1]);
         }
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
         mtxfile_free(&mtxfile);
     }
     {
@@ -273,8 +273,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns,
             num_nonzeros, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxmatrix_dist A;
-        err = mtxmatrix_dist_from_mtxfile(
+        struct mtxmpimatrix A;
+        err = mtxmpimatrix_from_mtxfile(
             &A, &mtxfile, mtxbasecoo, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
         TEST_ASSERT_EQ(3, A.num_rows);
@@ -322,7 +322,7 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(7.0, a[0][0]); TEST_ASSERT_EQ(-7.0, a[0][1]);
             TEST_ASSERT_EQ(9.0, a[1][0]); TEST_ASSERT_EQ(-9.0, a[1][1]);
         }
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
         mtxfile_free(&mtxfile);
     }
     {
@@ -336,8 +336,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns,
             num_nonzeros, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxmatrix_dist A;
-        err = mtxmatrix_dist_from_mtxfile(
+        struct mtxmpimatrix A;
+        err = mtxmpimatrix_from_mtxfile(
             &A, &mtxfile, mtxbasecoo, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
         TEST_ASSERT_EQ(3, A.num_rows);
@@ -385,7 +385,7 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(7, a[0]);
             TEST_ASSERT_EQ(9, a[1]);
         }
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
         mtxfile_free(&mtxfile);
     }
     {
@@ -399,8 +399,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns,
             num_nonzeros, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxmatrix_dist A;
-        err = mtxmatrix_dist_from_mtxfile(
+        struct mtxmpimatrix A;
+        err = mtxmpimatrix_from_mtxfile(
             &A, &mtxfile, mtxbasecoo, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
         TEST_ASSERT_EQ(3, A.num_rows);
@@ -448,7 +448,7 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(7, a[0]);
             TEST_ASSERT_EQ(9, a[1]);
         }
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
         mtxfile_free(&mtxfile);
     }
     {
@@ -462,8 +462,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns,
             num_nonzeros, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxmatrix_dist A;
-        err = mtxmatrix_dist_from_mtxfile(
+        struct mtxmpimatrix A;
+        err = mtxmpimatrix_from_mtxfile(
             &A, &mtxfile, mtxbasecoo, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
         TEST_ASSERT_EQ(3, A.num_rows);
@@ -504,7 +504,7 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(0, Ap->rowidx[0]); TEST_ASSERT_EQ(0, Ap->colidx[0]);
             TEST_ASSERT_EQ(0, Ap->rowidx[1]); TEST_ASSERT_EQ(1, Ap->colidx[1]);
         }
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
         mtxfile_free(&mtxfile);
     }
     mtxdisterror_free(&disterr);
@@ -512,10 +512,10 @@ int test_mtxmatrix_dist_from_mtxfile(void)
 }
 
 /**
- * ‘test_mtxmatrix_dist_to_mtxfile()’ tests converting matrices to
+ * ‘test_mtxmpimatrix_to_mtxfile()’ tests converting matrices to
  * Matrix Market files.
  */
-int test_mtxmatrix_dist_to_mtxfile(void)
+int test_mtxmpimatrix_to_mtxfile(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -563,8 +563,8 @@ int test_mtxmatrix_dist_to_mtxfile(void)
             ? ((const float[3]) {1.0f, 2.0f, 6.0f})
             : ((const float[2]) {7.0f, 9.0f});
         int64_t num_nonzeros = (rank == 0) ? 3 : 2;
-        struct mtxmatrix_dist src;
-        err = mtxmatrix_dist_init_entries_local_real_single(
+        struct mtxmpimatrix src;
+        err = mtxmpimatrix_init_entries_local_real_single(
             &src, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns,
             rowmapsize, rowmap, colmapsize, colmap,
             num_nonzeros, rowidx, colidx, srcdata, comm, &disterr);
@@ -573,7 +573,7 @@ int test_mtxmatrix_dist_to_mtxfile(void)
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
         struct mtxfile dst;
-        err = mtxmatrix_dist_to_mtxfile(
+        err = mtxmpimatrix_to_mtxfile(
             &dst, &src, mtxfile_coordinate, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -601,7 +601,7 @@ int test_mtxmatrix_dist_to_mtxfile(void)
             TEST_ASSERT_EQ(9.0f, data[4].a);
             mtxfile_free(&dst);
         }
-        mtxmatrix_dist_free(&src);
+        mtxmpimatrix_free(&src);
     }
     {
         int num_rows = 3;
@@ -616,8 +616,8 @@ int test_mtxmatrix_dist_to_mtxfile(void)
             ? ((const double[3]) {1.0, 2.0, 6.0})
             : ((const double[2]) {7.0, 9.0});
         int64_t num_nonzeros = (rank == 0) ? 3 : 2;
-        struct mtxmatrix_dist src;
-        err = mtxmatrix_dist_init_entries_global_real_double(
+        struct mtxmpimatrix src;
+        err = mtxmpimatrix_init_entries_global_real_double(
             &src, mtxbasecsr, mtx_unsymmetric, num_rows, num_columns,
             num_nonzeros, rowidx, colidx, srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -625,7 +625,7 @@ int test_mtxmatrix_dist_to_mtxfile(void)
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
         struct mtxfile dst;
-        err = mtxmatrix_dist_to_mtxfile(
+        err = mtxmpimatrix_to_mtxfile(
             &dst, &src, mtxfile_coordinate, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -653,17 +653,17 @@ int test_mtxmatrix_dist_to_mtxfile(void)
             TEST_ASSERT_EQ(9.0, data[4].a);
             mtxfile_free(&dst);
         }
-        mtxmatrix_dist_free(&src);
+        mtxmpimatrix_free(&src);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
 /**
- * ‘test_mtxmatrix_dist_from_mtxdistfile()’ tests converting
+ * ‘test_mtxmpimatrix_from_mtxdistfile()’ tests converting
  *  distributed Matrix Market files to matrices.
  */
-int test_mtxmatrix_dist_from_mtxdistfile(void)
+int test_mtxmpimatrix_from_mtxdistfile(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -708,8 +708,8 @@ int test_mtxmatrix_dist_from_mtxdistfile(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
-        struct mtxmatrix_dist A;
-        err = mtxmatrix_dist_from_mtxdistfile(
+        struct mtxmpimatrix A;
+        err = mtxmpimatrix_from_mtxdistfile(
             &A, &src, mtxbasecoo, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -759,7 +759,7 @@ int test_mtxmatrix_dist_from_mtxdistfile(void)
             TEST_ASSERT_EQ(7.0f, a[0]);
             TEST_ASSERT_EQ(9.0f, a[1]);
         }
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
         mtxdistfile_free(&src);
     }
     mtxdisterror_free(&disterr);
@@ -767,10 +767,10 @@ int test_mtxmatrix_dist_from_mtxdistfile(void)
 }
 #if 0
 /**
- * ‘test_mtxmatrix_dist_to_mtxdistfile()’ tests converting matrices to
+ * ‘test_mtxmpimatrix_to_mtxdistfile()’ tests converting matrices to
  * distributed Matrix Market files.
  */
-int test_mtxmatrix_dist_to_mtxdistfile(void)
+int test_mtxmpimatrix_to_mtxdistfile(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -802,12 +802,12 @@ int test_mtxmatrix_dist_to_mtxdistfile(void)
         int64_t * idx = rank == 0 ? (int64_t[2]) {1, 3} : (int64_t[3]) {5, 7, 9};
         float * xdata = rank == 0 ? (float[2]) {1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         int nnz = rank == 0 ? 2 : 3;
-        struct mtxmatrix_dist x;
-        err = mtxmatrix_dist_init_real_single(
+        struct mtxmpimatrix x;
+        err = mtxmpimatrix_init_real_single(
             &x, mtxbasecoo, size, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxdistfile mtxdistfile;
-        err = mtxmatrix_dist_to_mtxdistfile(
+        err = mtxmpimatrix_to_mtxdistfile(
             &mtxdistfile, &x, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
@@ -832,19 +832,19 @@ int test_mtxmatrix_dist_to_mtxdistfile(void)
             TEST_ASSERT_EQ(10, data[2].i); TEST_ASSERT_EQ(3.0f, data[2].a);
         }
         mtxdistfile_free(&mtxdistfile);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
         int size = 12;
         int64_t * idx = rank == 0 ? (int64_t[2]) {1, 3} : (int64_t[3]) {5, 7, 9};
         double * xdata = rank == 0 ? (double[2]) {1.0f, 1.0f} : (double[3]) {1.0f, 2.0f, 3.0f};
         int nnz = rank == 0 ? 2 : 3;
-        struct mtxmatrix_dist x;
-        err = mtxmatrix_dist_init_real_double(
+        struct mtxmpimatrix x;
+        err = mtxmpimatrix_init_real_double(
             &x, mtxbasecoo, size, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxdistfile mtxdistfile;
-        err = mtxmatrix_dist_to_mtxdistfile(
+        err = mtxmpimatrix_to_mtxdistfile(
             &mtxdistfile, &x, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
@@ -869,19 +869,19 @@ int test_mtxmatrix_dist_to_mtxdistfile(void)
             TEST_ASSERT_EQ(10, data[2].i); TEST_ASSERT_EQ(3.0, data[2].a);
         }
         mtxdistfile_free(&mtxdistfile);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
         int size = 12;
         int64_t * idx = rank == 0 ? (int64_t[2]) {1, 3} : (int64_t[3]) {5};
         float (* xdata)[2] = rank == 0 ? (float[2][2]) {{1.0f, 1.0f}, {1.0f, 2.0f}} : (float[1][2]) {{3.0f, 0.0f}};
         int nnz = rank == 0 ? 2 : 1;
-        struct mtxmatrix_dist x;
-        err = mtxmatrix_dist_init_complex_single(
+        struct mtxmpimatrix x;
+        err = mtxmpimatrix_init_complex_single(
             &x, mtxbasecoo, size, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxdistfile mtxdistfile;
-        err = mtxmatrix_dist_to_mtxdistfile(
+        err = mtxmpimatrix_to_mtxdistfile(
             &mtxdistfile, &x, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
@@ -910,19 +910,19 @@ int test_mtxmatrix_dist_to_mtxdistfile(void)
             TEST_ASSERT_EQ(0.0f, data[0].a[1]);
         }
         mtxdistfile_free(&mtxdistfile);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
         int size = 12;
         int64_t * idx = rank == 0 ? (int64_t[2]) {1, 3} : (int64_t[3]) {5};
         double (* xdata)[2] = rank == 0 ? (double[2][2]) {{1.0f, 1.0f}, {1.0f, 2.0f}} : (double[1][2]) {{3.0f, 0.0f}};
         int nnz = rank == 0 ? 2 : 1;
-        struct mtxmatrix_dist x;
-        err = mtxmatrix_dist_init_complex_double(
+        struct mtxmpimatrix x;
+        err = mtxmpimatrix_init_complex_double(
             &x, mtxbasecoo, size, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxdistfile mtxdistfile;
-        err = mtxmatrix_dist_to_mtxdistfile(
+        err = mtxmpimatrix_to_mtxdistfile(
             &mtxdistfile, &x, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
@@ -951,19 +951,19 @@ int test_mtxmatrix_dist_to_mtxdistfile(void)
             TEST_ASSERT_EQ(0.0, data[0].a[1]);
         }
         mtxdistfile_free(&mtxdistfile);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
         int size = 12;
         int64_t * idx = rank == 0 ? (int64_t[2]) {1, 3} : (int64_t[3]) {5, 7, 9};
         int32_t * xdata = rank == 0 ? (int32_t[2]) {1, 1} : (int32_t[3]) {1, 2, 3};
         int nnz = rank == 0 ? 2 : 3;
-        struct mtxmatrix_dist x;
-        err = mtxmatrix_dist_init_integer_single(
+        struct mtxmpimatrix x;
+        err = mtxmpimatrix_init_integer_single(
             &x, mtxbasecoo, size, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxdistfile mtxdistfile;
-        err = mtxmatrix_dist_to_mtxdistfile(
+        err = mtxmpimatrix_to_mtxdistfile(
             &mtxdistfile, &x, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
@@ -988,19 +988,19 @@ int test_mtxmatrix_dist_to_mtxdistfile(void)
             TEST_ASSERT_EQ(10, data[2].i); TEST_ASSERT_EQ(3, data[2].a);
         }
         mtxdistfile_free(&mtxdistfile);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
         int size = 12;
         int64_t * idx = rank == 0 ? (int64_t[2]) {1, 3} : (int64_t[3]) {5, 7, 9};
         int64_t * xdata = rank == 0 ? (int64_t[2]) {1, 1} : (int64_t[3]) {1, 2, 3};
         int nnz = rank == 0 ? 2 : 3;
-        struct mtxmatrix_dist x;
-        err = mtxmatrix_dist_init_integer_double(
+        struct mtxmpimatrix x;
+        err = mtxmpimatrix_init_integer_double(
             &x, mtxbasecoo, size, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxdistfile mtxdistfile;
-        err = mtxmatrix_dist_to_mtxdistfile(
+        err = mtxmpimatrix_to_mtxdistfile(
             &mtxdistfile, &x, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
@@ -1025,7 +1025,7 @@ int test_mtxmatrix_dist_to_mtxdistfile(void)
             TEST_ASSERT_EQ(10, data[2].i); TEST_ASSERT_EQ(3, data[2].a);
         }
         mtxdistfile_free(&mtxdistfile);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
@@ -1033,9 +1033,9 @@ int test_mtxmatrix_dist_to_mtxdistfile(void)
 #endif
 
 /**
- * ‘test_mtxmatrix_dist_split()’ tests splitting matrices.
+ * ‘test_mtxmpimatrix_split()’ tests splitting matrices.
  */
-int test_mtxmatrix_dist_split(void)
+int test_mtxmpimatrix_split(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -1062,9 +1062,9 @@ int test_mtxmatrix_dist_split(void)
     err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err) MPI_Abort(comm, EXIT_FAILURE);
     {
-        struct mtxmatrix_dist src;
-        struct mtxmatrix_dist dst0, dst1;
-        struct mtxmatrix_dist * dsts[] = {&dst0, &dst1};
+        struct mtxmpimatrix src;
+        struct mtxmpimatrix dst0, dst1;
+        struct mtxmpimatrix * dsts[] = {&dst0, &dst1};
         int num_parts = 2;
         int num_rows = 3;
         int num_columns = 3;
@@ -1072,12 +1072,12 @@ int test_mtxmatrix_dist_split(void)
         int64_t * srcrowidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {1, 2, 2};
         int64_t * srccolidx = rank == 0 ? (int64_t[2]) {0, 2} : (int64_t[3]) {0, 0, 2};
         float * srcdata = rank == 0 ? (float[2]) {1.0f, 3.0f} : (float[3]) {5.0f, 7.0f, 9.0f};
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &src, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns,
             srcnnz, srcrowidx, srccolidx, srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int * parts = rank == 0 ? (int[2]) {0, 0} : (int[3]) {0, 1, 1};
-        err = mtxmatrix_dist_split(
+        err = mtxmpimatrix_split(
             num_parts, dsts, &src, srcnnz, parts, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -1155,17 +1155,17 @@ int test_mtxmatrix_dist_split(void)
             TEST_ASSERT_EQ(7.0f, a[0]);
             TEST_ASSERT_EQ(9.0f, a[1]);
         }
-        mtxmatrix_dist_free(&dst1); mtxmatrix_dist_free(&dst0);
-        mtxmatrix_dist_free(&src);
+        mtxmpimatrix_free(&dst1); mtxmpimatrix_free(&dst0);
+        mtxmpimatrix_free(&src);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
 /**
- * ‘test_mtxmatrix_dist_swap()’ tests swapping values of two matrices.
+ * ‘test_mtxmpimatrix_swap()’ tests swapping values of two matrices.
  */
-int test_mtxmatrix_dist_swap(void)
+int test_mtxmpimatrix_swap(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -1192,8 +1192,8 @@ int test_mtxmatrix_dist_swap(void)
     err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err) MPI_Abort(comm, EXIT_FAILURE);
     {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
+        struct mtxmpimatrix x;
+        struct mtxmpimatrix y;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
@@ -1204,13 +1204,13 @@ int test_mtxmatrix_dist_swap(void)
         int64_t * ycolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * ydata = rank == 0 ? (float[2]) {2.0f, 1.0f} : (float[3]) {0.0f, 2.0f, 1.0f};
         int ynnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &y, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, ynnz, yrowidx, ycolidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_swap(&x, &y, &disterr);
+        err = mtxmpimatrix_swap(&x, &y, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(3, x.num_rows);
         TEST_ASSERT_EQ(3, x.num_columns);
@@ -1302,18 +1302,18 @@ int test_mtxmatrix_dist_swap(void)
             TEST_ASSERT_EQ(2.0f, a[1]);
             TEST_ASSERT_EQ(3.0f, a[2]);
         }
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&y);
+        mtxmpimatrix_free(&x);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
 /**
- * ‘test_mtxmatrix_dist_copy()’ tests copying values from one matrix
+ * ‘test_mtxmpimatrix_copy()’ tests copying values from one matrix
  * to another.
  */
-int test_mtxmatrix_dist_copy(void)
+int test_mtxmpimatrix_copy(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -1340,8 +1340,8 @@ int test_mtxmatrix_dist_copy(void)
     err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err) MPI_Abort(comm, EXIT_FAILURE);
     {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
+        struct mtxmpimatrix x;
+        struct mtxmpimatrix y;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
@@ -1352,13 +1352,13 @@ int test_mtxmatrix_dist_copy(void)
         int64_t * ycolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * ydata = rank == 0 ? (float[2]) {2.0f, 1.0f} : (float[3]) {0.0f, 2.0f, 1.0f};
         int ynnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &y, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, ynnz, yrowidx, ycolidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_swap(&x, &y, &disterr);
+        err = mtxmpimatrix_swap(&x, &y, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(3, y.num_rows);
         TEST_ASSERT_EQ(3, y.num_columns);
@@ -1405,17 +1405,17 @@ int test_mtxmatrix_dist_copy(void)
             TEST_ASSERT_EQ(2.0f, a[1]);
             TEST_ASSERT_EQ(3.0f, a[2]);
         }
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&y);
+        mtxmpimatrix_free(&x);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
 /**
- * ‘test_mtxmatrix_dist_scal()’ tests scaling matrices by a constant.
+ * ‘test_mtxmpimatrix_scal()’ tests scaling matrices by a constant.
  */
-int test_mtxmatrix_dist_scal(void)
+int test_mtxmpimatrix_scal(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -1442,17 +1442,17 @@ int test_mtxmatrix_dist_scal(void)
     err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err) MPI_Abort(comm, EXIT_FAILURE);
     {
-        struct mtxmatrix_dist x;
+        struct mtxmpimatrix x;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
         int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * xdata = rank == 0 ? (float[2]) {1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         int xnnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_sscal(2.0f, &x, NULL, &disterr);
+        err = mtxmpimatrix_sscal(2.0f, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.real_single[0]);
@@ -1462,7 +1462,7 @@ int test_mtxmatrix_dist_scal(void)
             TEST_ASSERT_EQ(4.0f, x.Ap.storage.coo.a.data.real_single[1]);
             TEST_ASSERT_EQ(6.0f, x.Ap.storage.coo.a.data.real_single[2]);
         }
-        err = mtxmatrix_dist_dscal(2.0, &x, NULL, &disterr);
+        err = mtxmpimatrix_dscal(2.0, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.real_single[0]);
@@ -1472,20 +1472,20 @@ int test_mtxmatrix_dist_scal(void)
             TEST_ASSERT_EQ( 8.0f, x.Ap.storage.coo.a.data.real_single[1]);
             TEST_ASSERT_EQ(12.0f, x.Ap.storage.coo.a.data.real_single[2]);
         }
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
+        struct mtxmpimatrix x;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
         int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         double * xdata = rank == 0 ? (double[2]) {1.0, 1.0} : (double[3]) {1.0, 2.0, 3.0};
         int xnnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_entries_global_real_double(
+        err = mtxmpimatrix_init_entries_global_real_double(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_sscal(2.0f, &x, NULL, &disterr);
+        err = mtxmpimatrix_sscal(2.0f, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.real_double[0]);
@@ -1495,7 +1495,7 @@ int test_mtxmatrix_dist_scal(void)
             TEST_ASSERT_EQ(4.0f, x.Ap.storage.coo.a.data.real_double[1]);
             TEST_ASSERT_EQ(6.0f, x.Ap.storage.coo.a.data.real_double[2]);
         }
-        err = mtxmatrix_dist_dscal(2.0, &x, NULL, &disterr);
+        err = mtxmpimatrix_dscal(2.0, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.real_double[0]);
@@ -1505,10 +1505,10 @@ int test_mtxmatrix_dist_scal(void)
             TEST_ASSERT_EQ( 8.0f, x.Ap.storage.coo.a.data.real_double[1]);
             TEST_ASSERT_EQ(12.0f, x.Ap.storage.coo.a.data.real_double[2]);
         }
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
+        struct mtxmpimatrix x;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
@@ -1517,10 +1517,10 @@ int test_mtxmatrix_dist_scal(void)
             ? ((float[2][2]) {{1.0f,1.0f}, {1.0f,2.0f}})
             : ((float[1][2]) {{3.0f,0.0f}});
         int xnnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_entries_global_complex_single(
+        err = mtxmpimatrix_init_entries_global_complex_single(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_sscal(2.0f, &x, NULL, &disterr);
+        err = mtxmpimatrix_sscal(2.0f, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
@@ -1531,7 +1531,7 @@ int test_mtxmatrix_dist_scal(void)
             TEST_ASSERT_EQ(6.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
             TEST_ASSERT_EQ(0.0f, x.Ap.storage.coo.a.data.complex_single[0][1]);
         }
-        err = mtxmatrix_dist_dscal(2.0, &x, NULL, &disterr);
+        err = mtxmpimatrix_dscal(2.0, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
@@ -1543,7 +1543,7 @@ int test_mtxmatrix_dist_scal(void)
             TEST_ASSERT_EQ( 0.0f, x.Ap.storage.coo.a.data.complex_single[0][1]);
         }
         float as[2] = {2, 3};
-        err = mtxmatrix_dist_cscal(as, &x, NULL, &disterr);
+        err = mtxmpimatrix_cscal(as, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( -4.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
@@ -1555,7 +1555,7 @@ int test_mtxmatrix_dist_scal(void)
             TEST_ASSERT_EQ( 36.0f, x.Ap.storage.coo.a.data.complex_single[0][1]);
         }
         double ad[2] = {2, 3};
-        err = mtxmatrix_dist_zscal(ad, &x, NULL, &disterr);
+        err = mtxmpimatrix_zscal(ad, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( -68.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
@@ -1566,10 +1566,10 @@ int test_mtxmatrix_dist_scal(void)
             TEST_ASSERT_EQ( -60.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
             TEST_ASSERT_EQ( 144.0f, x.Ap.storage.coo.a.data.complex_single[0][1]);
         }
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
+        struct mtxmpimatrix x;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
@@ -1578,10 +1578,10 @@ int test_mtxmatrix_dist_scal(void)
             ? ((double[2][2]) {{1.0f,1.0f}, {1.0f,2.0f}})
             : ((double[1][2]) {{3.0f,0.0f}});
         int xnnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_entries_global_complex_double(
+        err = mtxmpimatrix_init_entries_global_complex_double(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_sscal(2.0f, &x, NULL, &disterr);
+        err = mtxmpimatrix_sscal(2.0f, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.complex_double[0][0]);
@@ -1592,7 +1592,7 @@ int test_mtxmatrix_dist_scal(void)
             TEST_ASSERT_EQ(6.0f, x.Ap.storage.coo.a.data.complex_double[0][0]);
             TEST_ASSERT_EQ(0.0f, x.Ap.storage.coo.a.data.complex_double[0][1]);
         }
-        err = mtxmatrix_dist_dscal(2.0, &x, NULL, &disterr);
+        err = mtxmpimatrix_dscal(2.0, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.complex_double[0][0]);
@@ -1604,7 +1604,7 @@ int test_mtxmatrix_dist_scal(void)
             TEST_ASSERT_EQ( 0.0f, x.Ap.storage.coo.a.data.complex_double[0][1]);
         }
         float as[2] = {2, 3};
-        err = mtxmatrix_dist_cscal(as, &x, NULL, &disterr);
+        err = mtxmpimatrix_cscal(as, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( -4.0, x.Ap.storage.coo.a.data.complex_double[0][0]);
@@ -1616,7 +1616,7 @@ int test_mtxmatrix_dist_scal(void)
             TEST_ASSERT_EQ( 36.0, x.Ap.storage.coo.a.data.complex_double[0][1]);
         }
         double ad[2] = {2, 3};
-        err = mtxmatrix_dist_zscal(ad, &x, NULL, &disterr);
+        err = mtxmpimatrix_zscal(ad, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( -68.0, x.Ap.storage.coo.a.data.complex_double[0][0]);
@@ -1627,17 +1627,17 @@ int test_mtxmatrix_dist_scal(void)
             TEST_ASSERT_EQ( -60.0, x.Ap.storage.coo.a.data.complex_double[0][0]);
             TEST_ASSERT_EQ( 144.0, x.Ap.storage.coo.a.data.complex_double[0][1]);
         }
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
 /**
- * ‘test_mtxmatrix_dist_axpy()’ tests multiplying a matrix by a
+ * ‘test_mtxmpimatrix_axpy()’ tests multiplying a matrix by a
  * constant and adding the result to another matrix.
  */
-int test_mtxmatrix_dist_axpy(void)
+int test_mtxmpimatrix_axpy(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -1664,8 +1664,8 @@ int test_mtxmatrix_dist_axpy(void)
     err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err) MPI_Abort(comm, EXIT_FAILURE);
     {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
+        struct mtxmpimatrix x;
+        struct mtxmpimatrix y;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
@@ -1673,13 +1673,13 @@ int test_mtxmatrix_dist_axpy(void)
         float * xdata = rank == 0 ? (float[2]) {1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         float * ydata = rank == 0 ? (float[2]) {2.0f, 1.0f} : (float[3]) {0.0f, 2.0f, 1.0f};
         int nnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &y, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_saxpy(2.0f, &x, &y, NULL, &disterr);
+        err = mtxmpimatrix_saxpy(2.0f, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 4.0f, y.Ap.storage.coo.a.data.real_single[0]);
@@ -1689,7 +1689,7 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ( 6.0f, y.Ap.storage.coo.a.data.real_single[1]);
             TEST_ASSERT_EQ( 7.0f, y.Ap.storage.coo.a.data.real_single[2]);
         }
-        err = mtxmatrix_dist_daxpy(2.0, &x, &y, NULL, &disterr);
+        err = mtxmpimatrix_daxpy(2.0, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 6.0f, y.Ap.storage.coo.a.data.real_single[0]);
@@ -1699,7 +1699,7 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(10.0f, y.Ap.storage.coo.a.data.real_single[1]);
             TEST_ASSERT_EQ(13.0f, y.Ap.storage.coo.a.data.real_single[2]);
         }
-        err = mtxmatrix_dist_saypx(2.0f, &y, &x, NULL, &disterr);
+        err = mtxmpimatrix_saypx(2.0f, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(13.0f, y.Ap.storage.coo.a.data.real_single[0]);
@@ -1709,7 +1709,7 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(22.0f, y.Ap.storage.coo.a.data.real_single[1]);
             TEST_ASSERT_EQ(29.0f, y.Ap.storage.coo.a.data.real_single[2]);
         }
-        err = mtxmatrix_dist_daypx(2.0, &y, &x, NULL, &disterr);
+        err = mtxmpimatrix_daypx(2.0, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(27.0f, y.Ap.storage.coo.a.data.real_single[0]);
@@ -1719,12 +1719,12 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(46.0f, y.Ap.storage.coo.a.data.real_single[1]);
             TEST_ASSERT_EQ(61.0f, y.Ap.storage.coo.a.data.real_single[2]);
         }
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&y);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
+        struct mtxmpimatrix x;
+        struct mtxmpimatrix y;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
@@ -1732,13 +1732,13 @@ int test_mtxmatrix_dist_axpy(void)
         double * xdata = rank == 0 ? (double[2]) {1.0, 1.0} : (double[3]) {1.0, 2.0, 3.0};
         double * ydata = rank == 0 ? (double[2]) {2.0, 1.0} : (double[3]) {0.0, 2.0, 1.0};
         int nnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_entries_global_real_double(
+        err = mtxmpimatrix_init_entries_global_real_double(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_entries_global_real_double(
+        err = mtxmpimatrix_init_entries_global_real_double(
             &y, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_saxpy(2.0f, &x, &y, NULL, &disterr);
+        err = mtxmpimatrix_saxpy(2.0f, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 4.0, y.Ap.storage.coo.a.data.real_double[0]);
@@ -1748,7 +1748,7 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ( 6.0, y.Ap.storage.coo.a.data.real_double[1]);
             TEST_ASSERT_EQ( 7.0, y.Ap.storage.coo.a.data.real_double[2]);
         }
-        err = mtxmatrix_dist_daxpy(2.0, &x, &y, NULL, &disterr);
+        err = mtxmpimatrix_daxpy(2.0, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 6.0, y.Ap.storage.coo.a.data.real_double[0]);
@@ -1758,7 +1758,7 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(10.0, y.Ap.storage.coo.a.data.real_double[1]);
             TEST_ASSERT_EQ(13.0, y.Ap.storage.coo.a.data.real_double[2]);
         }
-        err = mtxmatrix_dist_saypx(2.0f, &y, &x, NULL, &disterr);
+        err = mtxmpimatrix_saypx(2.0f, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(13.0, y.Ap.storage.coo.a.data.real_double[0]);
@@ -1768,7 +1768,7 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(22.0, y.Ap.storage.coo.a.data.real_double[1]);
             TEST_ASSERT_EQ(29.0, y.Ap.storage.coo.a.data.real_double[2]);
         }
-        err = mtxmatrix_dist_daypx(2.0, &y, &x, NULL, &disterr);
+        err = mtxmpimatrix_daypx(2.0, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(27.0, y.Ap.storage.coo.a.data.real_double[0]);
@@ -1778,12 +1778,12 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(46.0, y.Ap.storage.coo.a.data.real_double[1]);
             TEST_ASSERT_EQ(61.0, y.Ap.storage.coo.a.data.real_double[2]);
         }
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&y);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
+        struct mtxmpimatrix x;
+        struct mtxmpimatrix y;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
@@ -1795,13 +1795,13 @@ int test_mtxmatrix_dist_axpy(void)
             ? ((float[2][2]) {{2.0f,1.0f}, {0.0f,2.0f}})
             : ((float[1][2]) {{1.0f,0.0f}});
         int nnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_entries_global_complex_single(
+        err = mtxmpimatrix_init_entries_global_complex_single(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_entries_global_complex_single(
+        err = mtxmpimatrix_init_entries_global_complex_single(
             &y, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_saxpy(2.0f, &x, &y, NULL, &disterr);
+        err = mtxmpimatrix_saxpy(2.0f, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
@@ -1812,7 +1812,7 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(7.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
             TEST_ASSERT_EQ(0.0f, y.Ap.storage.coo.a.data.complex_single[0][1]);
         }
-        err = mtxmatrix_dist_daxpy(2.0, &x, &y, NULL, &disterr);
+        err = mtxmpimatrix_daxpy(2.0, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 6.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
@@ -1823,7 +1823,7 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(13.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
             TEST_ASSERT_EQ( 0.0f, y.Ap.storage.coo.a.data.complex_single[0][1]);
         }
-        err = mtxmatrix_dist_saypx(2.0f, &y, &x, NULL, &disterr);
+        err = mtxmpimatrix_saypx(2.0f, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(13.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
@@ -1834,7 +1834,7 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(29.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
             TEST_ASSERT_EQ( 0.0f, y.Ap.storage.coo.a.data.complex_single[0][1]);
         }
-        err = mtxmatrix_dist_daypx(2.0, &y, &x, NULL, &disterr);
+        err = mtxmpimatrix_daypx(2.0, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(27.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
@@ -1845,12 +1845,12 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(61.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
             TEST_ASSERT_EQ( 0.0f, y.Ap.storage.coo.a.data.complex_single[0][1]);
         }
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&y);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
+        struct mtxmpimatrix x;
+        struct mtxmpimatrix y;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
@@ -1862,13 +1862,13 @@ int test_mtxmatrix_dist_axpy(void)
             ? ((double[2][2]) {{2.0,1.0}, {0.0,2.0}})
             : ((double[1][2]) {{1.0,0.0}});
         int nnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_entries_global_complex_double(
+        err = mtxmpimatrix_init_entries_global_complex_double(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_entries_global_complex_double(
+        err = mtxmpimatrix_init_entries_global_complex_double(
             &y, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_saxpy(2.0f, &x, &y, NULL, &disterr);
+        err = mtxmpimatrix_saxpy(2.0f, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
@@ -1879,7 +1879,7 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(7.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
             TEST_ASSERT_EQ(0.0, y.Ap.storage.coo.a.data.complex_double[0][1]);
         }
-        err = mtxmatrix_dist_daxpy(2.0, &x, &y, NULL, &disterr);
+        err = mtxmpimatrix_daxpy(2.0, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 6.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
@@ -1890,7 +1890,7 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(13.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
             TEST_ASSERT_EQ( 0.0, y.Ap.storage.coo.a.data.complex_double[0][1]);
         }
-        err = mtxmatrix_dist_saypx(2.0f, &y, &x, NULL, &disterr);
+        err = mtxmpimatrix_saypx(2.0f, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(13.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
@@ -1901,7 +1901,7 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(29.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
             TEST_ASSERT_EQ( 0.0, y.Ap.storage.coo.a.data.complex_double[0][1]);
         }
-        err = mtxmatrix_dist_daypx(2.0, &y, &x, NULL, &disterr);
+        err = mtxmpimatrix_daypx(2.0, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(27.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
@@ -1912,18 +1912,18 @@ int test_mtxmatrix_dist_axpy(void)
             TEST_ASSERT_EQ(61.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
             TEST_ASSERT_EQ( 0.0, y.Ap.storage.coo.a.data.complex_double[0][1]);
         }
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&y);
+        mtxmpimatrix_free(&x);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
 /**
- * ‘test_mtxmatrix_dist_dot()’ tests computing the dot products of
+ * ‘test_mtxmpimatrix_dot()’ tests computing the dot products of
  * pairs of matrices.
  */
-int test_mtxmatrix_dist_dot(void)
+int test_mtxmpimatrix_dot(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -1950,8 +1950,8 @@ int test_mtxmatrix_dist_dot(void)
     err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err) MPI_Abort(comm, EXIT_FAILURE);
     {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
+        struct mtxmpimatrix x;
+        struct mtxmpimatrix y;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
@@ -1959,42 +1959,42 @@ int test_mtxmatrix_dist_dot(void)
         float * xdata = rank == 0 ? (float[2]) {1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         float * ydata = rank == 0 ? (float[2]) {3.0f, 2.0f} : (float[3]) {1.0f, 0.0f, 1.0f};
         int nnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &y, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sdot;
-        err = mtxmatrix_dist_sdot(&x, &y, &sdot, NULL, &disterr);
+        err = mtxmpimatrix_sdot(&x, &y, &sdot, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, sdot);
         double ddot;
-        err = mtxmatrix_dist_ddot(&x, &y, &ddot, NULL, &disterr);
+        err = mtxmpimatrix_ddot(&x, &y, &ddot, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, ddot);
         float cdotu[2];
-        err = mtxmatrix_dist_cdotu(&x, &y, &cdotu, NULL, &disterr);
+        err = mtxmpimatrix_cdotu(&x, &y, &cdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxmatrix_dist_cdotc(&x, &y, &cdotc, NULL, &disterr);
+        err = mtxmpimatrix_cdotc(&x, &y, &cdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxmatrix_dist_zdotu(&x, &y, &zdotu, NULL, &disterr);
+        err = mtxmpimatrix_zdotu(&x, &y, &zdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
         double zdotc[2];
-        err = mtxmatrix_dist_zdotc(&x, &y, &zdotc, NULL, &disterr);
+        err = mtxmpimatrix_zdotc(&x, &y, &zdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&y);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
+        struct mtxmpimatrix x;
+        struct mtxmpimatrix y;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
@@ -2002,42 +2002,42 @@ int test_mtxmatrix_dist_dot(void)
         double * xdata = rank == 0 ? (double[2]) {1.0, 1.0} : (double[3]) {1.0, 2.0, 3.0};
         double * ydata = rank == 0 ? (double[2]) {3.0, 2.0} : (double[3]) {1.0, 0.0, 1.0};
         int nnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_entries_global_real_double(
+        err = mtxmpimatrix_init_entries_global_real_double(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_entries_global_real_double(
+        err = mtxmpimatrix_init_entries_global_real_double(
             &y, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sdot;
-        err = mtxmatrix_dist_sdot(&x, &y, &sdot, NULL, &disterr);
+        err = mtxmpimatrix_sdot(&x, &y, &sdot, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, sdot);
         double ddot;
-        err = mtxmatrix_dist_ddot(&x, &y, &ddot, NULL, &disterr);
+        err = mtxmpimatrix_ddot(&x, &y, &ddot, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, ddot);
         float cdotu[2];
-        err = mtxmatrix_dist_cdotu(&x, &y, &cdotu, NULL, &disterr);
+        err = mtxmpimatrix_cdotu(&x, &y, &cdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxmatrix_dist_cdotc(&x, &y, &cdotc, NULL, &disterr);
+        err = mtxmpimatrix_cdotc(&x, &y, &cdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxmatrix_dist_zdotu(&x, &y, &zdotu, NULL, &disterr);
+        err = mtxmpimatrix_zdotu(&x, &y, &zdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
         double zdotc[2];
-        err = mtxmatrix_dist_zdotc(&x, &y, &zdotc, NULL, &disterr);
+        err = mtxmpimatrix_zdotc(&x, &y, &zdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&y);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
+        struct mtxmpimatrix x;
+        struct mtxmpimatrix y;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
@@ -2049,34 +2049,34 @@ int test_mtxmatrix_dist_dot(void)
             ? ((float[2][2]) {{3.0f,2.0f}, {1.0f,0.0f}})
             : ((float[1][2]) {{1.0f,0.0f}});
         int nnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_entries_global_complex_single(
+        err = mtxmpimatrix_init_entries_global_complex_single(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_entries_global_complex_single(
+        err = mtxmpimatrix_init_entries_global_complex_single(
             &y, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float cdotu[2];
-        err = mtxmatrix_dist_cdotu(&x, &y, &cdotu, NULL, &disterr);
+        err = mtxmpimatrix_cdotu(&x, &y, &cdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(5.0f, cdotu[0]); TEST_ASSERT_EQ(7.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxmatrix_dist_cdotc(&x, &y, &cdotc, NULL, &disterr);
+        err = mtxmpimatrix_cdotc(&x, &y, &cdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(-3.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxmatrix_dist_zdotu(&x, &y, &zdotu, NULL, &disterr);
+        err = mtxmpimatrix_zdotu(&x, &y, &zdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(5.0, zdotu[0]); TEST_ASSERT_EQ(7.0, zdotu[1]);
         double zdotc[2];
-        err = mtxmatrix_dist_zdotc(&x, &y, &zdotc, NULL, &disterr);
+        err = mtxmpimatrix_zdotc(&x, &y, &zdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(-3.0, zdotc[1]);
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&y);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
+        struct mtxmpimatrix x;
+        struct mtxmpimatrix y;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
@@ -2088,40 +2088,40 @@ int test_mtxmatrix_dist_dot(void)
             ? ((double[2][2]) {{3.0,2.0}, {1.0,0.0}})
             : ((double[1][2]) {{1.0,0.0}});
         int nnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_entries_global_complex_double(
+        err = mtxmpimatrix_init_entries_global_complex_double(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_entries_global_complex_double(
+        err = mtxmpimatrix_init_entries_global_complex_double(
             &y, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float cdotu[2];
-        err = mtxmatrix_dist_cdotu(&x, &y, &cdotu, NULL, &disterr);
+        err = mtxmpimatrix_cdotu(&x, &y, &cdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(5.0f, cdotu[0]); TEST_ASSERT_EQ(7.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxmatrix_dist_cdotc(&x, &y, &cdotc, NULL, &disterr);
+        err = mtxmpimatrix_cdotc(&x, &y, &cdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(-3.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxmatrix_dist_zdotu(&x, &y, &zdotu, NULL, &disterr);
+        err = mtxmpimatrix_zdotu(&x, &y, &zdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(5.0, zdotu[0]); TEST_ASSERT_EQ(7.0, zdotu[1]);
         double zdotc[2];
-        err = mtxmatrix_dist_zdotc(&x, &y, &zdotc, NULL, &disterr);
+        err = mtxmpimatrix_zdotc(&x, &y, &zdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(-3.0, zdotc[1]);
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&y);
+        mtxmpimatrix_free(&x);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
 /**
- * ‘test_mtxmatrix_dist_nrm2()’ tests computing the Euclidean norm of
+ * ‘test_mtxmpimatrix_nrm2()’ tests computing the Euclidean norm of
  * matrices.
  */
-int test_mtxmatrix_dist_nrm2(void)
+int test_mtxmpimatrix_nrm2(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -2148,49 +2148,49 @@ int test_mtxmatrix_dist_nrm2(void)
     err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err) MPI_Abort(comm, EXIT_FAILURE);
     {
-        struct mtxmatrix_dist x;
+        struct mtxmpimatrix x;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
         int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * xdata = rank == 0 ? (float[2]) {1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         int xnnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
-        err = mtxmatrix_dist_snrm2(&x, &snrm2, NULL, &disterr);
+        err = mtxmpimatrix_snrm2(&x, &snrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxmatrix_dist_dnrm2(&x, &dnrm2, NULL, &disterr);
+        err = mtxmpimatrix_dnrm2(&x, &dnrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
+        struct mtxmpimatrix x;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
         int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         double * xdata = rank == 0 ? (double[2]) {1.0, 1.0} : (double[3]) {1.0, 2.0, 3.0};
         int xnnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_entries_global_real_double(
+        err = mtxmpimatrix_init_entries_global_real_double(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
-        err = mtxmatrix_dist_snrm2(&x, &snrm2, NULL, &disterr);
+        err = mtxmpimatrix_snrm2(&x, &snrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxmatrix_dist_dnrm2(&x, &dnrm2, NULL, &disterr);
+        err = mtxmpimatrix_dnrm2(&x, &dnrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
+        struct mtxmpimatrix x;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
@@ -2199,21 +2199,21 @@ int test_mtxmatrix_dist_nrm2(void)
             ? ((float[2][2]) {{1.0f,1.0f}, {1.0f,2.0f}})
             : ((float[1][2]) {{3.0f,0.0f}});
         int xnnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_entries_global_complex_single(
+        err = mtxmpimatrix_init_entries_global_complex_single(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
-        err = mtxmatrix_dist_snrm2(&x, &snrm2, NULL, &disterr);
+        err = mtxmpimatrix_snrm2(&x, &snrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxmatrix_dist_dnrm2(&x, &dnrm2, NULL, &disterr);
+        err = mtxmpimatrix_dnrm2(&x, &dnrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
+        struct mtxmpimatrix x;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
@@ -2222,28 +2222,28 @@ int test_mtxmatrix_dist_nrm2(void)
             ? ((double[2][2]) {{1.0f,1.0f}, {1.0f,2.0f}})
             : ((double[1][2]) {{3.0f,0.0f}});
         int xnnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_entries_global_complex_double(
+        err = mtxmpimatrix_init_entries_global_complex_double(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
-        err = mtxmatrix_dist_snrm2(&x, &snrm2, NULL, &disterr);
+        err = mtxmpimatrix_snrm2(&x, &snrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxmatrix_dist_dnrm2(&x, &dnrm2, NULL, &disterr);
+        err = mtxmpimatrix_dnrm2(&x, &dnrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
 /**
- * ‘test_mtxmatrix_dist_asum()’ tests computing the sum of
+ * ‘test_mtxmpimatrix_asum()’ tests computing the sum of
  * absolute values of matrices.
  */
-int test_mtxmatrix_dist_asum(void)
+int test_mtxmpimatrix_asum(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -2270,49 +2270,49 @@ int test_mtxmatrix_dist_asum(void)
     err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err) MPI_Abort(comm, EXIT_FAILURE);
     {
-        struct mtxmatrix_dist x;
+        struct mtxmpimatrix x;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
         int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * xdata = rank == 0 ? (float[2]) {-1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         int xnnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sasum;
-        err = mtxmatrix_dist_sasum(&x, &sasum, NULL, &disterr);
+        err = mtxmpimatrix_sasum(&x, &sasum, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8.0f, sasum);
         double dasum;
-        err = mtxmatrix_dist_dasum(&x, &dasum, NULL, &disterr);
+        err = mtxmpimatrix_dasum(&x, &dasum, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8.0, dasum);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
+        struct mtxmpimatrix x;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
         int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         double * xdata = rank == 0 ? (double[2]) {-1.0, 1.0} : (double[3]) {1.0, 2.0, 3.0};
         int xnnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_entries_global_real_double(
+        err = mtxmpimatrix_init_entries_global_real_double(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sasum;
-        err = mtxmatrix_dist_sasum(&x, &sasum, NULL, &disterr);
+        err = mtxmpimatrix_sasum(&x, &sasum, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8.0f, sasum);
         double dasum;
-        err = mtxmatrix_dist_dasum(&x, &dasum, NULL, &disterr);
+        err = mtxmpimatrix_dasum(&x, &dasum, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8.0, dasum);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
+        struct mtxmpimatrix x;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
@@ -2321,21 +2321,21 @@ int test_mtxmatrix_dist_asum(void)
             ? ((float[2][2]) {{-1.0f,-1.0f}, {1.0f,2.0f}})
             : ((float[1][2]) {{3.0f,0.0f}});
         int xnnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_entries_global_complex_single(
+        err = mtxmpimatrix_init_entries_global_complex_single(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sasum;
-        err = mtxmatrix_dist_sasum(&x, &sasum, NULL, &disterr);
+        err = mtxmpimatrix_sasum(&x, &sasum, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8.0f, sasum);
         double dasum;
-        err = mtxmatrix_dist_dasum(&x, &dasum, NULL, &disterr);
+        err = mtxmpimatrix_dasum(&x, &dasum, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8.0, dasum);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     {
-        struct mtxmatrix_dist x;
+        struct mtxmpimatrix x;
         int num_rows = 3;
         int num_columns = 3;
         int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
@@ -2344,28 +2344,28 @@ int test_mtxmatrix_dist_asum(void)
             ? ((double[2][2]) {{-1.0f,-1.0f}, {1.0f,2.0f}})
             : ((double[1][2]) {{3.0f,0.0f}});
         int xnnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_entries_global_complex_double(
+        err = mtxmpimatrix_init_entries_global_complex_double(
             &x, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sasum;
-        err = mtxmatrix_dist_sasum(&x, &sasum, NULL, &disterr);
+        err = mtxmpimatrix_sasum(&x, &sasum, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8.0f, sasum);
         double dasum;
-        err = mtxmatrix_dist_dasum(&x, &dasum, NULL, &disterr);
+        err = mtxmpimatrix_dasum(&x, &dasum, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8.0, dasum);
-        mtxmatrix_dist_free(&x);
+        mtxmpimatrix_free(&x);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
 /**
- * ‘test_mtxmatrix_dist_gemv()’ tests computing matrix-vector
+ * ‘test_mtxmpimatrix_gemv()’ tests computing matrix-vector
  * products.
  */
-int test_mtxmatrix_dist_gemv(void)
+int test_mtxmpimatrix_gemv(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -2502,7 +2502,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 3;
@@ -2523,7 +2523,7 @@ int test_mtxmatrix_dist_gemv(void)
         int64_t * yidx = rank==0 ? (int64_t[2]){0, 1} : (int64_t[1]){2};
         float * ydata = rank==0 ? (float[2]){1,0} : (float[1]){2};
         int ynnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &A, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_real_single(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -2531,7 +2531,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(
                 MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
                 ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -2552,7 +2552,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(
                 MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
                 ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -2573,7 +2573,7 @@ int test_mtxmatrix_dist_gemv(void)
         /* { */
         /*     err = mtxmpivector_init_real_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr); */
         /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-        /*     err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr); */
+        /*     err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr); */
         /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
         /*     TEST_ASSERT_EQ(mtxbasevector, y.xp.type); */
         /*     const struct mtxbasevector * y_ = &y.xp.storage.base; */
@@ -2592,7 +2592,7 @@ int test_mtxmatrix_dist_gemv(void)
         /* { */
         /*     err = mtxmpivector_init_real_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr); */
         /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-        /*     err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr); */
+        /*     err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr); */
         /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
         /*     TEST_ASSERT_EQ(mtxbasevector, y.xp.type); */
         /*     const struct mtxbasevector * y_ = &y.xp.storage.base; */
@@ -2609,7 +2609,7 @@ int test_mtxmatrix_dist_gemv(void)
         /*     mtxmpivector_free(&y); */
         /* } */
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 #if 0
     /*
@@ -2617,7 +2617,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 3;
@@ -2628,7 +2628,7 @@ int test_mtxmatrix_dist_gemv(void)
         float Adata[] = {1.0f, 2.0f, 5.0f, 6.0f, 9.0f};
         float xdata[] = {3.0f, 2.0f, 1.0f};
         float ydata[] = {1.0f, 0.0f, 2.0f};
-        err = mtxmatrix_dist_init_entries_global_real_single(
+        err = mtxmpimatrix_init_entries_global_real_single(
             &A, mtxbasecoo, mtx_symmetric, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_real_single(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -2636,7 +2636,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2655,7 +2655,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2674,7 +2674,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2693,7 +2693,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2710,7 +2710,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 
     /*
@@ -2718,7 +2718,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 3;
@@ -2729,7 +2729,7 @@ int test_mtxmatrix_dist_gemv(void)
         double Adata[] = {1.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
         double xdata[] = {3.0, 2.0, 1.0};
         double ydata[] = {1.0, 0.0, 2.0};
-        err = mtxmatrix_dist_init_entries_global_real_double(
+        err = mtxmpimatrix_init_entries_global_real_double(
             &A, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_real_double(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -2737,7 +2737,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2756,7 +2756,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2775,7 +2775,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2792,7 +2792,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2809,7 +2809,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 
     /*
@@ -2817,7 +2817,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 3;
@@ -2828,7 +2828,7 @@ int test_mtxmatrix_dist_gemv(void)
         double Adata[] = {1.0, 2.0, 5.0, 6.0, 9.0};
         double xdata[] = {3.0, 2.0, 1.0};
         double ydata[] = {1.0, 0.0, 2.0};
-        err = mtxmatrix_dist_init_entries_global_real_double(
+        err = mtxmpimatrix_init_entries_global_real_double(
             &A, mtxbasecoo, mtx_symmetric, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_real_double(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -2836,7 +2836,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2855,7 +2855,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2874,7 +2874,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2893,7 +2893,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_real_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2910,7 +2910,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 
     /*
@@ -2918,7 +2918,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 2;
@@ -2929,7 +2929,7 @@ int test_mtxmatrix_dist_gemv(void)
         float Adata[][2] = {{1.0f,2.0f}, {3.0f,4.0f}, {5.0f,6.0f}, {7.0f,8.0f}};
         float xdata[][2] = {{3.0f,1.0f}, {1.0f,2.0f}};
         float ydata[][2] = {{1.0f,0.0f}, {2.0f,2.0f}};
-        err = mtxmatrix_dist_init_entries_global_complex_single(
+        err = mtxmpimatrix_init_entries_global_complex_single(
             &A, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_complex_single(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -2937,7 +2937,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2953,7 +2953,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2969,7 +2969,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -2985,7 +2985,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3001,7 +3001,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3017,7 +3017,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3035,7 +3035,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3051,7 +3051,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3067,7 +3067,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3085,7 +3085,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3101,7 +3101,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3117,7 +3117,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3131,7 +3131,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 
     /*
@@ -3139,7 +3139,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 2;
@@ -3150,7 +3150,7 @@ int test_mtxmatrix_dist_gemv(void)
         float Adata[][2] = {{1.0f,2.0f}, {3.0f,4.0f}, {7.0f,8.0f}};
         float xdata[][2] = {{3.0f,1.0f}, {1.0f,2.0f}};
         float ydata[][2] = {{1.0f,0.0f}, {2.0f,2.0f}};
-        err = mtxmatrix_dist_init_entries_global_complex_single(
+        err = mtxmpimatrix_init_entries_global_complex_single(
             &A, mtxbasecoo, mtx_symmetric, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_complex_single(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -3158,7 +3158,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3174,7 +3174,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3190,7 +3190,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3206,7 +3206,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3222,7 +3222,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3238,7 +3238,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3256,7 +3256,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3272,7 +3272,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3288,7 +3288,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3306,7 +3306,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3322,7 +3322,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3338,7 +3338,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3352,7 +3352,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 
     /*
@@ -3360,7 +3360,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 2;
@@ -3371,7 +3371,7 @@ int test_mtxmatrix_dist_gemv(void)
         float Adata[][2] = {{1.0f,0.0f}, {3.0f,4.0f}, {7.0f,0.0f}};
         float xdata[][2] = {{3.0f,1.0f}, {1.0f,2.0f}};
         float ydata[][2] = {{1.0f,0.0f}, {2.0f,2.0f}};
-        err = mtxmatrix_dist_init_entries_global_complex_single(
+        err = mtxmpimatrix_init_entries_global_complex_single(
             &A, mtxbasecoo, mtx_hermitian, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_complex_single(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -3379,7 +3379,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3395,7 +3395,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3411,7 +3411,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3427,7 +3427,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3443,7 +3443,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3459,7 +3459,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3477,7 +3477,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3493,7 +3493,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3509,7 +3509,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3527,7 +3527,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3543,7 +3543,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3559,7 +3559,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3573,7 +3573,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 
     /*
@@ -3581,7 +3581,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 2;
@@ -3592,7 +3592,7 @@ int test_mtxmatrix_dist_gemv(void)
         double Adata[][2] = {{1.0,2.0}, {3.0,4.0}, {5.0,6.0}, {7.0,8.0}};
         double xdata[][2] = {{3.0,1.0}, {1.0,2.0}};
         double ydata[][2] = {{1.0,0.0}, {2.0,2.0}};
-        err = mtxmatrix_dist_init_entries_global_complex_double(
+        err = mtxmpimatrix_init_entries_global_complex_double(
             &A, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_complex_double(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -3600,7 +3600,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3616,7 +3616,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3632,7 +3632,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3648,7 +3648,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3664,7 +3664,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3680,7 +3680,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3698,7 +3698,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3714,7 +3714,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3730,7 +3730,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3748,7 +3748,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3764,7 +3764,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3780,7 +3780,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3794,7 +3794,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 
     /*
@@ -3802,7 +3802,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 2;
@@ -3813,7 +3813,7 @@ int test_mtxmatrix_dist_gemv(void)
         double Adata[][2] = {{1.0,2.0}, {3.0,4.0}, {7.0,8.0}};
         double xdata[][2] = {{3.0,1.0}, {1.0,2.0}};
         double ydata[][2] = {{1.0,0.0}, {2.0,2.0}};
-        err = mtxmatrix_dist_init_entries_global_complex_double(
+        err = mtxmpimatrix_init_entries_global_complex_double(
             &A, mtxbasecoo, mtx_symmetric, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_complex_double(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -3821,7 +3821,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3837,7 +3837,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3853,7 +3853,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3869,7 +3869,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3885,7 +3885,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3901,7 +3901,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3919,7 +3919,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3935,7 +3935,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3951,7 +3951,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3969,7 +3969,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -3985,7 +3985,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4001,7 +4001,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4015,7 +4015,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 
     /*
@@ -4023,7 +4023,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 2;
@@ -4034,7 +4034,7 @@ int test_mtxmatrix_dist_gemv(void)
         double Adata[][2] = {{1.0,0.0}, {3.0,4.0}, {7.0,0.0}};
         double xdata[][2] = {{3.0,1.0}, {1.0,2.0}};
         double ydata[][2] = {{1.0,0.0}, {2.0,2.0}};
-        err = mtxmatrix_dist_init_entries_global_complex_double(
+        err = mtxmpimatrix_init_entries_global_complex_double(
             &A, mtxbasecoo, mtx_hermitian, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_complex_double(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -4042,7 +4042,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4058,7 +4058,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4074,7 +4074,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4090,7 +4090,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4106,7 +4106,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4122,7 +4122,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4140,7 +4140,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4156,7 +4156,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4172,7 +4172,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4190,7 +4190,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4206,7 +4206,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4222,7 +4222,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_complex_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            err = mtxmpimatrix_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4236,7 +4236,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 
     /*
@@ -4244,7 +4244,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 3;
@@ -4255,7 +4255,7 @@ int test_mtxmatrix_dist_gemv(void)
         int32_t Adata[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
         int32_t xdata[] = {3, 2, 1};
         int32_t ydata[] = {1, 0, 2};
-        err = mtxmatrix_dist_init_entries_global_integer_single(
+        err = mtxmpimatrix_init_entries_global_integer_single(
             &A, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_integer_single(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -4263,7 +4263,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4282,7 +4282,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4301,7 +4301,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4320,7 +4320,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4337,7 +4337,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 
     /*
@@ -4345,7 +4345,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 3;
@@ -4356,7 +4356,7 @@ int test_mtxmatrix_dist_gemv(void)
         int32_t Adata[] = {1, 2, 3, 5, 6, 9};
         int32_t xdata[] = {3, 2, 1};
         int32_t ydata[] = {1, 0, 2};
-        err = mtxmatrix_dist_init_entries_global_integer_single(
+        err = mtxmpimatrix_init_entries_global_integer_single(
             &A, mtxbasecoo, mtx_symmetric, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_integer_single(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -4364,7 +4364,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4383,7 +4383,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4402,7 +4402,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4421,7 +4421,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_single(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4438,7 +4438,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 
     /*
@@ -4446,7 +4446,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 3;
@@ -4457,7 +4457,7 @@ int test_mtxmatrix_dist_gemv(void)
         int64_t Adata[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
         int64_t xdata[] = {3, 2, 1};
         int64_t ydata[] = {1, 0, 2};
-        err = mtxmatrix_dist_init_entries_global_integer_double(
+        err = mtxmpimatrix_init_entries_global_integer_double(
             &A, mtxbasecoo, mtx_unsymmetric, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_integer_double(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -4465,7 +4465,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4484,7 +4484,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4503,7 +4503,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4522,7 +4522,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4539,7 +4539,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 
     /*
@@ -4547,7 +4547,7 @@ int test_mtxmatrix_dist_gemv(void)
      */
 
     {
-        struct mtxmatrix_dist A;
+        struct mtxmpimatrix A;
         struct mtxmpivector x;
         struct mtxmpivector y;
         int num_rows = 3;
@@ -4558,7 +4558,7 @@ int test_mtxmatrix_dist_gemv(void)
         int64_t Adata[] = {1, 2, 3, 5, 6, 9};
         int64_t xdata[] = {3, 2, 1};
         int64_t ydata[] = {1, 0, 2};
-        err = mtxmatrix_dist_init_entries_global_integer_double(
+        err = mtxmpimatrix_init_entries_global_integer_double(
             &A, mtxbasecoo, mtx_symmetric, num_rows, num_columns, Annz, Arowidx, Acolidx, Adata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmpivector_init_integer_double(&x, mtxbasevector, num_columns, xnnz, xidx, xdata, comm, &disterr);
@@ -4566,7 +4566,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4585,7 +4585,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            err = mtxmpimatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4604,7 +4604,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4623,7 +4623,7 @@ int test_mtxmatrix_dist_gemv(void)
         {
             err = mtxmpivector_init_integer_double(&y, mtxbasevector, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-            err = mtxmatrix_dist_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            err = mtxmpimatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(mtxbasevector, y.xp.type);
             const struct mtxbasevector * y_ = &y.xp.storage.base;
@@ -4640,7 +4640,7 @@ int test_mtxmatrix_dist_gemv(void)
             mtxmpivector_free(&y);
         }
         mtxmpivector_free(&x);
-        mtxmatrix_dist_free(&A);
+        mtxmpimatrix_free(&A);
     }
 #endif
     mtxdisterror_free(&disterr);
@@ -4667,19 +4667,19 @@ int main(int argc, char * argv[])
 
     /* 2. run test suite. */
     TEST_SUITE_BEGIN("Running tests for distributed matrices\n");
-    TEST_RUN(test_mtxmatrix_dist_from_mtxfile);
-    TEST_RUN(test_mtxmatrix_dist_to_mtxfile);
-    TEST_RUN(test_mtxmatrix_dist_from_mtxdistfile);
-    /* TEST_RUN(test_mtxmatrix_dist_to_mtxdistfile); */
-    TEST_RUN(test_mtxmatrix_dist_split);
-    TEST_RUN(test_mtxmatrix_dist_swap);
-    TEST_RUN(test_mtxmatrix_dist_copy);
-    TEST_RUN(test_mtxmatrix_dist_scal);
-    TEST_RUN(test_mtxmatrix_dist_axpy);
-    TEST_RUN(test_mtxmatrix_dist_dot);
-    TEST_RUN(test_mtxmatrix_dist_nrm2);
-    TEST_RUN(test_mtxmatrix_dist_asum);
-    TEST_RUN(test_mtxmatrix_dist_gemv);
+    TEST_RUN(test_mtxmpimatrix_from_mtxfile);
+    TEST_RUN(test_mtxmpimatrix_to_mtxfile);
+    TEST_RUN(test_mtxmpimatrix_from_mtxdistfile);
+    /* TEST_RUN(test_mtxmpimatrix_to_mtxdistfile); */
+    TEST_RUN(test_mtxmpimatrix_split);
+    TEST_RUN(test_mtxmpimatrix_swap);
+    TEST_RUN(test_mtxmpimatrix_copy);
+    TEST_RUN(test_mtxmpimatrix_scal);
+    TEST_RUN(test_mtxmpimatrix_axpy);
+    TEST_RUN(test_mtxmpimatrix_dot);
+    TEST_RUN(test_mtxmpimatrix_nrm2);
+    TEST_RUN(test_mtxmpimatrix_asum);
+    TEST_RUN(test_mtxmpimatrix_gemv);
     TEST_SUITE_END();
 
     /* 3. clean up and return. */

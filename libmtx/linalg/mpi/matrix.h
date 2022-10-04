@@ -16,13 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-06-06
+ * Last modified: 2022-10-03
  *
  * Data structures and routines for distributed matrices.
  */
 
-#ifndef LIBMTX_MATRIX_DIST_H
-#define LIBMTX_MATRIX_DIST_H
+#ifndef LIBMTX_LINALG_MPI_MATRIX_H
+#define LIBMTX_LINALG_MPI_MATRIX_H
 
 #include <libmtx/libmtx-config.h>
 
@@ -47,14 +47,14 @@ struct mtxdisterror;
 struct mtxmpivector;
 
 /**
- * ‘mtxmatrix_dist’ represents a distributed matrix.
+ * ‘mtxmpimatrix’ represents a distributed matrix.
  *
  * The matrix is thus represented on each process by a contiguous
  * array of elements together with an array of integers designating
  * the offset of each element. This can be thought of as a sum of
  * sparse matrices in packed form with one matrix per process.
  */
-struct mtxmatrix_dist
+struct mtxmpimatrix
 {
     /**
      * ‘comm’ is an MPI communicator for processes among which the
@@ -141,41 +141,41 @@ struct mtxmatrix_dist
 };
 
 /**
- * ‘mtxmatrix_dist_field()’ gets the field of a matrix.
+ * ‘mtxmpimatrix_field()’ gets the field of a matrix.
  */
-int mtxmatrix_dist_field(
-    const struct mtxmatrix_dist * A,
+int mtxmpimatrix_field(
+    const struct mtxmpimatrix * A,
     enum mtxfield * field);
 
 /**
- * ‘mtxmatrix_dist_precision()’ gets the precision of a matrix.
+ * ‘mtxmpimatrix_precision()’ gets the precision of a matrix.
  */
-int mtxmatrix_dist_precision(
-    const struct mtxmatrix_dist * A,
+int mtxmpimatrix_precision(
+    const struct mtxmpimatrix * A,
     enum mtxprecision * precision);
 
 /**
- * ‘mtxmatrix_dist_symmetry()’ gets the symmetry of a matrix.
+ * ‘mtxmpimatrix_symmetry()’ gets the symmetry of a matrix.
  */
-int mtxmatrix_dist_symmetry(
-    const struct mtxmatrix_dist * A,
+int mtxmpimatrix_symmetry(
+    const struct mtxmpimatrix * A,
     enum mtxsymmetry * symmetry);
 
 /**
- * ‘mtxmatrix_dist_num_nonzeros()’ gets the number of the number of
+ * ‘mtxmpimatrix_num_nonzeros()’ gets the number of the number of
  *  nonzero matrix entries, including those represented implicitly due
  *  to symmetry.
  */
-int mtxmatrix_dist_num_nonzeros(
-    const struct mtxmatrix_dist * A,
+int mtxmpimatrix_num_nonzeros(
+    const struct mtxmpimatrix * A,
     int64_t * num_nonzeros);
 
 /**
- * ‘mtxmatrix_dist_size()’ gets the number of explicitly stored
+ * ‘mtxmpimatrix_size()’ gets the number of explicitly stored
  * nonzeros of a matrix.
  */
-int mtxmatrix_dist_size(
-    const struct mtxmatrix_dist * A,
+int mtxmpimatrix_size(
+    const struct mtxmpimatrix * A,
     int64_t * size);
 
 /*
@@ -183,27 +183,27 @@ int mtxmatrix_dist_size(
  */
 
 /**
- * ‘mtxmatrix_dist_free()’ frees storage allocated for a matrix.
+ * ‘mtxmpimatrix_free()’ frees storage allocated for a matrix.
  */
-void mtxmatrix_dist_free(
-    struct mtxmatrix_dist * A);
+void mtxmpimatrix_free(
+    struct mtxmpimatrix * A);
 
 /**
- * ‘mtxmatrix_dist_alloc_copy()’ allocates a copy of a matrix without
+ * ‘mtxmpimatrix_alloc_copy()’ allocates a copy of a matrix without
  * initialising the values.
  */
-int mtxmatrix_dist_alloc_copy(
-    struct mtxmatrix_dist * dst,
-    const struct mtxmatrix_dist * src,
+int mtxmpimatrix_alloc_copy(
+    struct mtxmpimatrix * dst,
+    const struct mtxmpimatrix * src,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_copy()’ allocates a copy of a matrix and also
+ * ‘mtxmpimatrix_init_copy()’ allocates a copy of a matrix and also
  * copies the values.
  */
-int mtxmatrix_dist_init_copy(
-    struct mtxmatrix_dist * dst,
-    const struct mtxmatrix_dist * src,
+int mtxmpimatrix_init_copy(
+    struct mtxmpimatrix * dst,
+    const struct mtxmpimatrix * src,
     struct mtxdisterror * disterr);
 
 /*
@@ -213,11 +213,11 @@ int mtxmatrix_dist_init_copy(
  */
 
 /**
- * ‘mtxmatrix_dist_alloc_entries_local()’ allocates storage for a
+ * ‘mtxmpimatrix_alloc_entries_local()’ allocates storage for a
  * matrix based on entrywise data in coordinate format.
  */
-int mtxmatrix_dist_alloc_entries_local(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_alloc_entries_local(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxfield field,
     enum mtxprecision precision,
@@ -237,12 +237,12 @@ int mtxmatrix_dist_alloc_entries_local(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_local_real_single()’ allocates and
+ * ‘mtxmpimatrix_init_entries_local_real_single()’ allocates and
  * initialises a matrix from data in coordinate format with real,
  * single precision coefficients.
  */
-int mtxmatrix_dist_init_entries_local_real_single(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_local_real_single(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -259,12 +259,12 @@ int mtxmatrix_dist_init_entries_local_real_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_local_real_double()’ allocates and
+ * ‘mtxmpimatrix_init_entries_local_real_double()’ allocates and
  * initialises a matrix from data in coordinate format with real,
  * double precision coefficients.
  */
-int mtxmatrix_dist_init_entries_local_real_double(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_local_real_double(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -281,12 +281,12 @@ int mtxmatrix_dist_init_entries_local_real_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_local_complex_single()’ allocates and
+ * ‘mtxmpimatrix_init_entries_local_complex_single()’ allocates and
  * initialises a matrix from data in coordinate format with complex,
  * single precision coefficients.
  */
-int mtxmatrix_dist_init_entries_local_complex_single(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_local_complex_single(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -303,12 +303,12 @@ int mtxmatrix_dist_init_entries_local_complex_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_local_complex_double()’ allocates and
+ * ‘mtxmpimatrix_init_entries_local_complex_double()’ allocates and
  * initialises a matrix from data in coordinate format with complex,
  * double precision coefficients.
  */
-int mtxmatrix_dist_init_entries_local_complex_double(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_local_complex_double(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -325,12 +325,12 @@ int mtxmatrix_dist_init_entries_local_complex_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_local_integer_single()’ allocates and
+ * ‘mtxmpimatrix_init_entries_local_integer_single()’ allocates and
  * initialises a matrix from data in coordinate format with integer,
  * single precision coefficients.
  */
-int mtxmatrix_dist_init_entries_local_integer_single(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_local_integer_single(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -347,12 +347,12 @@ int mtxmatrix_dist_init_entries_local_integer_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_local_integer_double()’ allocates and
+ * ‘mtxmpimatrix_init_entries_local_integer_double()’ allocates and
  * initialises a matrix from data in coordinate format with integer,
  * double precision coefficients.
  */
-int mtxmatrix_dist_init_entries_local_integer_double(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_local_integer_double(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -369,12 +369,12 @@ int mtxmatrix_dist_init_entries_local_integer_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_local_pattern()’ allocates and
+ * ‘mtxmpimatrix_init_entries_local_pattern()’ allocates and
  * initialises a matrix from data in coordinate format with integer,
  * double precision coefficients.
  */
-int mtxmatrix_dist_init_entries_local_pattern(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_local_pattern(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -395,12 +395,12 @@ int mtxmatrix_dist_init_entries_local_pattern(
  */
 
 /**
- * ‘mtxmatrix_dist_alloc_entries_global()’ allocates a distributed
+ * ‘mtxmpimatrix_alloc_entries_global()’ allocates a distributed
  * matrix, where the local part of the matrix on each process is
  * stored as a matrix of the given type.
  */
-int mtxmatrix_dist_alloc_entries_global(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_alloc_entries_global(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxfield field,
     enum mtxprecision precision,
@@ -416,7 +416,7 @@ int mtxmatrix_dist_alloc_entries_global(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_real_single()’ allocates and
+ * ‘mtxmpimatrix_init_entries_global_real_single()’ allocates and
  * initialises a matrix with real, single precision coefficients.
  *
  * On each process, ‘idx’ and ‘data’ are arrays of length
@@ -424,8 +424,8 @@ int mtxmatrix_dist_alloc_entries_global(
  * respectively, of the matrix elements stored on the process. Note
  * that ‘num_nonzeros’ may differ from one process to the next.
  */
-int mtxmatrix_dist_init_entries_global_real_single(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_real_single(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -438,11 +438,11 @@ int mtxmatrix_dist_init_entries_global_real_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_real_double()’ allocates and
+ * ‘mtxmpimatrix_init_entries_global_real_double()’ allocates and
  * initialises a matrix with real, double precision coefficients.
  */
-int mtxmatrix_dist_init_entries_global_real_double(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_real_double(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -455,11 +455,11 @@ int mtxmatrix_dist_init_entries_global_real_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_complex_single()’ allocates and
+ * ‘mtxmpimatrix_init_entries_global_complex_single()’ allocates and
  * initialises a matrix with complex, single precision coefficients.
  */
-int mtxmatrix_dist_init_entries_global_complex_single(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_complex_single(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -472,11 +472,11 @@ int mtxmatrix_dist_init_entries_global_complex_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_complex_double()’ allocates and
+ * ‘mtxmpimatrix_init_entries_global_complex_double()’ allocates and
  * initialises a matrix with complex, double precision coefficients.
  */
-int mtxmatrix_dist_init_entries_global_complex_double(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_complex_double(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -489,11 +489,11 @@ int mtxmatrix_dist_init_entries_global_complex_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_integer_single()’ allocates and
+ * ‘mtxmpimatrix_init_entries_global_integer_single()’ allocates and
  * initialises a matrix with integer, single precision coefficients.
  */
-int mtxmatrix_dist_init_entries_global_integer_single(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_integer_single(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -506,11 +506,11 @@ int mtxmatrix_dist_init_entries_global_integer_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_integer_double()’ allocates and
+ * ‘mtxmpimatrix_init_entries_global_integer_double()’ allocates and
  * initialises a matrix with integer, double precision coefficients.
  */
-int mtxmatrix_dist_init_entries_global_integer_double(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_integer_double(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -523,12 +523,12 @@ int mtxmatrix_dist_init_entries_global_integer_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_pattern()’ allocates and
+ * ‘mtxmpimatrix_init_entries_global_pattern()’ allocates and
  * initialises a binary pattern matrix, where every entry has a value
  * of one.
  */
-int mtxmatrix_dist_init_entries_global_pattern(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_pattern(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -545,12 +545,12 @@ int mtxmatrix_dist_init_entries_global_pattern(
  */
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_strided_real_single()’
+ * ‘mtxmpimatrix_init_entries_global_strided_real_single()’
  * allocates and initialises a matrix with real, single precision
  * coefficients.
  */
-int mtxmatrix_dist_init_entries_global_strided_real_single(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_strided_real_single(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -566,12 +566,12 @@ int mtxmatrix_dist_init_entries_global_strided_real_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_strided_real_double()’
+ * ‘mtxmpimatrix_init_entries_global_strided_real_double()’
  * allocates and initialises a matrix with real, double precision
  * coefficients.
  */
-int mtxmatrix_dist_init_entries_global_strided_real_double(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_strided_real_double(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -587,12 +587,12 @@ int mtxmatrix_dist_init_entries_global_strided_real_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_strided_complex_single()’
+ * ‘mtxmpimatrix_init_entries_global_strided_complex_single()’
  * allocates and initialises a matrix with complex, single precision
  * coefficients.
  */
-int mtxmatrix_dist_init_entries_global_strided_complex_single(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_strided_complex_single(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -608,12 +608,12 @@ int mtxmatrix_dist_init_entries_global_strided_complex_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_strided_complex_double()’
+ * ‘mtxmpimatrix_init_entries_global_strided_complex_double()’
  * allocates and initialises a matrix with complex, double precision
  * coefficients.
  */
-int mtxmatrix_dist_init_entries_global_strided_complex_double(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_strided_complex_double(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -629,12 +629,12 @@ int mtxmatrix_dist_init_entries_global_strided_complex_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_strided_integer_single()’
+ * ‘mtxmpimatrix_init_entries_global_strided_integer_single()’
  * allocates and initialises a matrix with integer, single precision
  * coefficients.
  */
-int mtxmatrix_dist_init_entries_global_strided_integer_single(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_strided_integer_single(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -650,12 +650,12 @@ int mtxmatrix_dist_init_entries_global_strided_integer_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_strided_integer_double()’
+ * ‘mtxmpimatrix_init_entries_global_strided_integer_double()’
  * allocates and initialises a matrix with integer, double precision
  * coefficients.
  */
-int mtxmatrix_dist_init_entries_global_strided_integer_double(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_strided_integer_double(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -671,12 +671,12 @@ int mtxmatrix_dist_init_entries_global_strided_integer_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_entries_global_pattern()’ allocates and
+ * ‘mtxmpimatrix_init_entries_global_pattern()’ allocates and
  * initialises a binary pattern matrix, where every entry has a value
  * of one.
  */
-int mtxmatrix_dist_init_entries_global_strided_pattern(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_init_entries_global_strided_pattern(
+    struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int64_t num_rows,
@@ -694,60 +694,60 @@ int mtxmatrix_dist_init_entries_global_strided_pattern(
  */
 
 /**
- * ‘mtxmatrix_dist_set_constant_real_single()’ sets every nonzero
+ * ‘mtxmpimatrix_set_constant_real_single()’ sets every nonzero
  * entry of a matrix equal to a constant, single precision floating
  * point number.
  */
-int mtxmatrix_dist_set_constant_real_single(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_set_constant_real_single(
+    struct mtxmpimatrix * A,
     float a,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_set_constant_real_double()’ sets every nonzero
+ * ‘mtxmpimatrix_set_constant_real_double()’ sets every nonzero
  * entry of a matrix equal to a constant, double precision floating
  * point number.
  */
-int mtxmatrix_dist_set_constant_real_double(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_set_constant_real_double(
+    struct mtxmpimatrix * A,
     double a,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_set_constant_complex_single()’ sets every nonzero
+ * ‘mtxmpimatrix_set_constant_complex_single()’ sets every nonzero
  * entry of a matrix equal to a constant, single precision floating
  * point complex number.
  */
-int mtxmatrix_dist_set_constant_complex_single(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_set_constant_complex_single(
+    struct mtxmpimatrix * A,
     float a[2],
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_set_constant_complex_double()’ sets every nonzero
+ * ‘mtxmpimatrix_set_constant_complex_double()’ sets every nonzero
  * entry of a matrix equal to a constant, double precision floating
  * point complex number.
  */
-int mtxmatrix_dist_set_constant_complex_double(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_set_constant_complex_double(
+    struct mtxmpimatrix * A,
     double a[2],
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_set_constant_integer_single()’ sets every nonzero
+ * ‘mtxmpimatrix_set_constant_integer_single()’ sets every nonzero
  * entry of a matrix equal to a constant integer.
  */
-int mtxmatrix_dist_set_constant_integer_single(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_set_constant_integer_single(
+    struct mtxmpimatrix * A,
     int32_t a,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_set_constant_integer_double()’ sets every nonzero
+ * ‘mtxmpimatrix_set_constant_integer_double()’ sets every nonzero
  * entry of a matrix equal to a constant integer.
  */
-int mtxmatrix_dist_set_constant_integer_double(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_set_constant_integer_double(
+    struct mtxmpimatrix * A,
     int64_t a,
     struct mtxdisterror * disterr);
 
@@ -756,23 +756,23 @@ int mtxmatrix_dist_set_constant_integer_double(
  */
 
 /**
- * ‘mtxmatrix_dist_alloc_row_vector()’ allocates a row vector for a
+ * ‘mtxmpimatrix_alloc_row_vector()’ allocates a row vector for a
  * given matrix, where a row vector is a vector whose length equal to
  * a single row of the matrix.
  */
-int mtxmatrix_dist_alloc_row_vector(
-    const struct mtxmatrix_dist * A,
+int mtxmpimatrix_alloc_row_vector(
+    const struct mtxmpimatrix * A,
     struct mtxmpivector * vector,
     enum mtxvectortype vector_type,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_alloc_column_vector()’ allocates a column vector
+ * ‘mtxmpimatrix_alloc_column_vector()’ allocates a column vector
  * for a given matrix, where a column vector is a vector whose length
  * equal to a single column of the matrix.
  */
-int mtxmatrix_dist_alloc_column_vector(
-    const struct mtxmatrix_dist * A,
+int mtxmpimatrix_alloc_column_vector(
+    const struct mtxmpimatrix * A,
     struct mtxmpivector * vector,
     enum mtxvectortype vector_type,
     struct mtxdisterror * disterr);
@@ -782,14 +782,14 @@ int mtxmatrix_dist_alloc_column_vector(
  */
 
 /**
- * ‘mtxmatrix_dist_from_mtxfile()’ converts from a matrix in Matrix
+ * ‘mtxmpimatrix_from_mtxfile()’ converts from a matrix in Matrix
  * Market format.
  *
  * The ‘type’ argument may be used to specify a desired storage format
  * or implementation for the underlying ‘mtxmatrix’ on each process.
  */
-int mtxmatrix_dist_from_mtxfile(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_from_mtxfile(
+    struct mtxmpimatrix * A,
     const struct mtxfile * mtxfile,
     enum mtxmatrixtype type,
     MPI_Comm comm,
@@ -797,37 +797,37 @@ int mtxmatrix_dist_from_mtxfile(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_to_mtxfile()’ converts to a matrix in Matrix Market
+ * ‘mtxmpimatrix_to_mtxfile()’ converts to a matrix in Matrix Market
  * format.
  */
-int mtxmatrix_dist_to_mtxfile(
+int mtxmpimatrix_to_mtxfile(
     struct mtxfile * mtxfile,
-    const struct mtxmatrix_dist * A,
+    const struct mtxmpimatrix * A,
     enum mtxfileformat mtxfmt,
     int root,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_from_mtxdistfile()’ converts from a matrix in
+ * ‘mtxmpimatrix_from_mtxdistfile()’ converts from a matrix in
  * Matrix Market format that is distributed among multiple processes.
  *
  * The ‘type’ argument may be used to specify a desired storage format
  * or implementation for the underlying ‘mtxmatrix’ on each process.
  */
-int mtxmatrix_dist_from_mtxdistfile(
-    struct mtxmatrix_dist * A,
+int mtxmpimatrix_from_mtxdistfile(
+    struct mtxmpimatrix * A,
     const struct mtxdistfile * mtxdistfile,
     enum mtxmatrixtype type,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_to_mtxdistfile()’ converts to a matrix in Matrix
+ * ‘mtxmpimatrix_to_mtxdistfile()’ converts to a matrix in Matrix
  * Market format that is distributed among multiple processes.
  */
-int mtxmatrix_dist_to_mtxdistfile(
+int mtxmpimatrix_to_mtxdistfile(
     struct mtxdistfile * mtxdistfile,
-    const struct mtxmatrix_dist * A,
+    const struct mtxmpimatrix * A,
     enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr);
 
@@ -836,7 +836,7 @@ int mtxmatrix_dist_to_mtxdistfile(
  */
 
 /**
- * ‘mtxmatrix_dist_fwrite()’ writes a distributed matrix to a single
+ * ‘mtxmpimatrix_fwrite()’ writes a distributed matrix to a single
  * stream that is shared by every process in the communicator. The
  * output is written in Matrix Market format.
  *
@@ -865,8 +865,8 @@ int mtxmatrix_dist_to_mtxdistfile(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxmatrix_dist_fwrite(
-    const struct mtxmatrix_dist * A,
+int mtxmpimatrix_fwrite(
+    const struct mtxmpimatrix * A,
     enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
@@ -879,7 +879,7 @@ int mtxmatrix_dist_fwrite(
  */
 
 /**
- * ‘mtxmatrix_dist_split()’ splits a matrix into multiple matrices
+ * ‘mtxmpimatrix_split()’ splits a matrix into multiple matrices
  * according to a given assignment of parts to each nonzero matrix
  * element.
  *
@@ -891,17 +891,17 @@ int mtxmatrix_dist_fwrite(
  * corresponding matrix nonzero belongs.
  *
  * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
- * of type ‘struct mtxmatrix_dist’. If successful, then ‘dsts[p]’
+ * of type ‘struct mtxmpimatrix’. If successful, then ‘dsts[p]’
  * points to a matrix consisting of elements from ‘src’ that belong to
  * the ‘p’th part, as designated by the ‘parts’ array.
  *
- * The caller is responsible for calling ‘mtxmatrix_dist_free()’ to
+ * The caller is responsible for calling ‘mtxmpimatrix_free()’ to
  * free storage allocated for each matrix in the ‘dsts’ array.
  */
-int mtxmatrix_dist_split(
+int mtxmpimatrix_split(
     int num_parts,
-    struct mtxmatrix_dist ** dsts,
-    const struct mtxmatrix_dist * src,
+    struct mtxmpimatrix ** dsts,
+    const struct mtxmpimatrix * src,
     int64_t size,
     int * parts,
     int64_t * invperm,
@@ -912,7 +912,7 @@ int mtxmatrix_dist_split(
  */
 
 /**
- * ‘mtxmatrix_dist_swap()’ swaps values of two matrices,
+ * ‘mtxmpimatrix_swap()’ swaps values of two matrices,
  * simultaneously performing ‘y <- x’ and ‘x <- y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
@@ -920,66 +920,66 @@ int mtxmatrix_dist_split(
  * given process, both matrices must also have the same number of
  * nonzero elements on that process.
  */
-int mtxmatrix_dist_swap(
-    struct mtxmatrix_dist * x,
-    struct mtxmatrix_dist * y,
+int mtxmpimatrix_swap(
+    struct mtxmpimatrix * x,
+    struct mtxmpimatrix * y,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_copy()’ copies values of a matrix, ‘y = x’.
+ * ‘mtxmpimatrix_copy()’ copies values of a matrix, ‘y = x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same total number of nonzero elements. On any
  * given process, both matrices must also have the same number of
  * nonzero elements on that process.
  */
-int mtxmatrix_dist_copy(
-    struct mtxmatrix_dist * y,
-    const struct mtxmatrix_dist * x,
+int mtxmpimatrix_copy(
+    struct mtxmpimatrix * y,
+    const struct mtxmpimatrix * x,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_sscal()’ scales a matrix by a single precision
+ * ‘mtxmpimatrix_sscal()’ scales a matrix by a single precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxmatrix_dist_sscal(
+int mtxmpimatrix_sscal(
     float a,
-    struct mtxmatrix_dist * x,
+    struct mtxmpimatrix * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_dscal()’ scales a matrix by a double precision
+ * ‘mtxmpimatrix_dscal()’ scales a matrix by a double precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxmatrix_dist_dscal(
+int mtxmpimatrix_dscal(
     double a,
-    struct mtxmatrix_dist * x,
+    struct mtxmpimatrix * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_cscal()’ scales a matrix by a complex, single
+ * ‘mtxmpimatrix_cscal()’ scales a matrix by a complex, single
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxmatrix_dist_cscal(
+int mtxmpimatrix_cscal(
     float a[2],
-    struct mtxmatrix_dist * x,
+    struct mtxmpimatrix * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_zscal()’ scales a matrix by a complex, double
+ * ‘mtxmpimatrix_zscal()’ scales a matrix by a complex, double
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxmatrix_dist_zscal(
+int mtxmpimatrix_zscal(
     double a[2],
-    struct mtxmatrix_dist * x,
+    struct mtxmpimatrix * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_saxpy()’ adds a matrix to another one multiplied by
+ * ‘mtxmpimatrix_saxpy()’ adds a matrix to another one multiplied by
  * a single precision floating point value, ‘y = a*x + y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
@@ -990,15 +990,15 @@ int mtxmatrix_dist_zscal(
  * undefined. However, repeated indices in the dist matrices are
  * allowed.
  */
-int mtxmatrix_dist_saxpy(
+int mtxmpimatrix_saxpy(
     float a,
-    const struct mtxmatrix_dist * x,
-    struct mtxmatrix_dist * y,
+    const struct mtxmpimatrix * x,
+    struct mtxmpimatrix * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_daxpy()’ adds a matrix to another one multiplied by
+ * ‘mtxmpimatrix_daxpy()’ adds a matrix to another one multiplied by
  * a double precision floating point value, ‘y = a*x + y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
@@ -1009,15 +1009,15 @@ int mtxmatrix_dist_saxpy(
  * undefined. However, repeated indices in the dist matrices are
  * allowed.
  */
-int mtxmatrix_dist_daxpy(
+int mtxmpimatrix_daxpy(
     double a,
-    const struct mtxmatrix_dist * x,
-    struct mtxmatrix_dist * y,
+    const struct mtxmpimatrix * x,
+    struct mtxmpimatrix * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_saypx()’ multiplies a matrix by a single precision
+ * ‘mtxmpimatrix_saypx()’ multiplies a matrix by a single precision
  * floating point scalar and adds another matrix, ‘y = a*y + x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
@@ -1028,15 +1028,15 @@ int mtxmatrix_dist_daxpy(
  * undefined. However, repeated indices in the dist matrices are
  * allowed.
  */
-int mtxmatrix_dist_saypx(
+int mtxmpimatrix_saypx(
     float a,
-    struct mtxmatrix_dist * y,
-    const struct mtxmatrix_dist * x,
+    struct mtxmpimatrix * y,
+    const struct mtxmpimatrix * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_daypx()’ multiplies a matrix by a double precision
+ * ‘mtxmpimatrix_daypx()’ multiplies a matrix by a double precision
  * floating point scalar and adds another matrix, ‘y = a*y + x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
@@ -1047,15 +1047,15 @@ int mtxmatrix_dist_saypx(
  * undefined. However, repeated indices in the dist matrices are
  * allowed.
  */
-int mtxmatrix_dist_daypx(
+int mtxmpimatrix_daypx(
     double a,
-    struct mtxmatrix_dist * y,
-    const struct mtxmatrix_dist * x,
+    struct mtxmpimatrix * y,
+    const struct mtxmpimatrix * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_sdot()’ computes the Euclidean dot product of two
+ * ‘mtxmpimatrix_sdot()’ computes the Euclidean dot product of two
  * matrices in single precision floating point.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
@@ -1066,15 +1066,15 @@ int mtxmatrix_dist_daypx(
  * undefined. Moreover, repeated indices in the dist matrix are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmatrix_dist_sdot(
-    const struct mtxmatrix_dist * x,
-    const struct mtxmatrix_dist * y,
+int mtxmpimatrix_sdot(
+    const struct mtxmpimatrix * x,
+    const struct mtxmpimatrix * y,
     float * dot,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_ddot()’ computes the Euclidean dot product of two
+ * ‘mtxmpimatrix_ddot()’ computes the Euclidean dot product of two
  * matrices in double precision floating point.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
@@ -1085,15 +1085,15 @@ int mtxmatrix_dist_sdot(
  * undefined. Moreover, repeated indices in the dist matrix are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmatrix_dist_ddot(
-    const struct mtxmatrix_dist * x,
-    const struct mtxmatrix_dist * y,
+int mtxmpimatrix_ddot(
+    const struct mtxmpimatrix * x,
+    const struct mtxmpimatrix * y,
     double * dot,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_cdotu()’ computes the product of the transpose of a
+ * ‘mtxmpimatrix_cdotu()’ computes the product of the transpose of a
  * complex row matrix with another complex row matrix in single
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -1105,15 +1105,15 @@ int mtxmatrix_dist_ddot(
  * undefined. Moreover, repeated indices in the dist matrix are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmatrix_dist_cdotu(
-    const struct mtxmatrix_dist * x,
-    const struct mtxmatrix_dist * y,
+int mtxmpimatrix_cdotu(
+    const struct mtxmpimatrix * x,
+    const struct mtxmpimatrix * y,
     float (* dot)[2],
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_zdotu()’ computes the product of the transpose of a
+ * ‘mtxmpimatrix_zdotu()’ computes the product of the transpose of a
  * complex row matrix with another complex row matrix in double
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -1125,15 +1125,15 @@ int mtxmatrix_dist_cdotu(
  * undefined. Moreover, repeated indices in the dist matrix are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmatrix_dist_zdotu(
-    const struct mtxmatrix_dist * x,
-    const struct mtxmatrix_dist * y,
+int mtxmpimatrix_zdotu(
+    const struct mtxmpimatrix * x,
+    const struct mtxmpimatrix * y,
     double (* dot)[2],
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_cdotc()’ computes the Euclidean dot product of two
+ * ‘mtxmpimatrix_cdotc()’ computes the Euclidean dot product of two
  * complex matrices in single precision floating point, ‘dot :=
  * x^H*y’.
  *
@@ -1145,15 +1145,15 @@ int mtxmatrix_dist_zdotu(
  * undefined. Moreover, repeated indices in the dist matrix are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmatrix_dist_cdotc(
-    const struct mtxmatrix_dist * x,
-    const struct mtxmatrix_dist * y,
+int mtxmpimatrix_cdotc(
+    const struct mtxmpimatrix * x,
+    const struct mtxmpimatrix * y,
     float (* dot)[2],
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_zdotc()’ computes the Euclidean dot product of two
+ * ‘mtxmpimatrix_zdotc()’ computes the Euclidean dot product of two
  * complex matrices in double precision floating point, ‘dot :=
  * x^H*y’.
  *
@@ -1165,71 +1165,71 @@ int mtxmatrix_dist_cdotc(
  * undefined. Moreover, repeated indices in the dist matrix are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmatrix_dist_zdotc(
-    const struct mtxmatrix_dist * x,
-    const struct mtxmatrix_dist * y,
+int mtxmpimatrix_zdotc(
+    const struct mtxmpimatrix * x,
+    const struct mtxmpimatrix * y,
     double (* dot)[2],
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_snrm2()’ computes the Euclidean norm of a matrix in
+ * ‘mtxmpimatrix_snrm2()’ computes the Euclidean norm of a matrix in
  * single precision floating point. Repeated indices in the dist
  * matrix are not allowed, otherwise the result is undefined.
  */
-int mtxmatrix_dist_snrm2(
-    const struct mtxmatrix_dist * x,
+int mtxmpimatrix_snrm2(
+    const struct mtxmpimatrix * x,
     float * nrm2,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_dnrm2()’ computes the Euclidean norm of a matrix in
+ * ‘mtxmpimatrix_dnrm2()’ computes the Euclidean norm of a matrix in
  * double precision floating point. Repeated indices in the dist
  * matrix are not allowed, otherwise the result is undefined.
  */
-int mtxmatrix_dist_dnrm2(
-    const struct mtxmatrix_dist * x,
+int mtxmpimatrix_dnrm2(
+    const struct mtxmpimatrix * x,
     double * nrm2,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_sasum()’ computes the sum of absolute values
+ * ‘mtxmpimatrix_sasum()’ computes the sum of absolute values
  * (1-norm) of a matrix in single precision floating point.  If the
  * matrix is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed. Repeated indices in the
  * dist matrix are not allowed, otherwise the result is undefined.
  */
-int mtxmatrix_dist_sasum(
-    const struct mtxmatrix_dist * x,
+int mtxmpimatrix_sasum(
+    const struct mtxmpimatrix * x,
     float * asum,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_dasum()’ computes the sum of absolute values
+ * ‘mtxmpimatrix_dasum()’ computes the sum of absolute values
  * (1-norm) of a matrix in double precision floating point.  If the
  * matrix is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed. Repeated indices in the
  * dist matrix are not allowed, otherwise the result is undefined.
  */
-int mtxmatrix_dist_dasum(
-    const struct mtxmatrix_dist * x,
+int mtxmpimatrix_dasum(
+    const struct mtxmpimatrix * x,
     double * asum,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_iamax()’ finds the index of the first element
+ * ‘mtxmpimatrix_iamax()’ finds the index of the first element
  * having the maximum absolute value.  If the matrix is
  * complex-valued, then the index points to the first element having
  * the maximum sum of the absolute values of the real and imaginary
  * parts. Repeated indices in the dist matrix are not allowed,
  * otherwise the result is undefined.
  */
-int mtxmatrix_dist_iamax(
-    const struct mtxmatrix_dist * x,
+int mtxmpimatrix_iamax(
+    const struct mtxmpimatrix * x,
     int * iamax,
     struct mtxdisterror * disterr);
 
@@ -1238,7 +1238,7 @@ int mtxmatrix_dist_iamax(
  */
 
 /**
- * ‘mtxmatrix_dist_sgemv()’ multiplies a matrix ‘A’ or its transpose
+ * ‘mtxmpimatrix_sgemv()’ multiplies a matrix ‘A’ or its transpose
  * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
  * the result to another vector ‘y’ multiplied by another real scalar
  * ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
@@ -1246,10 +1246,10 @@ int mtxmatrix_dist_iamax(
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
  */
-int mtxmatrix_dist_sgemv(
+int mtxmpimatrix_sgemv(
     enum mtxtransposition trans,
     float alpha,
-    const struct mtxmatrix_dist * A,
+    const struct mtxmpimatrix * A,
     const struct mtxmpivector * x,
     float beta,
     struct mtxmpivector * y,
@@ -1257,7 +1257,7 @@ int mtxmatrix_dist_sgemv(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_dgemv()’ multiplies a matrix ‘A’ or its transpose
+ * ‘mtxmpimatrix_dgemv()’ multiplies a matrix ‘A’ or its transpose
  * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
  * the result to another vector ‘y’ multiplied by another scalar real
  * ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
@@ -1265,10 +1265,10 @@ int mtxmatrix_dist_sgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
  */
-int mtxmatrix_dist_dgemv(
+int mtxmpimatrix_dgemv(
     enum mtxtransposition trans,
     double alpha,
-    const struct mtxmatrix_dist * A,
+    const struct mtxmpimatrix * A,
     const struct mtxmpivector * x,
     double beta,
     struct mtxmpivector * y,
@@ -1276,7 +1276,7 @@ int mtxmatrix_dist_dgemv(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_cgemv()’ multiplies a complex-valued matrix ‘A’,
+ * ‘mtxmpimatrix_cgemv()’ multiplies a complex-valued matrix ‘A’,
  * its transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex
  * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
  * another vector ‘y’ multiplied by another complex scalar ‘beta’
@@ -1286,10 +1286,10 @@ int mtxmatrix_dist_dgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
  */
-int mtxmatrix_dist_cgemv(
+int mtxmpimatrix_cgemv(
     enum mtxtransposition trans,
     float alpha[2],
-    const struct mtxmatrix_dist * A,
+    const struct mtxmpimatrix * A,
     const struct mtxmpivector * x,
     float beta[2],
     struct mtxmpivector * y,
@@ -1297,7 +1297,7 @@ int mtxmatrix_dist_cgemv(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_zgemv()’ multiplies a complex-valued matrix ‘A’,
+ * ‘mtxmpimatrix_zgemv()’ multiplies a complex-valued matrix ‘A’,
  * its transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex
  * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
  * another vector ‘y’ multiplied by another complex scalar ‘beta’
@@ -1307,10 +1307,10 @@ int mtxmatrix_dist_cgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
  */
-int mtxmatrix_dist_zgemv(
+int mtxmpimatrix_zgemv(
     enum mtxtransposition trans,
     double alpha[2],
-    const struct mtxmatrix_dist * A,
+    const struct mtxmpimatrix * A,
     const struct mtxmpivector * x,
     double beta[2],
     struct mtxmpivector * y,
@@ -1322,48 +1322,48 @@ int mtxmatrix_dist_zgemv(
  * overlapping of computation and communication
  */
 
-struct mtxmatrix_dist_gemv_impl;
+struct mtxmpimatrix_gemv_impl;
 
 /**
- * ‘mtxmatrix_dist_gemv’ is a data structure for a persistent,
+ * ‘mtxmpimatrix_gemv’ is a data structure for a persistent,
  * matrix-vector multiply operation.
  */
-struct mtxmatrix_dist_gemv
+struct mtxmpimatrix_gemv
 {
     enum mtxtransposition trans;
-    const struct mtxmatrix_dist * A;
+    const struct mtxmpimatrix * A;
     const struct mtxmpivector * x;
     struct mtxmpivector * y;
     enum mtxgemvoverlap overlap;
-    struct mtxmatrix_dist_gemv_impl * impl;
+    struct mtxmpimatrix_gemv_impl * impl;
 };
 
 /**
- * ‘mtxmatrix_dist_gemv_init()’ allocates data structures for a
+ * ‘mtxmpimatrix_gemv_init()’ allocates data structures for a
  * persistent, matrix-vector multiply operation.
  *
  * This is used in cases where the matrix-vector multiply operation is
  * performed repeatedly, since the setup phase only needs to be
  * carried out once.
  */
-int mtxmatrix_dist_gemv_init(
-    struct mtxmatrix_dist_gemv * gemv,
+int mtxmpimatrix_gemv_init(
+    struct mtxmpimatrix_gemv * gemv,
     enum mtxtransposition trans,
-    const struct mtxmatrix_dist * A,
+    const struct mtxmpimatrix * A,
     const struct mtxmpivector * x,
     struct mtxmpivector * y,
     enum mtxgemvoverlap overlap,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_gemv_free()’ frees resources associated with a
+ * ‘mtxmpimatrix_gemv_free()’ frees resources associated with a
  * persistent, matrix-vector multiply operation.
  */
-void mtxmatrix_dist_gemv_free(
-    struct mtxmatrix_dist_gemv * gemv);
+void mtxmpimatrix_gemv_free(
+    struct mtxmpimatrix_gemv * gemv);
 
 /**
- * ‘mtxmatrix_dist_gemv_sgemv()’ initiates a matrix-vector multiply
+ * ‘mtxmpimatrix_gemv_sgemv()’ initiates a matrix-vector multiply
  * operation to multiply a matrix ‘A’ or its transpose ‘A'’ by a real
  * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
  * another vector ‘y’ multiplied by another real scalar ‘beta’
@@ -1372,17 +1372,17 @@ void mtxmatrix_dist_gemv_free(
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
  *
- * The operation may not complete before ‘mtxmatrix_dist_gemv_wait()’
+ * The operation may not complete before ‘mtxmpimatrix_gemv_wait()’
  * is called.
  */
-int mtxmatrix_dist_gemv_sgemv(
-    struct mtxmatrix_dist_gemv * gemv,
+int mtxmpimatrix_gemv_sgemv(
+    struct mtxmpimatrix_gemv * gemv,
     float alpha,
     float beta,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_gemv_dgemv()’ initiates a matrix-vector multiply
+ * ‘mtxmpimatrix_gemv_dgemv()’ initiates a matrix-vector multiply
  * operation to multiply a matrix ‘A’ or its transpose ‘A'’ by a real
  * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
  * another vector ‘y’ multiplied by another real scalar ‘beta’
@@ -1391,17 +1391,17 @@ int mtxmatrix_dist_gemv_sgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
  *
- * The operation may not complete before ‘mtxmatrix_dist_gemv_wait()’
+ * The operation may not complete before ‘mtxmpimatrix_gemv_wait()’
  * is called.
  */
-int mtxmatrix_dist_gemv_dgemv(
-    struct mtxmatrix_dist_gemv * gemv,
+int mtxmpimatrix_gemv_dgemv(
+    struct mtxmpimatrix_gemv * gemv,
     double alpha,
     double beta,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_gemv_cgemv()’ initiates a matrix-vector multiply
+ * ‘mtxmpimatrix_gemv_cgemv()’ initiates a matrix-vector multiply
  * operation to multiply a complex-values matrix ‘A’, its transpose
  * ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar ‘alpha’
  * (‘α’) and a vector ‘x’, before adding the result to another vector
@@ -1411,17 +1411,17 @@ int mtxmatrix_dist_gemv_dgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
  *
- * The operation may not complete before ‘mtxmatrix_dist_gemv_wait()’
+ * The operation may not complete before ‘mtxmpimatrix_gemv_wait()’
  * is called.
  */
-int mtxmatrix_dist_gemv_cgemv(
-    struct mtxmatrix_dist_gemv * gemv,
+int mtxmpimatrix_gemv_cgemv(
+    struct mtxmpimatrix_gemv * gemv,
     float alpha[2],
     float beta[2],
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_gemv_zgemv()’ initiates a matrix-vector multiply
+ * ‘mtxmpimatrix_gemv_zgemv()’ initiates a matrix-vector multiply
  * operation to multiply a complex-values matrix ‘A’, its transpose
  * ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar ‘alpha’
  * (‘α’) and a vector ‘x’, before adding the result to another vector
@@ -1431,21 +1431,21 @@ int mtxmatrix_dist_gemv_cgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
  *
- * The operation may not complete before ‘mtxmatrix_dist_gemv_wait()’
+ * The operation may not complete before ‘mtxmpimatrix_gemv_wait()’
  * is called.
  */
-int mtxmatrix_dist_gemv_zgemv(
-    struct mtxmatrix_dist_gemv * gemv,
+int mtxmpimatrix_gemv_zgemv(
+    struct mtxmpimatrix_gemv * gemv,
     double alpha[2],
     double beta[2],
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_gemv_wait()’ waits for a persistent, matrix-vector
+ * ‘mtxmpimatrix_gemv_wait()’ waits for a persistent, matrix-vector
  * multiply operation to finish.
  */
-int mtxmatrix_dist_gemv_wait(
-    struct mtxmatrix_dist_gemv * gemv,
+int mtxmpimatrix_gemv_wait(
+    struct mtxmpimatrix_gemv * gemv,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 #endif
