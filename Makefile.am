@@ -46,7 +46,7 @@ EXTRA_DIST = \
 	tests/test_mtxdistfile_parallel \
 	tests/test_mtxfile_mpi_parallel \
 	tests/test_mtxmatrix_dist_parallel \
-	tests/test_mtxvector_dist_parallel
+	tests/test_mtxmpivector_parallel
 
 # Matrix Market library
 lib_LTLIBRARIES = libmtx.la
@@ -279,12 +279,12 @@ TESTS += tests/test_mtxompvector
 endif
 
 if HAVE_MPI
-tests_test_mtxvector_dist_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxvector_dist_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxvector_dist_SOURCES = tests/test_mtxvector_dist.c tests/test.h
-check_PROGRAMS += tests/test_mtxvector_dist
-TESTS += tests/test_mtxvector_dist_parallel
-tests/test_mtxvector_dist_parallel:  tests/test_mtxvector_dist
+tests_test_mtxmpivector_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxmpivector_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxmpivector_SOURCES = tests/test_mtxmpivector.c tests/test.h
+check_PROGRAMS += tests/test_mtxmpivector
+TESTS += tests/test_mtxmpivector_parallel
+tests/test_mtxmpivector_parallel:  tests/test_mtxmpivector
 endif
 
 # matrix

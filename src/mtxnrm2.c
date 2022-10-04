@@ -508,13 +508,13 @@ static int distvector_nrm2(
 
     /* 1. Convert Matrix Market file to a vector. */
     if (verbose > 0) {
-        fprintf(diagf, "mtxvector_dist_from_mtxdistfile: ");
+        fprintf(diagf, "mtxmpivector_from_mtxdistfile: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
-    struct mtxvector_dist x;
-    err = mtxvector_dist_from_mtxdistfile(
+    struct mtxmpivector x;
+    err = mtxmpivector_from_mtxdistfile(
         &x, mtxdistfile, vector_type, comm, disterr);
     if (err) {
         if (verbose > 0) fprintf(diagf, "\n");
@@ -530,16 +530,16 @@ static int distvector_nrm2(
     /* 2. Compute the Euclidean norm. */
     if (precision == mtx_single) {
         if (verbose > 0) {
-            fprintf(diagf, "mtxvector_dist_snrm2: ");
+            fprintf(diagf, "mtxmpivector_snrm2: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
         float nrm2 = 0.0f;
         int64_t num_flops = 0;
-        err = mtxvector_dist_snrm2(&x, &nrm2, &num_flops, disterr);
+        err = mtxmpivector_snrm2(&x, &nrm2, &num_flops, disterr);
         if (err) {
             if (verbose > 0) fprintf(diagf, "\n");
-            mtxvector_dist_free(&x);
+            mtxmpivector_free(&x);
             return err;
         }
         clock_gettime(CLOCK_MONOTONIC, &t1);
@@ -565,16 +565,16 @@ static int distvector_nrm2(
         }
     } else if (precision == mtx_double) {
         if (verbose > 0) {
-            fprintf(diagf, "mtxvector_dist_dnrm2: ");
+            fprintf(diagf, "mtxmpivector_dnrm2: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
         double nrm2 = 0.0;
         int64_t num_flops = 0;
-        err = mtxvector_dist_dnrm2(&x, &nrm2, &num_flops, disterr);
+        err = mtxmpivector_dnrm2(&x, &nrm2, &num_flops, disterr);
         if (err) {
             if (verbose > 0) fprintf(diagf, "\n");
-            mtxvector_dist_free(&x);
+            mtxmpivector_free(&x);
             return err;
         }
         clock_gettime(CLOCK_MONOTONIC, &t1);
@@ -599,10 +599,10 @@ static int distvector_nrm2(
             fputc('\n', stdout);
         }
     } else {
-        mtxvector_dist_free(&x);
+        mtxmpivector_free(&x);
         return MTX_ERR_INVALID_PRECISION;
     }
-    mtxvector_dist_free(&x);
+    mtxmpivector_free(&x);
     return MTX_SUCCESS;
 }
 

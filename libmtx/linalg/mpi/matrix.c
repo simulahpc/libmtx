@@ -1075,7 +1075,7 @@ int mtxmatrix_dist_set_constant_integer_double(
  */
 int mtxmatrix_dist_alloc_row_vector(
     const struct mtxmatrix_dist * A,
-    struct mtxvector_dist * x,
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     struct mtxdisterror * disterr)
 {
@@ -1085,7 +1085,7 @@ int mtxmatrix_dist_alloc_row_vector(
     enum mtxprecision precision;
     err = mtxmatrix_dist_precision(A, &precision);
     if (err) return err;
-    return mtxvector_dist_alloc(
+    return mtxmpivector_alloc(
         x, type, field, precision, A->num_columns,
         A->colmapsize, A->colmap, A->comm, disterr);
 }
@@ -1097,7 +1097,7 @@ int mtxmatrix_dist_alloc_row_vector(
  */
 int mtxmatrix_dist_alloc_column_vector(
     const struct mtxmatrix_dist * A,
-    struct mtxvector_dist * y,
+    struct mtxmpivector * y,
     enum mtxvectortype type,
     struct mtxdisterror * disterr)
 {
@@ -1107,7 +1107,7 @@ int mtxmatrix_dist_alloc_column_vector(
     enum mtxprecision precision;
     err = mtxmatrix_dist_precision(A, &precision);
     if (err) return err;
-    return mtxvector_dist_alloc(
+    return mtxmpivector_alloc(
         y, type, field, precision, A->num_rows,
         A->rowmapsize, A->rowmap, A->comm, disterr);
 }
@@ -2398,9 +2398,9 @@ int mtxmatrix_dist_sgemv(
     enum mtxtransposition trans,
     float alpha,
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
+    const struct mtxmpivector * x,
     float beta,
-    struct mtxvector_dist * y,
+    struct mtxmpivector * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
@@ -2429,9 +2429,9 @@ int mtxmatrix_dist_dgemv(
     enum mtxtransposition trans,
     double alpha,
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
+    const struct mtxmpivector * x,
     double beta,
-    struct mtxvector_dist * y,
+    struct mtxmpivector * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
@@ -2462,9 +2462,9 @@ int mtxmatrix_dist_cgemv(
     enum mtxtransposition trans,
     float alpha[2],
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
+    const struct mtxmpivector * x,
     float beta[2],
-    struct mtxvector_dist * y,
+    struct mtxmpivector * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
@@ -2483,9 +2483,9 @@ int mtxmatrix_dist_zgemv(
     enum mtxtransposition trans,
     double alpha[2],
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
+    const struct mtxmpivector * x,
     double beta[2],
-    struct mtxvector_dist * y,
+    struct mtxmpivector * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
@@ -2504,18 +2504,18 @@ struct mtxmatrix_dist_gemv_impl
     struct mtxmatrix_dist Arowhalo;
     struct mtxmatrix_dist Acolhalo;
     struct mtxmatrix_dist Aext;
-    struct mtxvector_dist xint;
-    struct mtxvector_dist xhalo;
+    struct mtxmpivector xint;
+    struct mtxmpivector xhalo;
     bool yhalo_needed;
     struct mtxvector yint;
     struct mtxvector yhalo;
-    struct mtxvector_dist_usscga usscga_xint;
-    struct mtxvector_dist_usscga usscga_xhalo;
+    struct mtxmpivector_usscga usscga_xint;
+    struct mtxmpivector_usscga usscga_xhalo;
 
-    struct mtxvector_dist z;
-    struct mtxvector_dist w;
+    struct mtxmpivector z;
+    struct mtxmpivector w;
     int64_t num_flops;
-    struct mtxvector_dist_usscga usscga;
+    struct mtxmpivector_usscga usscga;
     enum mtxfield field;
     enum mtxprecision precision;
     float salpha, sbeta;
@@ -2535,8 +2535,8 @@ struct mtxmatrix_dist_gemv_impl
 static int mtxmatrix_dist_gemv_rowparts(
     enum mtxtransposition trans,
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
-    const struct mtxvector_dist * y,
+    const struct mtxmpivector * x,
+    const struct mtxmpivector * y,
     int * dstrowparts)
 {
     int64_t num_nonzeros;
@@ -2600,8 +2600,8 @@ static int mtxmatrix_dist_gemv_rowparts(
 static int mtxmatrix_dist_gemv_colparts(
     enum mtxtransposition trans,
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
-    const struct mtxvector_dist * y,
+    const struct mtxmpivector * x,
+    const struct mtxmpivector * y,
     int * dstcolparts,
     int * dstxcolparts)
 {
@@ -2708,14 +2708,14 @@ static int mtxmatrix_dist_gemv_colparts(
 static int mtxmatrix_dist_gemv_partition(
     enum mtxtransposition trans,
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
-    const struct mtxvector_dist * y,
+    const struct mtxmpivector * x,
+    const struct mtxmpivector * y,
     struct mtxmatrix_dist * Aint,
     struct mtxmatrix_dist * Aext,
     struct mtxmatrix_dist * Arowhalo,
     struct mtxmatrix_dist * Acolhalo,
-    struct mtxvector_dist * xint,
-    struct mtxvector_dist * xhalo,
+    struct mtxmpivector * xint,
+    struct mtxmpivector * xhalo,
     bool * yhalo_needed,
     struct mtxvector * yint,
     struct mtxvector * yhalo,
@@ -2847,8 +2847,8 @@ static int mtxmatrix_dist_gemv_partition(
     free(ydstrowparts);
 
     /* /\* split the source vector into interior and halo parts *\/ */
-    /* struct mtxvector_dist * xdsts[2] = {xint, xhalo}; */
-    /* err = mtxvector_dist_split( */
+    /* struct mtxmpivector * xdsts[2] = {xint, xhalo}; */
+    /* err = mtxmpivector_split( */
     /*     2, xdsts, x, num_nonzeros, dstxcolparts, NULL, disterr); */
     /* if (err) { */
     /*     free(dstxcolparts); free(dstcolparts); */
@@ -2878,8 +2878,8 @@ int mtxmatrix_dist_gemv_init(
     struct mtxmatrix_dist_gemv * gemv,
     enum mtxtransposition trans,
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
-    struct mtxvector_dist * y,
+    const struct mtxmpivector * x,
+    struct mtxmpivector * y,
     enum mtxgemvoverlap overlap,
     struct mtxdisterror * disterr)
 {
@@ -2913,21 +2913,21 @@ int mtxmatrix_dist_gemv_init(
             err = mtxmatrix_dist_alloc_row_vector(
                 A, &impl->w, y->xp.type, disterr);
         } else {
-            mtxvector_dist_free(&impl->z);
+            mtxmpivector_free(&impl->z);
             free(impl);
             return MTX_ERR_INVALID_TRANSPOSITION;
         }
         if (err) {
-            mtxvector_dist_free(&impl->z);
+            mtxmpivector_free(&impl->z);
             free(impl);
             return err;
         }
 
-        err = mtxvector_dist_usscga_init(
+        err = mtxmpivector_usscga_init(
             &gemv->impl->usscga, &gemv->impl->z, x, disterr);
         if (err) {
-            mtxvector_dist_free(&impl->w);
-            mtxvector_dist_free(&impl->z);
+            mtxmpivector_free(&impl->w);
+            mtxmpivector_free(&impl->z);
             free(impl);
             return err;
         }
@@ -2944,10 +2944,10 @@ int mtxmatrix_dist_gemv_init(
         if (err) return err;
 
         /* set up the communication for the source vector halo */
-        err = mtxvector_dist_usscga_init(&impl->usscga_xint, &impl->xint, x, disterr);
+        err = mtxmpivector_usscga_init(&impl->usscga_xint, &impl->xint, x, disterr);
         if (err) {
             if (impl->yhalo_needed) { mtxvector_free(&impl->yint); mtxvector_free(&impl->yhalo); }
-            mtxvector_dist_free(&impl->xint); mtxvector_dist_free(&impl->xhalo);
+            mtxmpivector_free(&impl->xint); mtxmpivector_free(&impl->xhalo);
             mtxmatrix_dist_free(&impl->Aint); mtxmatrix_dist_free(&impl->Aext);
             mtxmatrix_dist_free(&impl->Arowhalo); mtxmatrix_dist_free(&impl->Acolhalo);
             free(impl);
@@ -2955,11 +2955,11 @@ int mtxmatrix_dist_gemv_init(
         }
 
         /* set up the communication for the source vector halo */
-        err = mtxvector_dist_usscga_init(&impl->usscga_xhalo, &impl->xhalo, x, disterr);
+        err = mtxmpivector_usscga_init(&impl->usscga_xhalo, &impl->xhalo, x, disterr);
         if (err) {
-            mtxvector_dist_usscga_free(&impl->usscga_xint);
+            mtxmpivector_usscga_free(&impl->usscga_xint);
             if (impl->yhalo_needed) { mtxvector_free(&impl->yint); mtxvector_free(&impl->yhalo); }
-            mtxvector_dist_free(&impl->xint); mtxvector_dist_free(&impl->xhalo);
+            mtxmpivector_free(&impl->xint); mtxmpivector_free(&impl->xhalo);
             mtxmatrix_dist_free(&impl->Aint); mtxmatrix_dist_free(&impl->Aext);
             mtxmatrix_dist_free(&impl->Arowhalo); mtxmatrix_dist_free(&impl->Acolhalo);
             free(impl);
@@ -2979,14 +2979,14 @@ void mtxmatrix_dist_gemv_free(
     struct mtxmatrix_dist_gemv * gemv)
 {
     if (gemv->overlap == mtxgemvoverlap_none) {
-        mtxvector_dist_usscga_free(&gemv->impl->usscga);
-        mtxvector_dist_free(&gemv->impl->w);
-        mtxvector_dist_free(&gemv->impl->z);
+        mtxmpivector_usscga_free(&gemv->impl->usscga);
+        mtxmpivector_free(&gemv->impl->w);
+        mtxmpivector_free(&gemv->impl->z);
     } else if (gemv->overlap == mtxgemvoverlap_irecv) {
-        mtxvector_dist_usscga_free(&gemv->impl->usscga_xint);
-        mtxvector_dist_usscga_free(&gemv->impl->usscga_xhalo);
+        mtxmpivector_usscga_free(&gemv->impl->usscga_xint);
+        mtxmpivector_usscga_free(&gemv->impl->usscga_xhalo);
         if (gemv->impl->yhalo_needed) { mtxvector_free(&gemv->impl->yint); mtxvector_free(&gemv->impl->yhalo); }
-        mtxvector_dist_free(&gemv->impl->xint); mtxvector_dist_free(&gemv->impl->xhalo);
+        mtxmpivector_free(&gemv->impl->xint); mtxmpivector_free(&gemv->impl->xhalo);
         mtxmatrix_dist_free(&gemv->impl->Aint); mtxmatrix_dist_free(&gemv->impl->Aext);
         mtxmatrix_dist_free(&gemv->impl->Arowhalo); mtxmatrix_dist_free(&gemv->impl->Acolhalo);
     }
@@ -3013,12 +3013,12 @@ int mtxmatrix_dist_gemv_sgemv(
     struct mtxdisterror * disterr)
 {
     struct mtxmatrix_dist_gemv_impl * impl = gemv->impl;
-    int err = mtxvector_dist_usscga_start(&impl->usscga, disterr);
+    int err = mtxmpivector_usscga_start(&impl->usscga, disterr);
     if (err) return err;
     if (gemv->overlap == mtxgemvoverlap_none) {
-        mtxvector_dist_usscga_wait(&impl->usscga, disterr);
+        mtxmpivector_usscga_wait(&impl->usscga, disterr);
         if (err) return err;
-        err = mtxvector_dist_setzero(&impl->w, disterr);
+        err = mtxmpivector_setzero(&impl->w, disterr);
         if (err) return err;
         err = mtxmatrix_sgemv(
             gemv->trans, alpha, &gemv->A->Ap,
@@ -3063,11 +3063,11 @@ int mtxmatrix_dist_gemv_dgemv(
     struct mtxmatrix_dist_gemv_impl * impl = gemv->impl;
 
     if (gemv->overlap == mtxgemvoverlap_none) {
-        err = mtxvector_dist_usscga_start(&impl->usscga, disterr);
+        err = mtxmpivector_usscga_start(&impl->usscga, disterr);
         if (err) return err;
-        mtxvector_dist_usscga_wait(&impl->usscga, disterr);
+        mtxmpivector_usscga_wait(&impl->usscga, disterr);
         if (err) return err;
-        err = mtxvector_dist_setzero(&impl->w, disterr);
+        err = mtxmpivector_setzero(&impl->w, disterr);
         if (err) return err;
         err = mtxmatrix_dgemv(
             gemv->trans, alpha, &gemv->A->Ap,
@@ -3096,11 +3096,11 @@ int mtxmatrix_dist_gemv_dgemv(
         /* err = mtxvector_ussc(&impl->xint.xp, &gemv->x->xp); */
         /* if (err) return err; */
 
-        err = mtxvector_dist_usscga_start(&impl->usscga_xhalo, disterr);
+        err = mtxmpivector_usscga_start(&impl->usscga_xhalo, disterr);
         if (err) return err;
-        err = mtxvector_dist_usscga_start(&impl->usscga_xint, disterr);
+        err = mtxmpivector_usscga_start(&impl->usscga_xint, disterr);
         if (err) return err;
-        err = mtxvector_dist_usscga_wait(&impl->usscga_xint, disterr);
+        err = mtxmpivector_usscga_wait(&impl->usscga_xint, disterr);
         if (err) return err;
 
         /* multiply the interior part */
@@ -3184,7 +3184,7 @@ int mtxmatrix_dist_gemv_wait(
 
     } else if (gemv->overlap == mtxgemvoverlap_irecv) {
 
-        err = mtxvector_dist_usscga_wait(&impl->usscga_xhalo, disterr);
+        err = mtxmpivector_usscga_wait(&impl->usscga_xhalo, disterr);
         if (err) return err;
 
         if (impl->field == mtx_field_real) {
@@ -3222,7 +3222,7 @@ int mtxmatrix_dist_gemv_wait(
     } else {
         /* TODO: allow overlapping computation with communication */
 
-        /* int err = mtxvector_dist_usscga_wait(&gemv->impl->usscga, disterr); */
+        /* int err = mtxmpivector_usscga_wait(&gemv->impl->usscga, disterr); */
         /* if (err) return err; */
 
         return MTX_ERR_INVALID_GEMVOVERLAP;

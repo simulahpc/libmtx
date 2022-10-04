@@ -44,7 +44,7 @@
 struct mtxfile;
 struct mtxdistfile;
 struct mtxdisterror;
-struct mtxvector_dist;
+struct mtxmpivector;
 
 /**
  * ‘mtxmatrix_dist’ represents a distributed matrix.
@@ -762,7 +762,7 @@ int mtxmatrix_dist_set_constant_integer_double(
  */
 int mtxmatrix_dist_alloc_row_vector(
     const struct mtxmatrix_dist * A,
-    struct mtxvector_dist * vector,
+    struct mtxmpivector * vector,
     enum mtxvectortype vector_type,
     struct mtxdisterror * disterr);
 
@@ -773,7 +773,7 @@ int mtxmatrix_dist_alloc_row_vector(
  */
 int mtxmatrix_dist_alloc_column_vector(
     const struct mtxmatrix_dist * A,
-    struct mtxvector_dist * vector,
+    struct mtxmpivector * vector,
     enum mtxvectortype vector_type,
     struct mtxdisterror * disterr);
 
@@ -1250,9 +1250,9 @@ int mtxmatrix_dist_sgemv(
     enum mtxtransposition trans,
     float alpha,
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
+    const struct mtxmpivector * x,
     float beta,
-    struct mtxvector_dist * y,
+    struct mtxmpivector * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
@@ -1269,9 +1269,9 @@ int mtxmatrix_dist_dgemv(
     enum mtxtransposition trans,
     double alpha,
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
+    const struct mtxmpivector * x,
     double beta,
-    struct mtxvector_dist * y,
+    struct mtxmpivector * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
@@ -1290,9 +1290,9 @@ int mtxmatrix_dist_cgemv(
     enum mtxtransposition trans,
     float alpha[2],
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
+    const struct mtxmpivector * x,
     float beta[2],
-    struct mtxvector_dist * y,
+    struct mtxmpivector * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
@@ -1311,9 +1311,9 @@ int mtxmatrix_dist_zgemv(
     enum mtxtransposition trans,
     double alpha[2],
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
+    const struct mtxmpivector * x,
     double beta[2],
-    struct mtxvector_dist * y,
+    struct mtxmpivector * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
@@ -1332,8 +1332,8 @@ struct mtxmatrix_dist_gemv
 {
     enum mtxtransposition trans;
     const struct mtxmatrix_dist * A;
-    const struct mtxvector_dist * x;
-    struct mtxvector_dist * y;
+    const struct mtxmpivector * x;
+    struct mtxmpivector * y;
     enum mtxgemvoverlap overlap;
     struct mtxmatrix_dist_gemv_impl * impl;
 };
@@ -1350,8 +1350,8 @@ int mtxmatrix_dist_gemv_init(
     struct mtxmatrix_dist_gemv * gemv,
     enum mtxtransposition trans,
     const struct mtxmatrix_dist * A,
-    const struct mtxvector_dist * x,
-    struct mtxvector_dist * y,
+    const struct mtxmpivector * x,
+    struct mtxmpivector * y,
     enum mtxgemvoverlap overlap,
     struct mtxdisterror * disterr);
 

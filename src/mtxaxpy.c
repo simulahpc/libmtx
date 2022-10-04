@@ -434,12 +434,12 @@ static int distvector_axpy(
 
     /* 1. Convert Matrix Market files to vectors. */
     if (verbose > 0) {
-        fprintf(diagf, "mtxvector_dist_from_mtxdistfile: ");
+        fprintf(diagf, "mtxmpivector_from_mtxdistfile: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
-    struct mtxvector_dist x;
-    err = mtxvector_dist_from_mtxdistfile(
+    struct mtxmpivector x;
+    err = mtxmpivector_from_mtxdistfile(
         &x, mtxdistfilex, vector_type, comm, disterr);
     if (err) {
         if (verbose > 0) fprintf(diagf, "\n");
@@ -449,16 +449,16 @@ static int distvector_axpy(
         clock_gettime(CLOCK_MONOTONIC, &t1);
         fprintf(diagf, "%'.6f seconds\n",
                 timespec_duration(t0, t1));
-        fprintf(diagf, "mtxvector_dist_from_mtxdistfile: ");
+        fprintf(diagf, "mtxmpivector_from_mtxdistfile: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
-    struct mtxvector_dist y;
-    err = mtxvector_dist_from_mtxdistfile(
+    struct mtxmpivector y;
+    err = mtxmpivector_from_mtxdistfile(
         &y, mtxdistfiley, vector_type, comm, disterr);
     if (err) {
         if (verbose > 0) fprintf(diagf, "\n");
-        mtxvector_dist_free(&x);
+        mtxmpivector_free(&x);
         return err;
     }
     if (verbose > 0) {
@@ -472,16 +472,16 @@ static int distvector_axpy(
         for (int i = 0; i < repeat; i++) {
             MPI_Barrier(comm);
             if (verbose > 0) {
-                fprintf(diagf, "mtxvector_dist_saxpy: ");
+                fprintf(diagf, "mtxmpivector_saxpy: ");
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
             int64_t num_flops = 0;
-            err = mtxvector_dist_saxpy(alpha, &x, &y, &num_flops, disterr);
+            err = mtxmpivector_saxpy(alpha, &x, &y, &num_flops, disterr);
             if (err) {
                 if (verbose > 0) fprintf(diagf, "\n");
-                mtxvector_dist_free(&y);
-                mtxvector_dist_free(&x);
+                mtxmpivector_free(&y);
+                mtxmpivector_free(&x);
                 return err;
             }
             MPI_Barrier(comm);
@@ -507,16 +507,16 @@ static int distvector_axpy(
         for (int i = 0; i < repeat; i++) {
             MPI_Barrier(comm);
             if (verbose > 0) {
-                fprintf(diagf, "mtxvector_dist_daxpy: ");
+                fprintf(diagf, "mtxmpivector_daxpy: ");
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
             int64_t num_flops = 0;
-            err = mtxvector_dist_daxpy(alpha, &x, &y, &num_flops, disterr);
+            err = mtxmpivector_daxpy(alpha, &x, &y, &num_flops, disterr);
             if (err) {
                 if (verbose > 0) fprintf(diagf, "\n");
-                mtxvector_dist_free(&y);
-                mtxvector_dist_free(&x);
+                mtxmpivector_free(&y);
+                mtxmpivector_free(&x);
                 return err;
             }
             MPI_Barrier(comm);
@@ -539,24 +539,24 @@ static int distvector_axpy(
             }
         }
     } else {
-        mtxvector_dist_free(&y);
-        mtxvector_dist_free(&x);
+        mtxmpivector_free(&y);
+        mtxmpivector_free(&x);
         return MTX_ERR_INVALID_PRECISION;
     }
 
     if (!quiet) {
         if (verbose > 0) {
-            fprintf(diagf, "mtxvector_dist_fwrite: ");
+            fprintf(diagf, "mtxmpivector_fwrite: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
         int64_t bytes_written = 0;
-        err = mtxvector_dist_fwrite(
+        err = mtxmpivector_fwrite(
             &y, mtxfmt, stdout, format, &bytes_written, root, disterr);
         if (err) {
             if (verbose > 0) fprintf(diagf, "\n");
-            mtxvector_dist_free(&y);
-            mtxvector_dist_free(&x);
+            mtxmpivector_free(&y);
+            mtxmpivector_free(&x);
             return MTX_ERR_MPI_COLLECTIVE;
         }
         if (verbose > 0) {
@@ -567,8 +567,8 @@ static int distvector_axpy(
         }
     }
 
-    mtxvector_dist_free(&y);
-    mtxvector_dist_free(&x);
+    mtxmpivector_free(&y);
+    mtxmpivector_free(&x);
     return MTX_SUCCESS;
 }
 

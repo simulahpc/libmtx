@@ -515,13 +515,13 @@ static int distvector_scal(
 
     /* 1. Convert Matrix Market file to a vector. */
     if (verbose > 0) {
-        fprintf(diagf, "mtxvector_dist_from_mtxdistfile: ");
+        fprintf(diagf, "mtxmpivector_from_mtxdistfile: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
-    struct mtxvector_dist x;
-    err = mtxvector_dist_from_mtxdistfile(
+    struct mtxmpivector x;
+    err = mtxmpivector_from_mtxdistfile(
         &x, mtxdistfile, vector_type, comm, disterr);
     if (err) {
         if (verbose > 0) fprintf(diagf, "\n");
@@ -538,15 +538,15 @@ static int distvector_scal(
     if (precision == mtx_single) {
         for (int i = 0; i < repeat; i++) {
             if (verbose > 0) {
-                fprintf(diagf, "mtxvector_dist_sscal: ");
+                fprintf(diagf, "mtxmpivector_sscal: ");
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
             int64_t num_flops = 0;
-            err = mtxvector_dist_sscal(alpha, &x, &num_flops, disterr);
+            err = mtxmpivector_sscal(alpha, &x, &num_flops, disterr);
             if (err) {
                 if (verbose > 0) fprintf(diagf, "\n");
-                mtxvector_dist_free(&x);
+                mtxmpivector_free(&x);
                 return err;
             }
             clock_gettime(CLOCK_MONOTONIC, &t1);
@@ -570,15 +570,15 @@ static int distvector_scal(
     } else if (precision == mtx_double) {
         for (int i = 0; i < repeat; i++) {
             if (verbose > 0) {
-                fprintf(diagf, "mtxvector_dist_dscal: ");
+                fprintf(diagf, "mtxmpivector_dscal: ");
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
             int64_t num_flops = 0;
-            err = mtxvector_dist_dscal(alpha, &x, &num_flops, disterr);
+            err = mtxmpivector_dscal(alpha, &x, &num_flops, disterr);
             if (err) {
                 if (verbose > 0) fprintf(diagf, "\n");
-                mtxvector_dist_free(&x);
+                mtxmpivector_free(&x);
                 return err;
             }
             clock_gettime(CLOCK_MONOTONIC, &t1);
@@ -600,22 +600,22 @@ static int distvector_scal(
             }
         }
     } else {
-        mtxvector_dist_free(&x);
+        mtxmpivector_free(&x);
         return MTX_ERR_INVALID_PRECISION;
     }
 
     if (!quiet) {
         if (verbose > 0) {
-            fprintf(diagf, "mtxvector_dist_fwrite: ");
+            fprintf(diagf, "mtxmpivector_fwrite: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
         int64_t bytes_written = 0;
-        err = mtxvector_dist_fwrite(
+        err = mtxmpivector_fwrite(
             &x, mtxfmt, stdout, format, &bytes_written, root, disterr);
         if (err) {
             if (verbose > 0) fprintf(diagf, "\n");
-            mtxvector_dist_free(&x);
+            mtxmpivector_free(&x);
             return MTX_ERR_MPI_COLLECTIVE;
         }
         if (verbose > 0) {
@@ -626,7 +626,7 @@ static int distvector_scal(
         }
     }
 
-    mtxvector_dist_free(&x);
+    mtxmpivector_free(&x);
     return MTX_SUCCESS;
 }
 

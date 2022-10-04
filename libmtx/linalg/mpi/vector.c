@@ -49,16 +49,16 @@
  */
 
 /**
- * ‘mtxvector_dist_free()’ frees storage allocated for a vector.
+ * ‘mtxmpivector_free()’ frees storage allocated for a vector.
  */
-void mtxvector_dist_free(
-    struct mtxvector_dist * x)
+void mtxmpivector_free(
+    struct mtxmpivector * x)
 {
     mtxvector_free(&x->xp);
 }
 
-static int mtxvector_dist_init_comm(
-    struct mtxvector_dist * x,
+static int mtxmpivector_init_comm(
+    struct mtxmpivector * x,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -72,8 +72,8 @@ static int mtxvector_dist_init_comm(
     return MTX_SUCCESS;
 }
 
-static int mtxvector_dist_init_size(
-    struct mtxvector_dist * x,
+static int mtxmpivector_init_size(
+    struct mtxmpivector * x,
     int64_t size,
     int64_t num_nonzeros,
     MPI_Comm comm,
@@ -98,21 +98,21 @@ static int mtxvector_dist_init_size(
 }
 
 /**
- * ‘mtxvector_dist_alloc_copy()’ allocates a copy of a vector without
+ * ‘mtxmpivector_alloc_copy()’ allocates a copy of a vector without
  * initialising the values.
  */
-int mtxvector_dist_alloc_copy(
-    struct mtxvector_dist * dst,
-    const struct mtxvector_dist * src,
+int mtxmpivector_alloc_copy(
+    struct mtxmpivector * dst,
+    const struct mtxmpivector * src,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxvector_dist_init_copy()’ allocates a copy of a vector and also
+ * ‘mtxmpivector_init_copy()’ allocates a copy of a vector and also
  * copies the values.
  */
-int mtxvector_dist_init_copy(
-    struct mtxvector_dist * dst,
-    const struct mtxvector_dist * src,
+int mtxmpivector_init_copy(
+    struct mtxmpivector * dst,
+    const struct mtxmpivector * src,
     struct mtxdisterror * disterr);
 
 /*
@@ -120,12 +120,12 @@ int mtxvector_dist_init_copy(
  */
 
 /**
- * ‘mtxvector_dist_alloc()’ allocates a sparse vector in packed form,
+ * ‘mtxmpivector_alloc()’ allocates a sparse vector in packed form,
  * where nonzero coefficients are stored in an underlying dense vector
  * of the given type.
  */
-int mtxvector_dist_alloc(
-    struct mtxvector_dist * x,
+int mtxmpivector_alloc(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     enum mtxfield field,
     enum mtxprecision precision,
@@ -135,9 +135,9 @@ int mtxvector_dist_alloc(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_alloc_packed(
         &x->xp, type, field, precision, size, num_nonzeros, idx);
@@ -146,7 +146,7 @@ int mtxvector_dist_alloc(
 }
 
 /**
- * ‘mtxvector_dist_init_real_single()’ allocates and initialises a
+ * ‘mtxmpivector_init_real_single()’ allocates and initialises a
  * vector with real, single precision coefficients.
  *
  * On each process, ‘idx’ and ‘data’ are arrays of length
@@ -156,8 +156,8 @@ int mtxvector_dist_alloc(
  * other hand, ‘size’ specifies the total number of elements in the
  * entire distributed vector and must be the same on all processes.
  */
-int mtxvector_dist_init_real_single(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_real_single(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -166,9 +166,9 @@ int mtxvector_dist_init_real_single(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_real_single(
         &x->xp, type, size, num_nonzeros, idx, data);
@@ -177,11 +177,11 @@ int mtxvector_dist_init_real_single(
 }
 
 /**
- * ‘mtxvector_dist_init_real_double()’ allocates and initialises a
+ * ‘mtxmpivector_init_real_double()’ allocates and initialises a
  * vector with real, double precision coefficients.
  */
-int mtxvector_dist_init_real_double(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_real_double(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -190,9 +190,9 @@ int mtxvector_dist_init_real_double(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_real_double(
         &x->xp, type, size, num_nonzeros, idx, data);
@@ -201,11 +201,11 @@ int mtxvector_dist_init_real_double(
 }
 
 /**
- * ‘mtxvector_dist_init_complex_single()’ allocates and initialises
+ * ‘mtxmpivector_init_complex_single()’ allocates and initialises
  * a vector with complex, single precision coefficients.
  */
-int mtxvector_dist_init_complex_single(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_complex_single(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -214,9 +214,9 @@ int mtxvector_dist_init_complex_single(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_complex_single(
         &x->xp, type, size, num_nonzeros, idx, data);
@@ -225,11 +225,11 @@ int mtxvector_dist_init_complex_single(
 }
 
 /**
- * ‘mtxvector_dist_init_complex_double()’ allocates and initialises
+ * ‘mtxmpivector_init_complex_double()’ allocates and initialises
  * a vector with complex, double precision coefficients.
  */
-int mtxvector_dist_init_complex_double(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_complex_double(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -238,9 +238,9 @@ int mtxvector_dist_init_complex_double(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_complex_double(
         &x->xp, type, size, num_nonzeros, idx, data);
@@ -249,11 +249,11 @@ int mtxvector_dist_init_complex_double(
 }
 
 /**
- * ‘mtxvector_dist_init_integer_single()’ allocates and initialises
+ * ‘mtxmpivector_init_integer_single()’ allocates and initialises
  * a vector with integer, single precision coefficients.
  */
-int mtxvector_dist_init_integer_single(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_integer_single(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -262,9 +262,9 @@ int mtxvector_dist_init_integer_single(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_integer_single(
         &x->xp, type, size, num_nonzeros, idx, data);
@@ -273,11 +273,11 @@ int mtxvector_dist_init_integer_single(
 }
 
 /**
- * ‘mtxvector_dist_init_integer_double()’ allocates and initialises
+ * ‘mtxmpivector_init_integer_double()’ allocates and initialises
  * a vector with integer, double precision coefficients.
  */
-int mtxvector_dist_init_integer_double(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_integer_double(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -286,9 +286,9 @@ int mtxvector_dist_init_integer_double(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_integer_double(
         &x->xp, type, size, num_nonzeros, idx, data);
@@ -297,11 +297,11 @@ int mtxvector_dist_init_integer_double(
 }
 
 /**
- * ‘mtxvector_dist_init_pattern()’ allocates and initialises a
+ * ‘mtxmpivector_init_pattern()’ allocates and initialises a
  * binary pattern vector, where every entry has a value of one.
  */
-int mtxvector_dist_init_pattern(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_pattern(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -309,9 +309,9 @@ int mtxvector_dist_init_pattern(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_pattern(
         &x->xp, type, size, num_nonzeros, idx);
@@ -320,11 +320,11 @@ int mtxvector_dist_init_pattern(
 }
 
 /**
- * ‘mtxvector_dist_init_strided_real_single()’ allocates and
+ * ‘mtxmpivector_init_strided_real_single()’ allocates and
  * initialises a vector with real, single precision coefficients.
  */
-int mtxvector_dist_init_strided_real_single(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_strided_real_single(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -336,9 +336,9 @@ int mtxvector_dist_init_strided_real_single(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_strided_real_single(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
@@ -347,11 +347,11 @@ int mtxvector_dist_init_strided_real_single(
 }
 
 /**
- * ‘mtxvector_dist_init_strided_real_double()’ allocates and
+ * ‘mtxmpivector_init_strided_real_double()’ allocates and
  * initialises a vector with real, double precision coefficients.
  */
-int mtxvector_dist_init_strided_real_double(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_strided_real_double(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -363,9 +363,9 @@ int mtxvector_dist_init_strided_real_double(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_strided_real_double(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
@@ -374,11 +374,11 @@ int mtxvector_dist_init_strided_real_double(
 }
 
 /**
- * ‘mtxvector_dist_init_strided_complex_single()’ allocates and
+ * ‘mtxmpivector_init_strided_complex_single()’ allocates and
  * initialises a vector with complex, single precision coefficients.
  */
-int mtxvector_dist_init_strided_complex_single(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_strided_complex_single(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -390,9 +390,9 @@ int mtxvector_dist_init_strided_complex_single(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_strided_complex_single(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
@@ -401,11 +401,11 @@ int mtxvector_dist_init_strided_complex_single(
 }
 
 /**
- * ‘mtxvector_dist_init_strided_complex_double()’ allocates and
+ * ‘mtxmpivector_init_strided_complex_double()’ allocates and
  * initialises a vector with complex, double precision coefficients.
  */
-int mtxvector_dist_init_strided_complex_double(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_strided_complex_double(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -417,9 +417,9 @@ int mtxvector_dist_init_strided_complex_double(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_strided_complex_double(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
@@ -428,11 +428,11 @@ int mtxvector_dist_init_strided_complex_double(
 }
 
 /**
- * ‘mtxvector_dist_init_strided_integer_single()’ allocates and
+ * ‘mtxmpivector_init_strided_integer_single()’ allocates and
  * initialises a vector with integer, single precision coefficients.
  */
-int mtxvector_dist_init_strided_integer_single(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_strided_integer_single(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -444,9 +444,9 @@ int mtxvector_dist_init_strided_integer_single(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_strided_integer_single(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
@@ -455,11 +455,11 @@ int mtxvector_dist_init_strided_integer_single(
 }
 
 /**
- * ‘mtxvector_dist_init_strided_integer_double()’ allocates and
+ * ‘mtxmpivector_init_strided_integer_double()’ allocates and
  * initialises a vector with integer, double precision coefficients.
  */
-int mtxvector_dist_init_strided_integer_double(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_strided_integer_double(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -471,9 +471,9 @@ int mtxvector_dist_init_strided_integer_double(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_strided_integer_double(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
@@ -482,11 +482,11 @@ int mtxvector_dist_init_strided_integer_double(
 }
 
 /**
- * ‘mtxvector_dist_init_pattern()’ allocates and initialises a
+ * ‘mtxmpivector_init_pattern()’ allocates and initialises a
  * binary pattern vector, where every entry has a value of one.
  */
-int mtxvector_dist_init_strided_pattern(
-    struct mtxvector_dist * x,
+int mtxmpivector_init_strided_pattern(
+    struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
@@ -496,9 +496,9 @@ int mtxvector_dist_init_strided_pattern(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_init_packed_strided_pattern(
         &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx);
@@ -511,11 +511,11 @@ int mtxvector_dist_init_strided_pattern(
  */
 
 /**
- * ‘mtxvector_dist_setzero()’ sets every nonzero entry of a vector to
+ * ‘mtxmpivector_setzero()’ sets every nonzero entry of a vector to
  * zero.
  */
-int mtxvector_dist_setzero(
-    struct mtxvector_dist * x,
+int mtxmpivector_setzero(
+    struct mtxmpivector * x,
     struct mtxdisterror * disterr)
 {
     int err = mtxvector_setzero(&x->xp);
@@ -524,12 +524,12 @@ int mtxvector_dist_setzero(
 }
 
 /**
- * ‘mtxvector_dist_set_constant_real_single()’ sets every nonzero
+ * ‘mtxmpivector_set_constant_real_single()’ sets every nonzero
  * entry of a vector equal to a constant, single precision floating
  * point number.
  */
-int mtxvector_dist_set_constant_real_single(
-    struct mtxvector_dist * x,
+int mtxmpivector_set_constant_real_single(
+    struct mtxmpivector * x,
     float a,
     struct mtxdisterror * disterr)
 {
@@ -539,12 +539,12 @@ int mtxvector_dist_set_constant_real_single(
 }
 
 /**
- * ‘mtxvector_dist_set_constant_real_double()’ sets every nonzero
+ * ‘mtxmpivector_set_constant_real_double()’ sets every nonzero
  * entry of a vector equal to a constant, double precision floating
  * point number.
  */
-int mtxvector_dist_set_constant_real_double(
-    struct mtxvector_dist * x,
+int mtxmpivector_set_constant_real_double(
+    struct mtxmpivector * x,
     double a,
     struct mtxdisterror * disterr)
 {
@@ -554,12 +554,12 @@ int mtxvector_dist_set_constant_real_double(
 }
 
 /**
- * ‘mtxvector_dist_set_constant_complex_single()’ sets every nonzero
+ * ‘mtxmpivector_set_constant_complex_single()’ sets every nonzero
  * entry of a vector equal to a constant, single precision floating
  * point complex number.
  */
-int mtxvector_dist_set_constant_complex_single(
-    struct mtxvector_dist * x,
+int mtxmpivector_set_constant_complex_single(
+    struct mtxmpivector * x,
     float a[2],
     struct mtxdisterror * disterr)
 {
@@ -569,12 +569,12 @@ int mtxvector_dist_set_constant_complex_single(
 }
 
 /**
- * ‘mtxvector_dist_set_constant_complex_double()’ sets every nonzero
+ * ‘mtxmpivector_set_constant_complex_double()’ sets every nonzero
  * entry of a vector equal to a constant, double precision floating
  * point complex number.
  */
-int mtxvector_dist_set_constant_complex_double(
-    struct mtxvector_dist * x,
+int mtxmpivector_set_constant_complex_double(
+    struct mtxmpivector * x,
     double a[2],
     struct mtxdisterror * disterr)
 {
@@ -584,11 +584,11 @@ int mtxvector_dist_set_constant_complex_double(
 }
 
 /**
- * ‘mtxvector_dist_set_constant_integer_single()’ sets every nonzero
+ * ‘mtxmpivector_set_constant_integer_single()’ sets every nonzero
  * entry of a vector equal to a constant integer.
  */
-int mtxvector_dist_set_constant_integer_single(
-    struct mtxvector_dist * x,
+int mtxmpivector_set_constant_integer_single(
+    struct mtxmpivector * x,
     int32_t a,
     struct mtxdisterror * disterr)
 {
@@ -598,11 +598,11 @@ int mtxvector_dist_set_constant_integer_single(
 }
 
 /**
- * ‘mtxvector_dist_set_constant_integer_double()’ sets every nonzero
+ * ‘mtxmpivector_set_constant_integer_double()’ sets every nonzero
  * entry of a vector equal to a constant integer.
  */
-int mtxvector_dist_set_constant_integer_double(
-    struct mtxvector_dist * x,
+int mtxmpivector_set_constant_integer_double(
+    struct mtxmpivector * x,
     int64_t a,
     struct mtxdisterror * disterr)
 {
@@ -616,21 +616,21 @@ int mtxvector_dist_set_constant_integer_double(
  */
 
 /**
- * ‘mtxvector_dist_from_mtxfile()’ converts from a vector in Matrix
+ * ‘mtxmpivector_from_mtxfile()’ converts from a vector in Matrix
  * Market format.
  *
  * The ‘type’ argument may be used to specify a desired storage format
  * or implementation for the underlying ‘mtxvector’ on each process.
  */
-int mtxvector_dist_from_mtxfile(
-    struct mtxvector_dist * x,
+int mtxmpivector_from_mtxfile(
+    struct mtxmpivector * x,
     const struct mtxfile * mtxfile,
     enum mtxvectortype type,
     MPI_Comm comm,
     int root,
     struct mtxdisterror * disterr)
 {
-    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    int err = mtxmpivector_init_comm(x, comm, disterr);
     if (err) return err;
     int comm_size = x->comm_size;
     int rank = x->rank;
@@ -659,7 +659,7 @@ int mtxvector_dist_from_mtxfile(
         num_nonzeros = mtxsize.num_nonzeros / comm_size
             + (rank < (mtxsize.num_nonzeros % comm_size) ? 1 : 0);
     } else { return MTX_ERR_INVALID_MTX_FORMAT; }
-    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    err = mtxmpivector_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
 
     int64_t offset = 0;
@@ -714,12 +714,12 @@ int mtxvector_dist_from_mtxfile(
 }
 
 /**
- * ‘mtxvector_dist_to_mtxfile()’ converts to a vector in Matrix Market
+ * ‘mtxmpivector_to_mtxfile()’ converts to a vector in Matrix Market
  * format.
  */
-int mtxvector_dist_to_mtxfile(
+int mtxmpivector_to_mtxfile(
     struct mtxfile * mtxfile,
-    const struct mtxvector_dist * x,
+    const struct mtxmpivector * x,
     enum mtxfileformat mtxfmt,
     int root,
     struct mtxdisterror * disterr)
@@ -799,14 +799,14 @@ int mtxvector_dist_to_mtxfile(
 }
 
 /**
- * ‘mtxvector_dist_from_mtxdistfile()’ converts from a vector in
+ * ‘mtxmpivector_from_mtxdistfile()’ converts from a vector in
  * Matrix Market format that is distributed among multiple processes.
  *
  * The ‘type’ argument may be used to specify a desired storage format
  * or implementation for the underlying ‘mtxvector’ on each process.
  */
-int mtxvector_dist_from_mtxdistfile(
-    struct mtxvector_dist * x,
+int mtxmpivector_from_mtxdistfile(
+    struct mtxmpivector * x,
     const struct mtxdistfile * mtxdistfile,
     enum mtxvectortype type,
     MPI_Comm comm,
@@ -823,41 +823,41 @@ int mtxvector_dist_from_mtxdistfile(
         if (mtxdistfile->header.field == mtxfile_real) {
             if (mtxdistfile->precision == mtx_single) {
                 const float * data = mtxdistfile->data.array_real_single;
-                err = mtxvector_dist_init_real_single(
+                err = mtxmpivector_init_real_single(
                     x, type, size, num_nonzeros, idx, data, comm, disterr);
                 if (err) { return err; }
             } else if (mtxdistfile->precision == mtx_double) {
                 const double * data = mtxdistfile->data.array_real_double;
-                err = mtxvector_dist_init_real_double(
+                err = mtxmpivector_init_real_double(
                     x, type, size, num_nonzeros, idx, data, comm, disterr);
                 if (err) { return err; }
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (mtxdistfile->header.field == mtxfile_complex) {
             if (mtxdistfile->precision == mtx_single) {
                 const float (* data)[2] = mtxdistfile->data.array_complex_single;
-                err = mtxvector_dist_init_complex_single(
+                err = mtxmpivector_init_complex_single(
                     x, type, size, num_nonzeros, idx, data, comm, disterr);
                 if (err) { return err; }
             } else if (mtxdistfile->precision == mtx_double) {
                 const double (* data)[2] = mtxdistfile->data.array_complex_double;
-                err = mtxvector_dist_init_complex_double(
+                err = mtxmpivector_init_complex_double(
                     x, type, size, num_nonzeros, idx, data, comm, disterr);
                 if (err) { return err; }
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (mtxdistfile->header.field == mtxfile_integer) {
             if (mtxdistfile->precision == mtx_single) {
                 const int32_t * data = mtxdistfile->data.array_integer_single;
-                err = mtxvector_dist_init_integer_single(
+                err = mtxmpivector_init_integer_single(
                     x, type, size, num_nonzeros, idx, data, comm, disterr);
                 if (err) { return err; }
             } else if (mtxdistfile->precision == mtx_double) {
                 const int64_t * data = mtxdistfile->data.array_integer_double;
-                err = mtxvector_dist_init_integer_double(
+                err = mtxmpivector_init_integer_double(
                     x, type, size, num_nonzeros, idx, data, comm, disterr);
                 if (err) { return err; }
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (mtxdistfile->header.field == mtxfile_pattern) {
-            err = mtxvector_dist_init_pattern(
+            err = mtxmpivector_init_pattern(
                 x, type, size, num_nonzeros, idx, comm, disterr);
             if (err) { return err; }
         } else { return MTX_ERR_INVALID_MTX_FIELD; }
@@ -868,14 +868,14 @@ int mtxvector_dist_from_mtxdistfile(
             if (mtxdistfile->precision == mtx_single) {
                 const struct mtxfile_vector_coordinate_real_single * data =
                     mtxdistfile->data.vector_coordinate_real_single;
-                err = mtxvector_dist_init_strided_real_single(
+                err = mtxmpivector_init_strided_real_single(
                     x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
                     sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
             } else if (mtxdistfile->precision == mtx_double) {
                 const struct mtxfile_vector_coordinate_real_double * data =
                     mtxdistfile->data.vector_coordinate_real_double;
-                err = mtxvector_dist_init_strided_real_double(
+                err = mtxmpivector_init_strided_real_double(
                     x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
                     sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
@@ -884,14 +884,14 @@ int mtxvector_dist_from_mtxdistfile(
             if (mtxdistfile->precision == mtx_single) {
                 const struct mtxfile_vector_coordinate_complex_single * data =
                     mtxdistfile->data.vector_coordinate_complex_single;
-                err = mtxvector_dist_init_strided_complex_single(
+                err = mtxmpivector_init_strided_complex_single(
                     x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
                     sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
             } else if (mtxdistfile->precision == mtx_double) {
                 const struct mtxfile_vector_coordinate_complex_double * data =
                     mtxdistfile->data.vector_coordinate_complex_double;
-                err = mtxvector_dist_init_strided_complex_double(
+                err = mtxmpivector_init_strided_complex_double(
                     x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
                     sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
@@ -900,14 +900,14 @@ int mtxvector_dist_from_mtxdistfile(
             if (mtxdistfile->precision == mtx_single) {
                 const struct mtxfile_vector_coordinate_integer_single * data =
                     mtxdistfile->data.vector_coordinate_integer_single;
-                err = mtxvector_dist_init_strided_integer_single(
+                err = mtxmpivector_init_strided_integer_single(
                     x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
                     sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
             } else if (mtxdistfile->precision == mtx_double) {
                 const struct mtxfile_vector_coordinate_integer_double * data =
                     mtxdistfile->data.vector_coordinate_integer_double;
-                err = mtxvector_dist_init_strided_integer_double(
+                err = mtxmpivector_init_strided_integer_double(
                     x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
                     sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
@@ -915,7 +915,7 @@ int mtxvector_dist_from_mtxdistfile(
         } else if (mtxdistfile->header.field == mtxfile_pattern) {
             const struct mtxfile_vector_coordinate_pattern * data =
                 mtxdistfile->data.vector_coordinate_pattern;
-            err = mtxvector_dist_init_strided_pattern(
+            err = mtxmpivector_init_strided_pattern(
                 x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
                 comm, disterr);
             if (err) return err;
@@ -925,12 +925,12 @@ int mtxvector_dist_from_mtxdistfile(
 }
 
 /**
- * ‘mtxvector_dist_to_mtxdistfile()’ converts to a vector in Matrix
+ * ‘mtxmpivector_to_mtxdistfile()’ converts to a vector in Matrix
  * Market format that is distributed among multiple processes.
  */
-int mtxvector_dist_to_mtxdistfile(
+int mtxmpivector_to_mtxdistfile(
     struct mtxdistfile * mtxdistfile,
-    const struct mtxvector_dist * x,
+    const struct mtxmpivector * x,
     enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr)
 {
@@ -997,7 +997,7 @@ int mtxvector_dist_to_mtxdistfile(
  */
 
 /**
- * ‘mtxvector_dist_fwrite()’ writes a distributed vector to a single
+ * ‘mtxmpivector_fwrite()’ writes a distributed vector to a single
  * stream that is shared by every process in the communicator. The
  * output is written in Matrix Market format.
  *
@@ -1026,8 +1026,8 @@ int mtxvector_dist_to_mtxdistfile(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxvector_dist_fwrite(
-    const struct mtxvector_dist * x,
+int mtxmpivector_fwrite(
+    const struct mtxmpivector * x,
     enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
@@ -1036,7 +1036,7 @@ int mtxvector_dist_fwrite(
     struct mtxdisterror * disterr)
 {
     struct mtxdistfile dst;
-    int err = mtxvector_dist_to_mtxdistfile(&dst, x, mtxfmt, disterr);
+    int err = mtxmpivector_to_mtxdistfile(&dst, x, mtxfmt, disterr);
     if (err) return err;
     err = mtxdistfile_fwrite(&dst, f, fmt, bytes_written, root, disterr);
     if (err) { mtxdistfile_free(&dst); return err; }
@@ -1049,7 +1049,7 @@ int mtxvector_dist_fwrite(
  */
 
 /**
- * ‘mtxvector_dist_split()’ splits a vector into multiple vectors
+ * ‘mtxmpivector_split()’ splits a vector into multiple vectors
  * according to a given assignment of parts to each vector element.
  *
  * The partitioning of the vector elements is specified by the array
@@ -1059,7 +1059,7 @@ int mtxvector_dist_fwrite(
  * which the corresponding vector element belongs.
  *
  * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
- * of type ‘struct mtxvector_dist’. If successful, then ‘dsts[p]’
+ * of type ‘struct mtxmpivector’. If successful, then ‘dsts[p]’
  * points to a vector consisting of elements from ‘src’ that belong to
  * the ‘p’th part, as designated by the ‘parts’ array.
  *
@@ -1071,13 +1071,13 @@ int mtxvector_dist_fwrite(
  * sorting) of the vector element that now occupies the ‘i’th position
  * among the sorted elements.
  *
- * The caller is responsible for calling ‘mtxvector_dist_free()’ to
+ * The caller is responsible for calling ‘mtxmpivector_free()’ to
  * free storage allocated for each vector in the ‘dsts’ array.
  */
-int mtxvector_dist_split(
+int mtxmpivector_split(
     int num_parts,
-    struct mtxvector_dist ** dsts,
-    const struct mtxvector_dist * src,
+    struct mtxmpivector ** dsts,
+    const struct mtxmpivector * src,
     int64_t size,
     int * parts,
     int64_t * invperm,
@@ -1107,7 +1107,7 @@ int mtxvector_dist_split(
             for (int q = 0; q < num_parts; q++) mtxvector_free(&dsts[q]->xp);
             return err;
         }
-        err = mtxvector_dist_init_size(
+        err = mtxmpivector_init_size(
             dsts[p], size, num_nonzeros, dsts[p]->comm, disterr);
         if (err) {
             for (int q = 0; q < num_parts; q++) mtxvector_free(&dsts[q]->xp);
@@ -1122,7 +1122,7 @@ int mtxvector_dist_split(
  */
 
 /**
- * ‘mtxvector_dist_swap()’ swaps values of two vectors, simultaneously
+ * ‘mtxmpivector_swap()’ swaps values of two vectors, simultaneously
  * performing ‘y <- x’ and ‘x <- y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1130,9 +1130,9 @@ int mtxvector_dist_split(
  * given process, both vectors must also have the same number of
  * nonzero elements on that process.
  */
-int mtxvector_dist_swap(
-    struct mtxvector_dist * x,
-    struct mtxvector_dist * y,
+int mtxmpivector_swap(
+    struct mtxmpivector * x,
+    struct mtxmpivector * y,
     struct mtxdisterror * disterr)
 {
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -1143,16 +1143,16 @@ int mtxvector_dist_swap(
 }
 
 /**
- * ‘mtxvector_dist_copy()’ copies values of a vector, ‘y = x’.
+ * ‘mtxmpivector_copy()’ copies values of a vector, ‘y = x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same total number of nonzero elements. On any
  * given process, both vectors must also have the same number of
  * nonzero elements on that process.
  */
-int mtxvector_dist_copy(
-    struct mtxvector_dist * y,
-    const struct mtxvector_dist * x,
+int mtxmpivector_copy(
+    struct mtxmpivector * y,
+    const struct mtxmpivector * x,
     struct mtxdisterror * disterr)
 {
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -1163,12 +1163,12 @@ int mtxvector_dist_copy(
 }
 
 /**
- * ‘mtxvector_dist_sscal()’ scales a vector by a single precision
+ * ‘mtxmpivector_sscal()’ scales a vector by a single precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxvector_dist_sscal(
+int mtxmpivector_sscal(
     float a,
-    struct mtxvector_dist * x,
+    struct mtxmpivector * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
@@ -1178,12 +1178,12 @@ int mtxvector_dist_sscal(
 }
 
 /**
- * ‘mtxvector_dist_dscal()’ scales a vector by a double precision
+ * ‘mtxmpivector_dscal()’ scales a vector by a double precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxvector_dist_dscal(
+int mtxmpivector_dscal(
     double a,
-    struct mtxvector_dist * x,
+    struct mtxmpivector * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
@@ -1193,12 +1193,12 @@ int mtxvector_dist_dscal(
 }
 
 /**
- * ‘mtxvector_dist_cscal()’ scales a vector by a complex, single
+ * ‘mtxmpivector_cscal()’ scales a vector by a complex, single
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxvector_dist_cscal(
+int mtxmpivector_cscal(
     float a[2],
-    struct mtxvector_dist * x,
+    struct mtxmpivector * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
@@ -1208,12 +1208,12 @@ int mtxvector_dist_cscal(
 }
 
 /**
- * ‘mtxvector_dist_zscal()’ scales a vector by a complex, double
+ * ‘mtxmpivector_zscal()’ scales a vector by a complex, double
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxvector_dist_zscal(
+int mtxmpivector_zscal(
     double a[2],
-    struct mtxvector_dist * x,
+    struct mtxmpivector * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
@@ -1223,7 +1223,7 @@ int mtxvector_dist_zscal(
 }
 
 /**
- * ‘mtxvector_dist_saxpy()’ adds a vector to another one multiplied by
+ * ‘mtxmpivector_saxpy()’ adds a vector to another one multiplied by
  * a single precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1234,10 +1234,10 @@ int mtxvector_dist_zscal(
  * undefined. However, repeated indices in the packed vectors are
  * allowed.
  */
-int mtxvector_dist_saxpy(
+int mtxmpivector_saxpy(
     float a,
-    const struct mtxvector_dist * x,
-    struct mtxvector_dist * y,
+    const struct mtxmpivector * x,
+    struct mtxmpivector * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
@@ -1249,7 +1249,7 @@ int mtxvector_dist_saxpy(
 }
 
 /**
- * ‘mtxvector_dist_daxpy()’ adds a vector to another one multiplied by
+ * ‘mtxmpivector_daxpy()’ adds a vector to another one multiplied by
  * a double precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1260,10 +1260,10 @@ int mtxvector_dist_saxpy(
  * undefined. However, repeated indices in the packed vectors are
  * allowed.
  */
-int mtxvector_dist_daxpy(
+int mtxmpivector_daxpy(
     double a,
-    const struct mtxvector_dist * x,
-    struct mtxvector_dist * y,
+    const struct mtxmpivector * x,
+    struct mtxmpivector * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
@@ -1275,7 +1275,7 @@ int mtxvector_dist_daxpy(
 }
 
 /**
- * ‘mtxvector_dist_saypx()’ multiplies a vector by a single precision
+ * ‘mtxmpivector_saypx()’ multiplies a vector by a single precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1286,10 +1286,10 @@ int mtxvector_dist_daxpy(
  * undefined. However, repeated indices in the packed vectors are
  * allowed.
  */
-int mtxvector_dist_saypx(
+int mtxmpivector_saypx(
     float a,
-    struct mtxvector_dist * y,
-    const struct mtxvector_dist * x,
+    struct mtxmpivector * y,
+    const struct mtxmpivector * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
@@ -1301,7 +1301,7 @@ int mtxvector_dist_saypx(
 }
 
 /**
- * ‘mtxvector_dist_daypx()’ multiplies a vector by a double precision
+ * ‘mtxmpivector_daypx()’ multiplies a vector by a double precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1312,10 +1312,10 @@ int mtxvector_dist_saypx(
  * undefined. However, repeated indices in the packed vectors are
  * allowed.
  */
-int mtxvector_dist_daypx(
+int mtxmpivector_daypx(
     double a,
-    struct mtxvector_dist * y,
-    const struct mtxvector_dist * x,
+    struct mtxmpivector * y,
+    const struct mtxmpivector * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
@@ -1327,7 +1327,7 @@ int mtxvector_dist_daypx(
 }
 
 /**
- * ‘mtxvector_dist_sdot()’ computes the Euclidean dot product of two
+ * ‘mtxmpivector_sdot()’ computes the Euclidean dot product of two
  * vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1338,9 +1338,9 @@ int mtxvector_dist_daypx(
  * undefined. Moreover, repeated indices in the dist vector are not
  * allowed, otherwise the result is undefined.
  */
-int mtxvector_dist_sdot(
-    const struct mtxvector_dist * x,
-    const struct mtxvector_dist * y,
+int mtxmpivector_sdot(
+    const struct mtxmpivector * x,
+    const struct mtxmpivector * y,
     float * dot,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
@@ -1363,7 +1363,7 @@ int mtxvector_dist_sdot(
 }
 
 /**
- * ‘mtxvector_dist_ddot()’ computes the Euclidean dot product of two
+ * ‘mtxmpivector_ddot()’ computes the Euclidean dot product of two
  * vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1374,9 +1374,9 @@ int mtxvector_dist_sdot(
  * undefined. Moreover, repeated indices in the dist vector are not
  * allowed, otherwise the result is undefined.
  */
-int mtxvector_dist_ddot(
-    const struct mtxvector_dist * x,
-    const struct mtxvector_dist * y,
+int mtxmpivector_ddot(
+    const struct mtxmpivector * x,
+    const struct mtxmpivector * y,
     double * dot,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
@@ -1399,7 +1399,7 @@ int mtxvector_dist_ddot(
 }
 
 /**
- * ‘mtxvector_dist_cdotu()’ computes the product of the transpose of a
+ * ‘mtxmpivector_cdotu()’ computes the product of the transpose of a
  * complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -1411,9 +1411,9 @@ int mtxvector_dist_ddot(
  * undefined. Moreover, repeated indices in the dist vector are not
  * allowed, otherwise the result is undefined.
  */
-int mtxvector_dist_cdotu(
-    const struct mtxvector_dist * x,
-    const struct mtxvector_dist * y,
+int mtxmpivector_cdotu(
+    const struct mtxmpivector * x,
+    const struct mtxmpivector * y,
     float (* dot)[2],
     int64_t * num_flops,
     struct mtxdisterror * disterr)
@@ -1436,7 +1436,7 @@ int mtxvector_dist_cdotu(
 }
 
 /**
- * ‘mtxvector_dist_zdotu()’ computes the product of the transpose of a
+ * ‘mtxmpivector_zdotu()’ computes the product of the transpose of a
  * complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -1448,9 +1448,9 @@ int mtxvector_dist_cdotu(
  * undefined. Moreover, repeated indices in the dist vector are not
  * allowed, otherwise the result is undefined.
  */
-int mtxvector_dist_zdotu(
-    const struct mtxvector_dist * x,
-    const struct mtxvector_dist * y,
+int mtxmpivector_zdotu(
+    const struct mtxmpivector * x,
+    const struct mtxmpivector * y,
     double (* dot)[2],
     int64_t * num_flops,
     struct mtxdisterror * disterr)
@@ -1473,7 +1473,7 @@ int mtxvector_dist_zdotu(
 }
 
 /**
- * ‘mtxvector_dist_cdotc()’ computes the Euclidean dot product of two
+ * ‘mtxmpivector_cdotc()’ computes the Euclidean dot product of two
  * complex vectors in single precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1484,9 +1484,9 @@ int mtxvector_dist_zdotu(
  * undefined. Moreover, repeated indices in the dist vector are not
  * allowed, otherwise the result is undefined.
  */
-int mtxvector_dist_cdotc(
-    const struct mtxvector_dist * x,
-    const struct mtxvector_dist * y,
+int mtxmpivector_cdotc(
+    const struct mtxmpivector * x,
+    const struct mtxmpivector * y,
     float (* dot)[2],
     int64_t * num_flops,
     struct mtxdisterror * disterr)
@@ -1509,7 +1509,7 @@ int mtxvector_dist_cdotc(
 }
 
 /**
- * ‘mtxvector_dist_zdotc()’ computes the Euclidean dot product of two
+ * ‘mtxmpivector_zdotc()’ computes the Euclidean dot product of two
  * complex vectors in double precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1520,9 +1520,9 @@ int mtxvector_dist_cdotc(
  * undefined. Moreover, repeated indices in the dist vector are not
  * allowed, otherwise the result is undefined.
  */
-int mtxvector_dist_zdotc(
-    const struct mtxvector_dist * x,
-    const struct mtxvector_dist * y,
+int mtxmpivector_zdotc(
+    const struct mtxmpivector * x,
+    const struct mtxmpivector * y,
     double (* dot)[2],
     int64_t * num_flops,
     struct mtxdisterror * disterr)
@@ -1545,12 +1545,12 @@ int mtxvector_dist_zdotc(
 }
 
 /**
- * ‘mtxvector_dist_snrm2()’ computes the Euclidean norm of a vector in
+ * ‘mtxmpivector_snrm2()’ computes the Euclidean norm of a vector in
  * single precision floating point. Repeated indices in the dist
  * vector are not allowed, otherwise the result is undefined.
  */
-int mtxvector_dist_snrm2(
-    const struct mtxvector_dist * x,
+int mtxmpivector_snrm2(
+    const struct mtxmpivector * x,
     float * nrm2,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
@@ -1567,12 +1567,12 @@ int mtxvector_dist_snrm2(
 }
 
 /**
- * ‘mtxvector_dist_dnrm2()’ computes the Euclidean norm of a vector in
+ * ‘mtxmpivector_dnrm2()’ computes the Euclidean norm of a vector in
  * double precision floating point. Repeated indices in the dist
  * vector are not allowed, otherwise the result is undefined.
  */
-int mtxvector_dist_dnrm2(
-    const struct mtxvector_dist * x,
+int mtxmpivector_dnrm2(
+    const struct mtxmpivector * x,
     double * nrm2,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
@@ -1589,14 +1589,14 @@ int mtxvector_dist_dnrm2(
 }
 
 /**
- * ‘mtxvector_dist_sasum()’ computes the sum of absolute values
+ * ‘mtxmpivector_sasum()’ computes the sum of absolute values
  * (1-norm) of a vector in single precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed. Repeated indices in the
  * dist vector are not allowed, otherwise the result is undefined.
  */
-int mtxvector_dist_sasum(
-    const struct mtxvector_dist * x,
+int mtxmpivector_sasum(
+    const struct mtxmpivector * x,
     float * asum,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
@@ -1611,14 +1611,14 @@ int mtxvector_dist_sasum(
 }
 
 /**
- * ‘mtxvector_dist_dasum()’ computes the sum of absolute values
+ * ‘mtxmpivector_dasum()’ computes the sum of absolute values
  * (1-norm) of a vector in double precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed. Repeated indices in the
  * dist vector are not allowed, otherwise the result is undefined.
  */
-int mtxvector_dist_dasum(
-    const struct mtxvector_dist * x,
+int mtxmpivector_dasum(
+    const struct mtxmpivector * x,
     double * asum,
     int64_t * num_flops,
     struct mtxdisterror * disterr)
@@ -1633,15 +1633,15 @@ int mtxvector_dist_dasum(
 }
 
 /**
- * ‘mtxvector_dist_iamax()’ finds the index of the first element
+ * ‘mtxmpivector_iamax()’ finds the index of the first element
  * having the maximum absolute value.  If the vector is
  * complex-valued, then the index points to the first element having
  * the maximum sum of the absolute values of the real and imaginary
  * parts. Repeated indices in the dist vector are not allowed,
  * otherwise the result is undefined.
  */
-int mtxvector_dist_iamax(
-    const struct mtxvector_dist * x,
+int mtxmpivector_iamax(
+    const struct mtxmpivector * x,
     int * iamax,
     struct mtxdisterror * disterr);
 
@@ -1650,7 +1650,7 @@ int mtxvector_dist_iamax(
  */
 
 /**
- * ‘mtxvector_dist_usscga()’ performs a combined scatter-gather
+ * ‘mtxmpivector_usscga()’ performs a combined scatter-gather
  * operation from a distributed sparse vector ‘x’ in packed form into
  * another distributed sparse vector ‘z’ in packed form. The vectors
  * ‘x’ and ‘z’ must have the same field, precision and size. Repeated
@@ -1658,27 +1658,27 @@ int mtxvector_dist_iamax(
  * result is undefined. They are, however, allowed in the packed
  * vector ‘z’.
  */
-int mtxvector_dist_usscga(
-    struct mtxvector_dist * z,
-    const struct mtxvector_dist * x,
+int mtxmpivector_usscga(
+    struct mtxmpivector * z,
+    const struct mtxmpivector * x,
     struct mtxdisterror * disterr)
 {
-    struct mtxvector_dist_usscga usscga;
-    int err = mtxvector_dist_usscga_init(&usscga, z, x, disterr);
+    struct mtxmpivector_usscga usscga;
+    int err = mtxmpivector_usscga_init(&usscga, z, x, disterr);
     if (err) return err;
-    err = mtxvector_dist_usscga_start(&usscga, disterr);
-    if (err) { mtxvector_dist_usscga_free(&usscga); return err; }
-    err = mtxvector_dist_usscga_wait(&usscga, disterr);
-    if (err) { mtxvector_dist_usscga_free(&usscga); return err; }
-    mtxvector_dist_usscga_free(&usscga);
+    err = mtxmpivector_usscga_start(&usscga, disterr);
+    if (err) { mtxmpivector_usscga_free(&usscga); return err; }
+    err = mtxmpivector_usscga_wait(&usscga, disterr);
+    if (err) { mtxmpivector_usscga_free(&usscga); return err; }
+    mtxmpivector_usscga_free(&usscga);
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_dist_usscga_impl’ is a data structure for a persistent,
+ * ‘mtxmpivector_usscga_impl’ is a data structure for a persistent,
  * asynchronous, combined scatter-gather operation.
  */
-struct mtxvector_dist_usscga_impl
+struct mtxmpivector_usscga_impl
 {
     MPI_Comm comm;
     int commsize;
@@ -1706,17 +1706,17 @@ struct mtxvector_dist_usscga_impl
 };
 
 /**
- * ‘mtxvector_dist_usscga_init()’ allocates data structures for a
+ * ‘mtxmpivector_usscga_init()’ allocates data structures for a
  * persistent, combined scatter-gather operation.
  *
  * This is used in cases where the combined scatter-gather operation
  * is performed repeatedly, since the setup phase only needs to be
  * carried out once.
  */
-int mtxvector_dist_usscga_init(
-    struct mtxvector_dist_usscga * usscga,
-    struct mtxvector_dist * z,
-    const struct mtxvector_dist * x,
+int mtxmpivector_usscga_init(
+    struct mtxmpivector_usscga * usscga,
+    struct mtxmpivector * z,
+    const struct mtxmpivector * x,
     struct mtxdisterror * disterr)
 {
     int err;
@@ -2257,7 +2257,7 @@ int mtxvector_dist_usscga_init(
 
     usscga->z = z;
     usscga->x = x;
-    usscga->impl = malloc(sizeof(struct mtxvector_dist_usscga_impl));
+    usscga->impl = malloc(sizeof(struct mtxmpivector_usscga_impl));
     err = !usscga->impl ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(req);
@@ -2290,11 +2290,11 @@ int mtxvector_dist_usscga_init(
 }
 
 /**
- * ‘mtxvector_dist_usscga_free()’ frees resources associated with a
+ * ‘mtxmpivector_usscga_free()’ frees resources associated with a
  * persistent, combined scatter-gather operation.
  */
-void mtxvector_dist_usscga_free(
-    struct mtxvector_dist_usscga * usscga)
+void mtxmpivector_usscga_free(
+    struct mtxmpivector_usscga * usscga)
 {
     free(usscga->impl->req);
     mtxvector_free(&usscga->impl->recvbuf);
@@ -2310,7 +2310,7 @@ void mtxvector_dist_usscga_free(
 }
 
 /**
- * ‘mtxvector_dist_usscga_start()’ initiates a combined scatter-gather
+ * ‘mtxmpivector_usscga_start()’ initiates a combined scatter-gather
  * operation from a distributed sparse vector ‘x’ in packed form into
  * another distributed sparse vector ‘z’ in packed form. Repeated
  * indices in the packed vector ‘x’ are not allowed, otherwise the
@@ -2318,10 +2318,10 @@ void mtxvector_dist_usscga_free(
  * vector ‘z’.
  *
  * The operation may not complete before
- * ‘mtxvector_dist_usscga_wait()’ is called.
+ * ‘mtxmpivector_usscga_wait()’ is called.
  */
-int mtxvector_dist_usscga_start(
-    struct mtxvector_dist_usscga * usscga,
+int mtxmpivector_usscga_start(
+    struct mtxmpivector_usscga * usscga,
     struct mtxdisterror * disterr)
 {
     MPI_Comm comm = usscga->impl->comm;
@@ -2332,7 +2332,7 @@ int mtxvector_dist_usscga_start(
      */
 
     struct mtxvector * sendbuf = &usscga->impl->sendbuf;
-    const struct mtxvector_dist * x = usscga->x;
+    const struct mtxmpivector * x = usscga->x;
     int err = mtxvector_usga(sendbuf, &x->xp);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
@@ -2387,14 +2387,14 @@ int mtxvector_dist_usscga_start(
 }
 
 /**
- * ‘mtxvector_dist_usscga_wait()’ waits for a persistent, combined
+ * ‘mtxmpivector_usscga_wait()’ waits for a persistent, combined
  * scatter-gather operation to finish.
  */
-int mtxvector_dist_usscga_wait(
-    struct mtxvector_dist_usscga * usscga,
+int mtxmpivector_usscga_wait(
+    struct mtxmpivector_usscga * usscga,
     struct mtxdisterror * disterr)
 {
-    struct mtxvector_dist * z = usscga->z;
+    struct mtxmpivector * z = usscga->z;
     int nrecvranks = usscga->impl->nrecvranks;
     MPI_Request * req = usscga->impl->req;
     struct mtxvector * recvbuf = &usscga->impl->recvbuf;

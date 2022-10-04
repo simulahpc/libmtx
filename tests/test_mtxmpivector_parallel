@@ -17,13 +17,11 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-04-14
+# Last modified: 2022-10-03
 #
 # Unit tests for distributed sparse vectors in packed form
 
-status=0
-if ! timeout --kill-after=60 60 mpirun --tag-output -np 2 tests/test_mtxvector_dist
-then
-    status=1
+if ! timeout --kill-after=60 60 mpirun --tag-output -np 2 tests/test_mtxmpivector; then
+    exit 1
 fi
-exit ${status}
+exit 0

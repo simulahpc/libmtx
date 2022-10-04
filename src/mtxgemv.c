@@ -516,14 +516,14 @@ static int distgemv(
                 timespec_duration(t0, t1));
     }
 
-    struct mtxvector_dist x;
+    struct mtxmpivector x;
     if (mtxdistfilex) {
         if (verbose > 0) {
-            fprintf(diagf, "mtxvector_dist_from_mtxdistfile: ");
+            fprintf(diagf, "mtxmpivector_from_mtxdistfile: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
-        err = mtxvector_dist_from_mtxdistfile(
+        err = mtxmpivector_from_mtxdistfile(
             &x, mtxdistfilex, vectortype, comm, disterr);
         if (err) {
             if (verbose > 0) fprintf(diagf, "\n");
@@ -537,7 +537,7 @@ static int distgemv(
         }
     } else {
         if (verbose > 0) {
-            fprintf(diagf, "mtxvector_dist_alloc: ");
+            fprintf(diagf, "mtxmpivector_alloc: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
@@ -569,7 +569,7 @@ static int distgemv(
         for (int64_t i = 0; i < colpartsize; i++)
             idx[i] = colpartoffset+i;
 
-        err = mtxvector_dist_alloc(
+        err = mtxmpivector_alloc(
             &x, vectortype, field, precision, num_columns,
             colpartsize, idx, comm, disterr);
         if (err) {
@@ -580,10 +580,10 @@ static int distgemv(
         }
         free(idx);
 
-        err = mtxvector_dist_set_constant_real_single(&x, 1.0f, disterr);
+        err = mtxmpivector_set_constant_real_single(&x, 1.0f, disterr);
         if (err) {
             if (verbose > 0) fprintf(diagf, "\n");
-            mtxvector_dist_free(&x);
+            mtxmpivector_free(&x);
             mtxmatrix_dist_free(&A);
             return err;
         }
@@ -593,18 +593,18 @@ static int distgemv(
         }
     }
 
-    struct mtxvector_dist y;
+    struct mtxmpivector y;
     if (mtxdistfiley) {
         if (verbose > 0) {
-            fprintf(diagf, "mtxvector_dist_from_mtxdistfile: ");
+            fprintf(diagf, "mtxmpivector_from_mtxdistfile: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
-        err = mtxvector_dist_from_mtxdistfile(
+        err = mtxmpivector_from_mtxdistfile(
             &y, mtxdistfiley, vectortype, comm, disterr);
         if (err) {
             if (verbose > 0) fprintf(diagf, "\n");
-            mtxvector_dist_free(&x);
+            mtxmpivector_free(&x);
             mtxmatrix_dist_free(&A);
             return err;
         }
@@ -614,7 +614,7 @@ static int distgemv(
         }
     } else {
         if (verbose > 0) {
-            fprintf(diagf, "mtxvector_dist_alloc_column_vector: ");
+            fprintf(diagf, "mtxmpivector_alloc_column_vector: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
@@ -624,11 +624,11 @@ static int distgemv(
             mtxmatrix_dist_free(&A);
             return err;
         }
-        err = mtxvector_dist_setzero(&y, disterr);
+        err = mtxmpivector_setzero(&y, disterr);
         if (err) {
             if (verbose > 0) fprintf(diagf, "\n");
-            mtxvector_dist_free(&y);
-            mtxvector_dist_free(&x);
+            mtxmpivector_free(&y);
+            mtxmpivector_free(&x);
             mtxmatrix_dist_free(&A);
             return err;
         }
@@ -649,8 +649,8 @@ static int distgemv(
         &gemv, trans, &A, &x, &y, overlap, disterr);
     if (err) {
         if (verbose > 0) fprintf(diagf, "\n");
-        mtxvector_dist_free(&y);
-        mtxvector_dist_free(&x);
+        mtxmpivector_free(&y);
+        mtxmpivector_free(&x);
         mtxmatrix_dist_free(&A);
         return err;
     }
@@ -673,8 +673,8 @@ static int distgemv(
             if (err) {
                 if (verbose > 0) fprintf(diagf, "\n");
                 mtxmatrix_dist_gemv_free(&gemv);
-                mtxvector_dist_free(&y);
-                mtxvector_dist_free(&x);
+                mtxmpivector_free(&y);
+                mtxmpivector_free(&x);
                 mtxmatrix_dist_free(&A);
                 return err;
             }
@@ -682,8 +682,8 @@ static int distgemv(
             if (err) {
                 if (verbose > 0) fprintf(diagf, "\n");
                 mtxmatrix_dist_gemv_free(&gemv);
-                mtxvector_dist_free(&y);
-                mtxvector_dist_free(&x);
+                mtxmpivector_free(&y);
+                mtxmpivector_free(&x);
                 mtxmatrix_dist_free(&A);
                 return err;
             }
@@ -720,8 +720,8 @@ static int distgemv(
             if (err) {
                 if (verbose > 0) fprintf(diagf, "\n");
                 mtxmatrix_dist_gemv_free(&gemv);
-                mtxvector_dist_free(&y);
-                mtxvector_dist_free(&x);
+                mtxmpivector_free(&y);
+                mtxmpivector_free(&x);
                 mtxmatrix_dist_free(&A);
                 return err;
             }
@@ -729,8 +729,8 @@ static int distgemv(
             if (err) {
                 if (verbose > 0) fprintf(diagf, "\n");
                 mtxmatrix_dist_gemv_free(&gemv);
-                mtxvector_dist_free(&y);
-                mtxvector_dist_free(&x);
+                mtxmpivector_free(&y);
+                mtxmpivector_free(&x);
                 mtxmatrix_dist_free(&A);
                 return err;
             }
@@ -756,8 +756,8 @@ static int distgemv(
         }
     } else {
         mtxmatrix_dist_gemv_free(&gemv);
-        mtxvector_dist_free(&y);
-        mtxvector_dist_free(&x);
+        mtxmpivector_free(&y);
+        mtxmpivector_free(&x);
         mtxmatrix_dist_free(&A);
         return MTX_ERR_INVALID_PRECISION;
     }
@@ -765,18 +765,18 @@ static int distgemv(
     /* 4. output results */
     if (!quiet) {
         if (verbose > 0) {
-            fprintf(diagf, "mtxvector_dist_fwrite: ");
+            fprintf(diagf, "mtxmpivector_fwrite: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
         int64_t bytes_written = 0;
-        err = mtxvector_dist_fwrite(
+        err = mtxmpivector_fwrite(
             &y, mtxfmt, stdout, format, &bytes_written, root, disterr);
         if (err) {
             if (verbose > 0) fprintf(diagf, "\n");
             mtxmatrix_dist_gemv_free(&gemv);
-            mtxvector_dist_free(&y);
-            mtxvector_dist_free(&x);
+            mtxmpivector_free(&y);
+            mtxmpivector_free(&x);
             mtxmatrix_dist_free(&A);
             return err;
         }
@@ -789,8 +789,8 @@ static int distgemv(
     }
 
     mtxmatrix_dist_gemv_free(&gemv);
-    mtxvector_dist_free(&y);
-    mtxvector_dist_free(&x);
+    mtxmpivector_free(&y);
+    mtxmpivector_free(&x);
     mtxmatrix_dist_free(&A);
     return MTX_SUCCESS;
 }
