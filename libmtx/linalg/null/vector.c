@@ -34,7 +34,7 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/linalg/base/vector.h>
 #include <libmtx/linalg/null/vector.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/linalg/local/vector.h>
 
 #include <math.h>
 #include <stdarg.h>

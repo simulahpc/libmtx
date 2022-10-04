@@ -33,7 +33,7 @@
 #include <libmtx/util/partition.h>
 #include <libmtx/linalg/omp/vector.h>
 #include <libmtx/linalg/base/vector.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/linalg/local/vector.h>
 
 #include <math.h>
 #include <stdarg.h>

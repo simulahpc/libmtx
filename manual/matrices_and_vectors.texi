@@ -55,7 +55,7 @@ given for the different matrix and vector implementations.
 @section Vectors
 
 @tindex struct mtxvector
-The file @file{libmtx/vector/vector.h} defines the type @code{struct
+The file @file{libmtx/linalg/local/vector.h} defines the type @code{struct
 mtxvector}. This is a single, abstract data type used to represent a
 vector with different options available for the underlying storage and
 implementation of vector operations.
@@ -601,7 +601,7 @@ int mtxvector_iamax(
 @section Matrices
 
 @tindex struct mtxmatrix
-The file @file{libmtx/matrix/matrix.h} defines the type @code{struct
+The file @file{libmtx/linalg/local/matrix.h} defines the type @code{struct
 mtxmatrix}. This is a single, abstract data type used to represent a
 matrix with different options available for the underlying storage and
 implementation of matrix operations.

@@ -30,7 +30,7 @@
 #include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/linalg/base/vector.h>
 #include <libmtx/linalg/mpi/vector.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/linalg/local/vector.h>
 
 #include <errno.h>
 #include <unistd.h>

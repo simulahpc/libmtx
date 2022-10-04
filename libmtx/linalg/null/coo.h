@@ -34,7 +34,7 @@
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/linalg/field.h>
 #include <libmtx/linalg/precision.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/linalg/local/vector.h>
 #include <libmtx/util/partition.h>
 
 #include <stdarg.h>

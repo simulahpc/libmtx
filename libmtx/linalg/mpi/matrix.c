@@ -34,7 +34,7 @@
 #include <libmtx/util/merge.h>
 #include <libmtx/util/sort.h>
 #include <libmtx/linalg/mpi/matrix.h>
-#include <libmtx/matrix/matrix.h>
+#include <libmtx/linalg/local/matrix.h>
 #include <libmtx/linalg/mpi/vector.h>
 
 #include <mpi.h>

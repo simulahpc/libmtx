@@ -31,7 +31,7 @@
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/linalg/omp/vector.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/linalg/local/vector.h>
 
 #include <stdarg.h>
 #include <stdbool.h>

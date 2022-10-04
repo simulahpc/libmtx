@@ -32,7 +32,7 @@
 #include <libmtx/util/partition.h>
 #include <libmtx/linalg/base/vector.h>
 #include <libmtx/linalg/blas/vector.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/linalg/local/vector.h>
 
 #include <cblas.h>
 

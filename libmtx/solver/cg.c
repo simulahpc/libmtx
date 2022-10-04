@@ -27,8 +27,8 @@
 #include <libmtx/linalg/precision.h>
 #include <libmtx/linalg/field.h>
 #include <libmtx/solver/cg.h>
-#include <libmtx/matrix/matrix.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/linalg/local/matrix.h>
+#include <libmtx/linalg/local/vector.h>
 
 #include <math.h>
 

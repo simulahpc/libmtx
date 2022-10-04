@@ -24,9 +24,9 @@
 #include "test.h"
 
 #include <libmtx/error.h>
-#include <libmtx/matrix/matrix.h>
+#include <libmtx/linalg/local/matrix.h>
 #include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/linalg/local/vector.h>
 
 #include <errno.h>
 #include <unistd.h>

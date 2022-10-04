@@ -31,7 +31,7 @@
 #include <libmtx/linalg/base/vector.h>
 #include <libmtx/linalg/field.h>
 #include <libmtx/linalg/precision.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/linalg/local/vector.h>
 
 #include <stdarg.h>
 #include <stdbool.h>

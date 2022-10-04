@@ -26,7 +26,7 @@
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/partition.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/linalg/local/vector.h>
 #include <libmtx/linalg/base/vector.h>
 
 #include <errno.h>

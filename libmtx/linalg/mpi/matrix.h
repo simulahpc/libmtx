@@ -27,7 +27,7 @@
 #include <libmtx/libmtx-config.h>
 
 #ifdef LIBMTX_HAVE_MPI
-#include <libmtx/matrix/matrix.h>
+#include <libmtx/linalg/local/matrix.h>
 #include <libmtx/matrix/gemvoverlap.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/mtxfile/header.h>

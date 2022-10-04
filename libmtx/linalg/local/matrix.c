@@ -24,7 +24,7 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/matrix/matrix.h>
+#include <libmtx/linalg/local/matrix.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/linalg/precision.h>
 #include <libmtx/util/partition.h>
