@@ -16,14 +16,14 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-29
+ * Last modified: 2022-10-03
  *
  * Different ways of overlapping communication with computation for
  * distributed matrix-vector multiply.
  */
 
-#ifndef LIBMTX_MATRIX_GEMVOVERLAP_H
-#define LIBMTX_MATRIX_GEMVOVERLAP_H
+#ifndef LIBMTX_LINALG_GEMVOVERLAP_H
+#define LIBMTX_LINALG_GEMVOVERLAP_H
 
 #include <stdint.h>
 

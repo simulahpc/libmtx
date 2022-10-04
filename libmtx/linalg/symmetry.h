@@ -16,13 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-15
+ * Last modified: 2022-10-03
  *
  * Symmetry properties of matrices.
  */
 
-#ifndef LIBMTX_MATRIX_SYMMETRY_H
-#define LIBMTX_MATRIX_SYMMETRY_H
+#ifndef LIBMTX_LINALG_SYMMETRY_H
+#define LIBMTX_LINALG_SYMMETRY_H
 
 #include <stdint.h>
 

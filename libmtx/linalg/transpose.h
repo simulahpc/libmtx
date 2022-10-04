@@ -16,13 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-16
+ * Last modified: 2022-10-03
  *
  * Different ways of transposing matrices and vectors.
  */
 
-#ifndef LIBMTX_MATRIX_TRANSPOSE_H
-#define LIBMTX_MATRIX_TRANSPOSE_H
+#ifndef LIBMTX_LINALG_TRANSPOSE_H
+#define LIBMTX_LINALG_TRANSPOSE_H
 
 #include <stdint.h>
 

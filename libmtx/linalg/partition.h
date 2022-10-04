@@ -16,13 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-22
+ * Last modified: 2022-10-03
  *
  * Matrix partitionings.
  */
 
-#ifndef LIBMTX_MATRIX_PARTITION_H
-#define LIBMTX_MATRIX_PARTITION_H
+#ifndef LIBMTX_LINALG_PARTITION_H
+#define LIBMTX_LINALG_PARTITION_H
 
 #include <stdint.h>
 
