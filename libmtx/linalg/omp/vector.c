@@ -52,7 +52,7 @@
  */
 enum mtxfield mtxompvector_field(const struct mtxompvector * x)
 {
-    return mtxvector_base_field(&x->base);
+    return mtxbasevector_field(&x->base);
 }
 
 /**
@@ -60,7 +60,7 @@ enum mtxfield mtxompvector_field(const struct mtxompvector * x)
  */
 enum mtxprecision mtxompvector_precision(const struct mtxompvector * x)
 {
-    return mtxvector_base_precision(&x->base);
+    return mtxbasevector_precision(&x->base);
 }
 
 /**
@@ -68,7 +68,7 @@ enum mtxprecision mtxompvector_precision(const struct mtxompvector * x)
  */
 int64_t mtxompvector_size(const struct mtxompvector * x)
 {
-    return mtxvector_base_size(&x->base);
+    return mtxbasevector_size(&x->base);
 }
 
 /**
@@ -77,7 +77,7 @@ int64_t mtxompvector_size(const struct mtxompvector * x)
  */
 int64_t mtxompvector_num_nonzeros(const struct mtxompvector * x)
 {
-    return mtxvector_base_num_nonzeros(&x->base);
+    return mtxbasevector_num_nonzeros(&x->base);
 }
 
 /**
@@ -87,7 +87,7 @@ int64_t mtxompvector_num_nonzeros(const struct mtxompvector * x)
  */
 int64_t * mtxompvector_idx(const struct mtxompvector * x)
 {
-    return mtxvector_base_idx(&x->base);
+    return mtxbasevector_idx(&x->base);
 }
 
 /*
@@ -100,7 +100,7 @@ int64_t * mtxompvector_idx(const struct mtxompvector * x)
 void mtxompvector_free(
     struct mtxompvector * x)
 {
-    mtxvector_base_free(&x->base);
+    mtxbasevector_free(&x->base);
     free(x->offsets);
 }
 
@@ -132,7 +132,7 @@ int mtxompvector_alloc_copy(
     } else { dst->offsets = NULL; }
     dst->sched = src->sched;
     dst->chunk_size = src->chunk_size;
-    int err = mtxvector_base_alloc_copy(&dst->base, &src->base);
+    int err = mtxbasevector_alloc_copy(&dst->base, &src->base);
     if (err) { free(dst->offsets); return err; }
     return MTX_SUCCESS;
 }
@@ -165,9 +165,9 @@ int mtxompvector_init_copy(
     } else { dst->offsets = NULL; }
     dst->sched = src->sched;
     dst->chunk_size = src->chunk_size;
-    int err = mtxvector_base_alloc_copy(&dst->base, &src->base);
+    int err = mtxbasevector_alloc_copy(&dst->base, &src->base);
     if (err) { free(dst->offsets); return err; }
-    return mtxvector_base_init_copy(&dst->base, &src->base);
+    return mtxbasevector_init_copy(&dst->base, &src->base);
 }
 
 /*
@@ -187,7 +187,7 @@ int mtxompvector_alloc(
     x->offsets = NULL;
     x->sched = omp_sched_static;
     x->chunk_size = 0;
-    return mtxvector_base_alloc(&x->base, field, precision, size);
+    return mtxbasevector_alloc(&x->base, field, precision, size);
 }
 
 /**
@@ -202,7 +202,7 @@ int mtxompvector_init_real_single(
     int err = mtxompvector_alloc(
         x, mtx_field_real, mtx_single, size);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < size; k++)
         base->data.real_single[k] = data[k];
@@ -221,7 +221,7 @@ int mtxompvector_init_real_double(
     int err = mtxompvector_alloc(
         x, mtx_field_real, mtx_double, size);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < size; k++)
         base->data.real_double[k] = data[k];
@@ -240,7 +240,7 @@ int mtxompvector_init_complex_single(
     int err = mtxompvector_alloc(
         x, mtx_field_complex, mtx_single, size);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < size; k++) {
         base->data.complex_single[k][0] = data[k][0];
@@ -261,7 +261,7 @@ int mtxompvector_init_complex_double(
     int err = mtxompvector_alloc(
         x, mtx_field_complex, mtx_double, size);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < size; k++) {
         base->data.complex_double[k][0] = data[k][0];
@@ -282,7 +282,7 @@ int mtxompvector_init_integer_single(
     int err = mtxompvector_alloc(
         x, mtx_field_integer, mtx_single, size);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < size; k++)
         base->data.integer_single[k] = data[k];
@@ -301,7 +301,7 @@ int mtxompvector_init_integer_double(
     int err = mtxompvector_alloc(
         x, mtx_field_integer, mtx_double, size);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < size; k++)
         base->data.integer_double[k] = data[k];
@@ -336,7 +336,7 @@ int mtxompvector_init_strided_real_single(
 {
     int err = mtxompvector_alloc(x, mtx_field_real, mtx_single, size);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < size; k++)
         base->data.real_single[k] = *(const float *) ((const char *) data + k*stride);
@@ -355,7 +355,7 @@ int mtxompvector_init_strided_real_double(
 {
     int err = mtxompvector_alloc(x, mtx_field_real, mtx_double, size);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < size; k++)
         base->data.real_double[k] = *(const double *) ((const char *) data + k*stride);
@@ -374,7 +374,7 @@ int mtxompvector_init_strided_complex_single(
 {
     int err = mtxompvector_alloc(x, mtx_field_complex, mtx_single, size);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < size; k++) {
         const void * p = ((const char *) data + k*stride);
@@ -396,7 +396,7 @@ int mtxompvector_init_strided_complex_double(
 {
     int err = mtxompvector_alloc(x, mtx_field_complex, mtx_double, size);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < size; k++) {
         const void * p = ((const char *) data + k*stride);
@@ -418,7 +418,7 @@ int mtxompvector_init_strided_integer_single(
 {
     int err = mtxompvector_alloc(x, mtx_field_integer, mtx_single, size);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < size; k++)
         base->data.integer_single[k] = *(const int32_t *) ((const char *) data + k*stride);
@@ -437,7 +437,7 @@ int mtxompvector_init_strided_integer_double(
 {
     int err = mtxompvector_alloc(x, mtx_field_integer, mtx_double, size);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < size; k++)
         base->data.integer_double[k] = *(const int64_t *) ((const char *) data + k*stride);
@@ -495,7 +495,7 @@ int mtxompvector_alloc_custom(
         x->sched = sched;
         x->chunk_size = chunk_size;
     }
-    int err = mtxvector_base_alloc(&x->base, field, precision, size);
+    int err = mtxbasevector_alloc(&x->base, field, precision, size);
     if (err) { free(x->offsets); return err; }
     return MTX_SUCCESS;
 }
@@ -665,17 +665,17 @@ int mtxompvector_alloc_packed(
     x->offsets = NULL;
     x->sched = omp_sched_static;
     x->chunk_size = 0;
-    int err = mtxvector_base_alloc(&x->base, field, precision, size);
+    int err = mtxbasevector_alloc(&x->base, field, precision, size);
     if (err) return err;
     x->base.num_nonzeros = num_nonzeros;
     x->base.idx = malloc(num_nonzeros * sizeof(int64_t));
-    if (!x->base.idx) { mtxvector_base_free(&x->base); return MTX_ERR_ERRNO; }
+    if (!x->base.idx) { mtxbasevector_free(&x->base); return MTX_ERR_ERRNO; }
     if (idx) {
         #pragma omp parallel for
         for (int64_t k = 0; k < num_nonzeros; k++) {
             if (idx[k] >= 0 && idx[k] < size) {
                 x->base.idx[k] = idx[k];
-            } else { mtxvector_base_free(&x->base); err = MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            } else { mtxbasevector_free(&x->base); err = MTX_ERR_INDEX_OUT_OF_BOUNDS; }
         }
         if (err) return err;
     }
@@ -696,7 +696,7 @@ int mtxompvector_init_packed_real_single(
     int err = mtxompvector_alloc_packed(
         x, mtx_field_real, mtx_single, size, num_nonzeros, idx);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < num_nonzeros; k++)
         base->data.real_single[k] = data[k];
@@ -717,7 +717,7 @@ int mtxompvector_init_packed_real_double(
     int err = mtxompvector_alloc_packed(
         x, mtx_field_real, mtx_double, size, num_nonzeros, idx);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < num_nonzeros; k++)
         base->data.real_double[k] = data[k];
@@ -738,7 +738,7 @@ int mtxompvector_init_packed_complex_single(
     int err = mtxompvector_alloc_packed(
         x, mtx_field_complex, mtx_single, size, num_nonzeros, idx);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < num_nonzeros; k++) {
         base->data.complex_single[k][0] = data[k][0];
@@ -761,7 +761,7 @@ int mtxompvector_init_packed_complex_double(
     int err = mtxompvector_alloc_packed(
         x, mtx_field_complex, mtx_double, size, num_nonzeros, idx);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < num_nonzeros; k++) {
         base->data.complex_double[k][0] = data[k][0];
@@ -784,7 +784,7 @@ int mtxompvector_init_packed_integer_single(
     int err = mtxompvector_alloc_packed(
         x, mtx_field_integer, mtx_single, size, num_nonzeros, idx);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < num_nonzeros; k++)
         base->data.integer_single[k] = data[k];
@@ -805,7 +805,7 @@ int mtxompvector_init_packed_integer_double(
     int err = mtxompvector_alloc_packed(
         x, mtx_field_integer, mtx_double, size, num_nonzeros, idx);
     if (err) return err;
-    struct mtxvector_base * base = &x->base;
+    struct mtxbasevector * base = &x->base;
     #pragma omp parallel for
     for (int64_t k = 0; k < num_nonzeros; k++)
         base->data.integer_double[k] = data[k];
@@ -848,18 +848,18 @@ int mtxompvector_alloc_packed_strided(
     x->offsets = NULL;
     x->sched = omp_sched_static;
     x->chunk_size = 0;
-    int err = mtxvector_base_alloc(&x->base, field, precision, size);
+    int err = mtxbasevector_alloc(&x->base, field, precision, size);
     if (err) return err;
     x->base.num_nonzeros = num_nonzeros;
     x->base.idx = malloc(num_nonzeros * sizeof(int64_t));
-    if (!x->base.idx) { mtxvector_base_free(&x->base); return MTX_ERR_ERRNO; }
+    if (!x->base.idx) { mtxbasevector_free(&x->base); return MTX_ERR_ERRNO; }
     if (idx) {
         #pragma omp parallel for
         for (int64_t k = 0; k < num_nonzeros; k++) {
             int64_t idxk = (*(int64_t *) ((unsigned char *) idx + k*idxstride)) - idxbase;
             if (idxk >= 0 && idxk < size) {
                 x->base.idx[k] = idxk;
-            } else { mtxvector_base_free(&x->base); err = MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            } else { mtxbasevector_free(&x->base); err = MTX_ERR_INDEX_OUT_OF_BOUNDS; }
         }
         if (err) return err;
     }
@@ -1235,7 +1235,7 @@ int mtxompvector_get_integer_double(
 int mtxompvector_setzero(
     struct mtxompvector * xomp)
 {
-    struct mtxvector_base * x = &xomp->base;
+    struct mtxbasevector * x = &xomp->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             if (xomp->offsets) {
@@ -1340,7 +1340,7 @@ int mtxompvector_set_constant_real_single(
     struct mtxompvector * xomp,
     float a)
 {
-    struct mtxvector_base * x = &xomp->base;
+    struct mtxbasevector * x = &xomp->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             if (xomp->offsets) {
@@ -1445,7 +1445,7 @@ int mtxompvector_set_constant_real_double(
     struct mtxompvector * xomp,
     double a)
 {
-    struct mtxvector_base * x = &xomp->base;
+    struct mtxbasevector * x = &xomp->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             if (xomp->offsets) {
@@ -1551,7 +1551,7 @@ int mtxompvector_set_constant_complex_single(
     struct mtxompvector * xomp,
     float a[2])
 {
-    struct mtxvector_base * x = &xomp->base;
+    struct mtxbasevector * x = &xomp->base;
     if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             if (xomp->offsets) {
@@ -1601,7 +1601,7 @@ int mtxompvector_set_constant_complex_double(
     struct mtxompvector * xomp,
     double a[2])
 {
-    struct mtxvector_base * x = &xomp->base;
+    struct mtxbasevector * x = &xomp->base;
     if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             if (xomp->offsets) {
@@ -1650,7 +1650,7 @@ int mtxompvector_set_constant_integer_single(
     struct mtxompvector * xomp,
     int32_t a)
 {
-    struct mtxvector_base * x = &xomp->base;
+    struct mtxbasevector * x = &xomp->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             if (xomp->offsets) {
@@ -1755,7 +1755,7 @@ int mtxompvector_set_constant_integer_double(
     struct mtxompvector * xomp,
     int64_t a)
 {
-    struct mtxvector_base * x = &xomp->base;
+    struct mtxbasevector * x = &xomp->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             if (xomp->offsets) {
@@ -2050,7 +2050,7 @@ int mtxompvector_from_mtxfile(
     x->offsets = NULL;
     x->sched = omp_sched_static;
     x->chunk_size = 0;
-    return mtxvector_base_from_mtxfile(&x->base, mtxfile);
+    return mtxbasevector_from_mtxfile(&x->base, mtxfile);
 }
 
 /**
@@ -2064,7 +2064,7 @@ int mtxompvector_to_mtxfile(
     const int64_t * idx,
     enum mtxfileformat mtxfmt)
 {
-    return mtxvector_base_to_mtxfile(mtxfile, &x->base, num_rows, idx, mtxfmt);
+    return mtxbasevector_to_mtxfile(mtxfile, &x->base, num_rows, idx, mtxfmt);
 }
 
 /*
@@ -2105,8 +2105,8 @@ int mtxompvector_split(
     int * parts,
     int64_t * invperm)
 {
-    struct mtxvector_base ** basedsts = malloc(
-        num_parts * sizeof(struct mtxvector_base *));
+    struct mtxbasevector ** basedsts = malloc(
+        num_parts * sizeof(struct mtxbasevector *));
     if (!basedsts) return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) {
         dsts[p]->num_threads = src->num_threads;
@@ -2114,7 +2114,7 @@ int mtxompvector_split(
         dsts[p]->chunk_size = 0;
         basedsts[p] = &dsts[p]->base;
     }
-    int err = mtxvector_base_split(
+    int err = mtxbasevector_split(
         num_parts, basedsts, &src->base, size, parts, invperm);
     free(basedsts);
     return err;
@@ -2135,8 +2135,8 @@ int mtxompvector_swap(
     struct mtxompvector * xomp,
     struct mtxompvector * yomp)
 {
-    struct mtxvector_base * x = &xomp->base;
-    struct mtxvector_base * y = &yomp->base;
+    struct mtxbasevector * x = &xomp->base;
+    struct mtxbasevector * y = &yomp->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -2286,8 +2286,8 @@ int mtxompvector_copy(
     struct mtxompvector * yomp,
     const struct mtxompvector * xomp)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    struct mtxbasevector * y = &yomp->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -2422,7 +2422,7 @@ int mtxompvector_sscal(
     struct mtxompvector * xomp,
     int64_t * num_flops)
 {
-    struct mtxvector_base * x = &xomp->base;
+    struct mtxbasevector * x = &xomp->base;
     if (a == 1) return MTX_SUCCESS;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -2537,7 +2537,7 @@ int mtxompvector_dscal(
     struct mtxompvector * xomp,
     int64_t * num_flops)
 {
-    struct mtxvector_base * x = &xomp->base;
+    struct mtxbasevector * x = &xomp->base;
     if (a == 1) return MTX_SUCCESS;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -2652,7 +2652,7 @@ int mtxompvector_cscal(
     struct mtxompvector * xomp,
     int64_t * num_flops)
 {
-    struct mtxvector_base * x = &xomp->base;
+    struct mtxbasevector * x = &xomp->base;
     if (x->field != mtx_field_complex) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision == mtx_single) {
         float (* xdata)[2] = x->data.complex_single;
@@ -2713,7 +2713,7 @@ int mtxompvector_zscal(
     struct mtxompvector * xomp,
     int64_t * num_flops)
 {
-    struct mtxvector_base * x = &xomp->base;
+    struct mtxbasevector * x = &xomp->base;
     if (x->field != mtx_field_complex) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision == mtx_single) {
         float (* xdata)[2] = x->data.complex_single;
@@ -2778,8 +2778,8 @@ int mtxompvector_saxpy(
     struct mtxompvector * yomp,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    struct mtxbasevector * y = &yomp->base;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (y->precision != x->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (y->size != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -2911,8 +2911,8 @@ int mtxompvector_daxpy(
     struct mtxompvector * yomp,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    struct mtxbasevector * y = &yomp->base;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (y->precision != x->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (y->size != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -3076,8 +3076,8 @@ int mtxompvector_saypx(
     const struct mtxompvector * xomp,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    struct mtxbasevector * y = &yomp->base;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (y->precision != x->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (y->size != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -3209,8 +3209,8 @@ int mtxompvector_daypx(
     const struct mtxompvector * xomp,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    struct mtxbasevector * y = &yomp->base;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (y->precision != x->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (y->size != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -3342,8 +3342,8 @@ int mtxompvector_sdot(
     float * dot,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -3435,8 +3435,8 @@ int mtxompvector_ddot(
     double * dot,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -3529,8 +3529,8 @@ int mtxompvector_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -3600,8 +3600,8 @@ int mtxompvector_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -3670,8 +3670,8 @@ int mtxompvector_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -3740,8 +3740,8 @@ int mtxompvector_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -3806,7 +3806,7 @@ int mtxompvector_snrm2(
     float * nrm2,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
+    const struct mtxbasevector * x = &xomp->base;
     float c = 0;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -3918,7 +3918,7 @@ int mtxompvector_dnrm2(
     double * nrm2,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
+    const struct mtxbasevector * x = &xomp->base;
     double c = 0;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -4032,7 +4032,7 @@ int mtxompvector_sasum(
     float * asum,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
+    const struct mtxbasevector * x = &xomp->base;
     float c = 0;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -4146,7 +4146,7 @@ int mtxompvector_dasum(
     double * asum,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
+    const struct mtxbasevector * x = &xomp->base;
     double c = 0;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -4259,8 +4259,8 @@ int mtxompvector_iamax(
     const struct mtxompvector * xomp,
     int * iamax)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    return mtxvector_base_iamax(x, iamax);
+    const struct mtxbasevector * x = &xomp->base;
+    return mtxbasevector_iamax(x, iamax);
 }
 
 /*
@@ -4286,8 +4286,8 @@ int mtxompvector_ussdot(
     float * dot,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (!x->idx) return mtxompvector_sdot(xomp, yomp, dot, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -4383,8 +4383,8 @@ int mtxompvector_usddot(
     double * dot,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (!x->idx) return mtxompvector_ddot(xomp, yomp, dot, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -4481,8 +4481,8 @@ int mtxompvector_uscdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (!x->idx) return mtxompvector_cdotu(xomp, yomp, dot, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -4556,8 +4556,8 @@ int mtxompvector_uszdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (!x->idx) return mtxompvector_zdotu(xomp, yomp, dot, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -4630,8 +4630,8 @@ int mtxompvector_uscdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (!x->idx) return mtxompvector_cdotc(xomp, yomp, dot, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -4704,8 +4704,8 @@ int mtxompvector_uszdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (!x->idx) return mtxompvector_zdotc(xomp, yomp, dot, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -4778,8 +4778,8 @@ int mtxompvector_ussaxpy(
     struct mtxompvector * yomp,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    struct mtxbasevector * y = &yomp->base;
     if (!x->idx) return mtxompvector_saxpy(alpha, xomp, yomp, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -4915,8 +4915,8 @@ int mtxompvector_usdaxpy(
     struct mtxompvector * yomp,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    struct mtxbasevector * y = &yomp->base;
     if (!x->idx) return mtxompvector_daxpy(alpha, xomp, yomp, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -5052,8 +5052,8 @@ int mtxompvector_uscaxpy(
     struct mtxompvector * yomp,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    struct mtxbasevector * y = &yomp->base;
     if (!x->idx) return mtxompvector_caxpy(alpha, xomp, yomp, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -5121,8 +5121,8 @@ int mtxompvector_uszaxpy(
     struct mtxompvector * yomp,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    struct mtxbasevector * y = &yomp->base;
     if (!x->idx) return mtxompvector_zaxpy(alpha, xomp, yomp, num_flops);
     if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -5184,9 +5184,9 @@ int mtxompvector_usga(
     struct mtxompvector * xomp,
     const struct mtxompvector * yomp)
 {
-    struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
-    if (!x->idx) return mtxvector_base_copy(x, y);
+    struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
+    if (!x->idx) return mtxbasevector_copy(x, y);
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -5309,8 +5309,8 @@ int mtxompvector_usgz(
     struct mtxompvector * xomp,
     struct mtxompvector * yomp)
 {
-    struct mtxvector_base * x = &xomp->base;
-    const struct mtxvector_base * y = &yomp->base;
+    struct mtxbasevector * x = &xomp->base;
+    const struct mtxbasevector * y = &yomp->base;
     if (!x->idx || y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
@@ -5441,8 +5441,8 @@ int mtxompvector_ussc(
     struct mtxompvector * yomp,
     const struct mtxompvector * xomp)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    struct mtxvector_base * y = &yomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    struct mtxbasevector * y = &yomp->base;
     if (!x->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     /* if (y->idx) return MTX_ERR_INVALID_VECTOR_TYPE; */
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -5573,8 +5573,8 @@ int mtxompvector_usscga(
     struct mtxompvector * zomp,
     const struct mtxompvector * xomp)
 {
-    const struct mtxvector_base * x = &xomp->base;
-    struct mtxvector_base * z = &zomp->base;
+    const struct mtxbasevector * x = &xomp->base;
+    struct mtxbasevector * z = &zomp->base;
     if (!x->idx || !z->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field != z->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != z->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
@@ -5613,7 +5613,7 @@ int mtxompvector_send(
     MPI_Comm comm,
     int * mpierrcode)
 {
-    return mtxvector_base_send(
+    return mtxbasevector_send(
         &x->base, offset, count, recipient, tag, comm, mpierrcode);
 }
 
@@ -5633,7 +5633,7 @@ int mtxompvector_recv(
     MPI_Status * status,
     int * mpierrcode)
 {
-    return mtxvector_base_recv(
+    return mtxbasevector_recv(
         &x->base, offset, count, sender, tag, comm, status, mpierrcode);
 }
 
@@ -5654,7 +5654,7 @@ int mtxompvector_irecv(
     MPI_Request * request,
     int * mpierrcode)
 {
-    return mtxvector_base_irecv(
+    return mtxbasevector_irecv(
         &x->base, offset, count, sender, tag, comm, request, mpierrcode);
 }
 #endif

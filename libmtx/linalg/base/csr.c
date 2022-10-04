@@ -52,7 +52,7 @@
  */
 enum mtxfield mtxmatrix_csr_field(const struct mtxmatrix_csr * A)
 {
-    return mtxvector_base_field(&A->a);
+    return mtxbasevector_field(&A->a);
 }
 
 /**
@@ -60,7 +60,7 @@ enum mtxfield mtxmatrix_csr_field(const struct mtxmatrix_csr * A)
  */
 enum mtxprecision mtxmatrix_csr_precision(const struct mtxmatrix_csr * A)
 {
-    return mtxvector_base_precision(&A->a);
+    return mtxbasevector_precision(&A->a);
 }
 
 /**
@@ -140,8 +140,8 @@ int mtxmatrix_csr_rowcolidx(
 void mtxmatrix_csr_free(
     struct mtxmatrix_csr * A)
 {
-    mtxvector_base_free(&A->diag);
-    mtxvector_base_free(&A->a);
+    mtxbasevector_free(&A->diag);
+    mtxbasevector_free(&A->a);
     free(A->colidx);
     free(A->rowptr);
 }
@@ -230,7 +230,7 @@ int mtxmatrix_csr_alloc_entries(
     for (int i = num_rows; i > 0; i--) A->rowptr[i] = A->rowptr[i-1];
     A->rowptr[0] = 0;
 
-    int err = mtxvector_base_alloc(&A->a, field, precision, size);
+    int err = mtxbasevector_alloc(&A->a, field, precision, size);
     if (err) { free(A->colidx); free(A->rowptr); return err; }
 
     /* extract diagonals for symmetric and Hermitian matrices */
@@ -246,10 +246,10 @@ int mtxmatrix_csr_alloc_entries(
             }
         }
         A->num_nonzeros = 2*A->size-num_diagonals;
-        err = mtxvector_base_alloc_packed(
+        err = mtxbasevector_alloc_packed(
             &A->diag, field, precision, A->size, num_diagonals, NULL);
         if (err) {
-            mtxvector_base_free(&A->a);
+            mtxbasevector_free(&A->a);
             free(A->colidx); free(A->rowptr);
             return err;
         }
@@ -262,10 +262,10 @@ int mtxmatrix_csr_alloc_entries(
         }
     } else if (symmetry == mtx_unsymmetric) {
         A->num_nonzeros = A->size;
-        err = mtxvector_base_alloc_packed(
+        err = mtxbasevector_alloc_packed(
             &A->diag, field, precision, A->size, 0, NULL);
         if (err) {
-            mtxvector_base_free(&A->a);
+            mtxbasevector_free(&A->a);
             free(A->colidx); free(A->rowptr);
             return err;
         }
@@ -294,14 +294,14 @@ int mtxmatrix_csr_init_entries_real_single(
         A, mtx_field_real, mtx_single, symmetry, num_rows, num_columns,
         size, sizeof(*rowidx), 0, rowidx, colidx, perm);
     if (err) { free(perm); return err; }
-    struct mtxvector_base x;
+    struct mtxbasevector x;
     x.idx = perm;
     x.field = mtx_field_real;
     x.precision = mtx_single;
     x.size = A->size;
     x.num_nonzeros = size;
     x.data.real_single = (float *) data;
-    err = mtxvector_base_ussc(&A->a, &x);
+    err = mtxbasevector_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
     free(perm);
     return MTX_SUCCESS;
@@ -328,14 +328,14 @@ int mtxmatrix_csr_init_entries_real_double(
         A, mtx_field_real, mtx_double, symmetry, num_rows, num_columns,
         size, sizeof(*rowidx), 0, rowidx, colidx, perm);
     if (err) { free(perm); return err; }
-    struct mtxvector_base x;
+    struct mtxbasevector x;
     x.idx = perm;
     x.field = mtx_field_real;
     x.precision = mtx_double;
     x.size = A->size;
     x.num_nonzeros = size;
     x.data.real_double = (double *) data;
-    err = mtxvector_base_ussc(&A->a, &x);
+    err = mtxbasevector_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
     free(perm);
     return MTX_SUCCESS;
@@ -362,14 +362,14 @@ int mtxmatrix_csr_init_entries_complex_single(
         A, mtx_field_complex, mtx_single, symmetry, num_rows, num_columns,
         size, sizeof(*rowidx), 0, rowidx, colidx, perm);
     if (err) { free(perm); return err; }
-    struct mtxvector_base x;
+    struct mtxbasevector x;
     x.idx = perm;
     x.field = mtx_field_complex;
     x.precision = mtx_single;
     x.size = A->size;
     x.num_nonzeros = size;
     x.data.complex_single = (float (*)[2]) data;
-    err = mtxvector_base_ussc(&A->a, &x);
+    err = mtxbasevector_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
     free(perm);
     return MTX_SUCCESS;
@@ -396,14 +396,14 @@ int mtxmatrix_csr_init_entries_complex_double(
         A, mtx_field_complex, mtx_double, symmetry, num_rows, num_columns,
         size, sizeof(*rowidx), 0, rowidx, colidx, perm);
     if (err) { free(perm); return err; }
-    struct mtxvector_base x;
+    struct mtxbasevector x;
     x.idx = perm;
     x.field = mtx_field_complex;
     x.precision = mtx_double;
     x.size = A->size;
     x.num_nonzeros = size;
     x.data.complex_double = (double (*)[2]) data;
-    err = mtxvector_base_ussc(&A->a, &x);
+    err = mtxbasevector_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
     free(perm);
     return MTX_SUCCESS;
@@ -430,14 +430,14 @@ int mtxmatrix_csr_init_entries_integer_single(
         A, mtx_field_integer, mtx_single, symmetry, num_rows, num_columns,
         size, sizeof(*rowidx), 0, rowidx, colidx, perm);
     if (err) { free(perm); return err; }
-    struct mtxvector_base x;
+    struct mtxbasevector x;
     x.idx = perm;
     x.field = mtx_field_integer;
     x.precision = mtx_single;
     x.size = A->size;
     x.num_nonzeros = size;
     x.data.integer_single = (int32_t *) data;
-    err = mtxvector_base_ussc(&A->a, &x);
+    err = mtxbasevector_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
     free(perm);
     return MTX_SUCCESS;
@@ -464,14 +464,14 @@ int mtxmatrix_csr_init_entries_integer_double(
         A, mtx_field_integer, mtx_double, symmetry, num_rows, num_columns,
         size, sizeof(*rowidx), 0, rowidx, colidx, perm);
     if (err) { free(perm); return err; }
-    struct mtxvector_base x;
+    struct mtxbasevector x;
     x.idx = perm;
     x.field = mtx_field_integer;
     x.precision = mtx_double;
     x.size = A->size;
     x.num_nonzeros = size;
     x.data.integer_double = (int64_t *) data;
-    err = mtxvector_base_ussc(&A->a, &x);
+    err = mtxbasevector_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
     free(perm);
     return MTX_SUCCESS;
@@ -659,7 +659,7 @@ int mtxmatrix_csr_alloc_rows(
     A->colidx = malloc(A->size * sizeof(int));
     if (!A->colidx) { free(A->rowptr); return MTX_ERR_ERRNO; }
     for (int64_t k = 0; k < A->size; k++) A->colidx[k] = colidx[k];
-    int err = mtxvector_base_alloc(&A->a, field, precision, A->size);
+    int err = mtxbasevector_alloc(&A->a, field, precision, A->size);
     if (err) { free(A->colidx); free(A->rowptr); return err; }
 
     /* extract diagonals for symmetric and Hermitian matrices */
@@ -675,10 +675,10 @@ int mtxmatrix_csr_alloc_rows(
             }
         }
         A->num_nonzeros = 2*A->size-num_diagonals;
-        err = mtxvector_base_alloc_packed(
+        err = mtxbasevector_alloc_packed(
             &A->diag, field, precision, A->size, num_diagonals, NULL);
         if (err) {
-            mtxvector_base_free(&A->a);
+            mtxbasevector_free(&A->a);
             free(A->colidx); free(A->rowptr);
             return err;
         }
@@ -691,10 +691,10 @@ int mtxmatrix_csr_alloc_rows(
         }
     } else if (symmetry == mtx_unsymmetric) {
         A->num_nonzeros = A->size;
-        err = mtxvector_base_alloc_packed(
+        err = mtxbasevector_alloc_packed(
             &A->diag, field, precision, A->size, 0, NULL);
         if (err) {
-            mtxvector_base_free(&A->a);
+            mtxbasevector_free(&A->a);
             free(A->colidx); free(A->rowptr);
             return err;
         }
@@ -720,7 +720,7 @@ int mtxmatrix_csr_init_rows_real_single(
         A, mtx_field_real, mtx_single, symmetry,
 	num_rows, num_columns, rowptr, colidx);
     if (err) return err;
-    err = mtxvector_base_set_real_single(&A->a, rowptr[num_rows], sizeof(*data), data);
+    err = mtxbasevector_set_real_single(&A->a, rowptr[num_rows], sizeof(*data), data);
     if (err) { mtxmatrix_csr_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -743,7 +743,7 @@ int mtxmatrix_csr_init_rows_real_double(
         A, mtx_field_real, mtx_double, symmetry,
 	num_rows, num_columns, rowptr, colidx);
     if (err) return err;
-    err = mtxvector_base_set_real_double(&A->a, rowptr[num_rows], sizeof(*data), data);
+    err = mtxbasevector_set_real_double(&A->a, rowptr[num_rows], sizeof(*data), data);
     if (err) { mtxmatrix_csr_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -766,7 +766,7 @@ int mtxmatrix_csr_init_rows_complex_single(
         A, mtx_field_complex, mtx_single, symmetry,
 	num_rows, num_columns, rowptr, colidx);
     if (err) return err;
-    err = mtxvector_base_set_complex_single(&A->a, rowptr[num_rows], sizeof(*data), data);
+    err = mtxbasevector_set_complex_single(&A->a, rowptr[num_rows], sizeof(*data), data);
     if (err) { mtxmatrix_csr_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -789,7 +789,7 @@ int mtxmatrix_csr_init_rows_complex_double(
         A, mtx_field_complex, mtx_double, symmetry,
 	num_rows, num_columns, rowptr, colidx);
     if (err) return err;
-    err = mtxvector_base_set_complex_double(&A->a, rowptr[num_rows], sizeof(*data), data);
+    err = mtxbasevector_set_complex_double(&A->a, rowptr[num_rows], sizeof(*data), data);
     if (err) { mtxmatrix_csr_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -812,7 +812,7 @@ int mtxmatrix_csr_init_rows_integer_single(
         A, mtx_field_integer, mtx_single, symmetry,
 	num_rows, num_columns, rowptr, colidx);
     if (err) return err;
-    err = mtxvector_base_set_integer_single(&A->a, rowptr[num_rows], sizeof(*data), data);
+    err = mtxbasevector_set_integer_single(&A->a, rowptr[num_rows], sizeof(*data), data);
     if (err) { mtxmatrix_csr_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -835,7 +835,7 @@ int mtxmatrix_csr_init_rows_integer_double(
         A, mtx_field_integer, mtx_double, symmetry,
 	num_rows, num_columns, rowptr, colidx);
     if (err) return err;
-    err = mtxvector_base_set_integer_double(&A->a, rowptr[num_rows], sizeof(*data), data);
+    err = mtxbasevector_set_integer_double(&A->a, rowptr[num_rows], sizeof(*data), data);
     if (err) { mtxmatrix_csr_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -1114,7 +1114,7 @@ int mtxmatrix_csr_init_cliques_pattern(
 int mtxmatrix_csr_setzero(
     struct mtxmatrix_csr * A)
 {
-    return mtxvector_base_setzero(&A->a);
+    return mtxbasevector_setzero(&A->a);
 }
 
 /**
@@ -1127,7 +1127,7 @@ int mtxmatrix_csr_set_real_single(
     int stride,
     const float * a)
 {
-    return mtxvector_base_set_real_single(&A->a, size, stride, a);
+    return mtxbasevector_set_real_single(&A->a, size, stride, a);
 }
 
 /**
@@ -1140,7 +1140,7 @@ int mtxmatrix_csr_set_real_double(
     int stride,
     const double * a)
 {
-    return mtxvector_base_set_real_double(&A->a, size, stride, a);
+    return mtxbasevector_set_real_double(&A->a, size, stride, a);
 }
 
 /**
@@ -1153,7 +1153,7 @@ int mtxmatrix_csr_set_complex_single(
     int stride,
     const float (*a)[2])
 {
-    return mtxvector_base_set_complex_single(&A->a, size, stride, a);
+    return mtxbasevector_set_complex_single(&A->a, size, stride, a);
 }
 
 /**
@@ -1166,7 +1166,7 @@ int mtxmatrix_csr_set_complex_double(
     int stride,
     const double (*a)[2])
 {
-    return mtxvector_base_set_complex_double(&A->a, size, stride, a);
+    return mtxbasevector_set_complex_double(&A->a, size, stride, a);
 }
 
 /**
@@ -1179,7 +1179,7 @@ int mtxmatrix_csr_set_integer_single(
     int stride,
     const int32_t * a)
 {
-    return mtxvector_base_set_integer_single(&A->a, size, stride, a);
+    return mtxbasevector_set_integer_single(&A->a, size, stride, a);
 }
 
 /**
@@ -1192,7 +1192,7 @@ int mtxmatrix_csr_set_integer_double(
     int stride,
     const int64_t * a)
 {
-    return mtxvector_base_set_integer_double(&A->a, size, stride, a);
+    return mtxbasevector_set_integer_double(&A->a, size, stride, a);
 }
 
 /*
@@ -1680,7 +1680,7 @@ int mtxmatrix_csr_split(
         for (int i = 0; i < dsts[p]->num_rows; i++)
             dsts[p]->rowptr[i+1] += dsts[p]->rowptr[i];
 
-        int err = mtxvector_base_alloc_packed(
+        int err = mtxbasevector_alloc_packed(
             &dsts[p]->a, src->a.field, src->a.precision, size, partsize, &invperm[offset]);
         if (err) {
             free(dsts[p]->colidx); free(dsts[p]->rowptr);
@@ -1688,9 +1688,9 @@ int mtxmatrix_csr_split(
             free(rowidx); free(invperm);
             return err;
         }
-        err = mtxvector_base_usga(&dsts[p]->a, &src->a);
+        err = mtxbasevector_usga(&dsts[p]->a, &src->a);
         if (err) {
-            mtxvector_base_free(&dsts[p]->a);
+            mtxbasevector_free(&dsts[p]->a);
             free(dsts[p]->colidx); free(dsts[p]->rowptr);
             for (int q = p-1; q >= 0; q--) mtxmatrix_csr_free(dsts[q]);
             free(rowidx); free(invperm);
@@ -1710,11 +1710,11 @@ int mtxmatrix_csr_split(
                 }
             }
             dsts[p]->num_nonzeros = 2*dsts[p]->size-num_diagonals;
-            err = mtxvector_base_alloc_packed(
+            err = mtxbasevector_alloc_packed(
                 &dsts[p]->diag, dsts[p]->a.field, dsts[p]->a.precision,
                 dsts[p]->size, num_diagonals, NULL);
             if (err) {
-                mtxvector_base_free(&dsts[p]->a);
+                mtxbasevector_free(&dsts[p]->a);
                 free(dsts[p]->colidx); free(dsts[p]->rowptr);
                 for (int q = p-1; q >= 0; q--) mtxmatrix_csr_free(dsts[q]);
                 free(rowidx); free(invperm);
@@ -1729,17 +1729,17 @@ int mtxmatrix_csr_split(
             }
         } else if (dsts[p]->symmetry == mtx_unsymmetric) {
             dsts[p]->num_nonzeros = dsts[p]->size;
-            err = mtxvector_base_alloc_packed(
+            err = mtxbasevector_alloc_packed(
                 &dsts[p]->diag, dsts[p]->a.field, dsts[p]->a.precision, dsts[p]->size, 0, NULL);
             if (err) {
-                mtxvector_base_free(&dsts[p]->a);
+                mtxbasevector_free(&dsts[p]->a);
                 free(dsts[p]->colidx); free(dsts[p]->rowptr);
                 for (int q = p-1; q >= 0; q--) mtxmatrix_csr_free(dsts[q]);
                 free(rowidx); free(invperm);
                 return err;
             }
         } else {
-            mtxvector_base_free(&dsts[p]->a);
+            mtxbasevector_free(&dsts[p]->a);
             free(dsts[p]->colidx); free(dsts[p]->rowptr);
             for (int q = p-1; q >= 0; q--) mtxmatrix_csr_free(dsts[q]);
             free(rowidx); free(invperm);
@@ -1768,7 +1768,7 @@ int mtxmatrix_csr_swap(
     struct mtxmatrix_csr * x,
     struct mtxmatrix_csr * y)
 {
-    return mtxvector_base_swap(&x->a, &y->a);
+    return mtxbasevector_swap(&x->a, &y->a);
 }
 
 /**
@@ -1782,7 +1782,7 @@ int mtxmatrix_csr_copy(
     struct mtxmatrix_csr * y,
     const struct mtxmatrix_csr * x)
 {
-    return mtxvector_base_copy(&y->a, &x->a);
+    return mtxbasevector_copy(&y->a, &x->a);
 }
 
 /**
@@ -1794,7 +1794,7 @@ int mtxmatrix_csr_sscal(
     struct mtxmatrix_csr * x,
     int64_t * num_flops)
 {
-    return mtxvector_base_sscal(a, &x->a, num_flops);
+    return mtxbasevector_sscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1806,7 +1806,7 @@ int mtxmatrix_csr_dscal(
     struct mtxmatrix_csr * x,
     int64_t * num_flops)
 {
-    return mtxvector_base_dscal(a, &x->a, num_flops);
+    return mtxbasevector_dscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1818,7 +1818,7 @@ int mtxmatrix_csr_cscal(
     struct mtxmatrix_csr * x,
     int64_t * num_flops)
 {
-    return mtxvector_base_cscal(a, &x->a, num_flops);
+    return mtxbasevector_cscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1830,7 +1830,7 @@ int mtxmatrix_csr_zscal(
     struct mtxmatrix_csr * x,
     int64_t * num_flops)
 {
-    return mtxvector_base_zscal(a, &x->a, num_flops);
+    return mtxbasevector_zscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1847,7 +1847,7 @@ int mtxmatrix_csr_saxpy(
     struct mtxmatrix_csr * y,
     int64_t * num_flops)
 {
-    return mtxvector_base_saxpy(a, &x->a, &y->a, num_flops);
+    return mtxbasevector_saxpy(a, &x->a, &y->a, num_flops);
 }
 
 /**
@@ -1864,7 +1864,7 @@ int mtxmatrix_csr_daxpy(
     struct mtxmatrix_csr * y,
     int64_t * num_flops)
 {
-    return mtxvector_base_daxpy(a, &x->a, &y->a, num_flops);
+    return mtxbasevector_daxpy(a, &x->a, &y->a, num_flops);
 }
 
 /**
@@ -1881,7 +1881,7 @@ int mtxmatrix_csr_saypx(
     const struct mtxmatrix_csr * x,
     int64_t * num_flops)
 {
-    return mtxvector_base_saypx(a, &y->a, &x->a, num_flops);
+    return mtxbasevector_saypx(a, &y->a, &x->a, num_flops);
 }
 
 /**
@@ -1898,7 +1898,7 @@ int mtxmatrix_csr_daypx(
     const struct mtxmatrix_csr * x,
     int64_t * num_flops)
 {
-    return mtxvector_base_daypx(a, &y->a, &x->a, num_flops);
+    return mtxbasevector_daypx(a, &y->a, &x->a, num_flops);
 }
 
 /**
@@ -1916,7 +1916,7 @@ int mtxmatrix_csr_sdot(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        return mtxvector_base_sdot(&x->a, &y->a, dot, num_flops);
+        return mtxbasevector_sdot(&x->a, &y->a, dot, num_flops);
     } else { return MTX_ERR_INVALID_SYMMETRY; }
 }
 
@@ -1935,7 +1935,7 @@ int mtxmatrix_csr_ddot(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        return mtxvector_base_ddot(&x->a, &y->a, dot, num_flops);
+        return mtxbasevector_ddot(&x->a, &y->a, dot, num_flops);
     } else { return MTX_ERR_INVALID_SYMMETRY; }
 }
 
@@ -1955,7 +1955,7 @@ int mtxmatrix_csr_cdotu(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        return mtxvector_base_cdotu(&x->a, &y->a, dot, num_flops);
+        return mtxbasevector_cdotu(&x->a, &y->a, dot, num_flops);
     } else { return MTX_ERR_INVALID_SYMMETRY; }
 }
 
@@ -1975,7 +1975,7 @@ int mtxmatrix_csr_zdotu(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        return mtxvector_base_zdotu(&x->a, &y->a, dot, num_flops);
+        return mtxbasevector_zdotu(&x->a, &y->a, dot, num_flops);
     } else { return MTX_ERR_INVALID_SYMMETRY; }
 }
 
@@ -1995,7 +1995,7 @@ int mtxmatrix_csr_cdotc(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        return mtxvector_base_cdotc(&x->a, &y->a, dot, num_flops);
+        return mtxbasevector_cdotc(&x->a, &y->a, dot, num_flops);
     } else { return MTX_ERR_INVALID_SYMMETRY; }
 }
 
@@ -2015,7 +2015,7 @@ int mtxmatrix_csr_zdotc(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        return mtxvector_base_zdotc(&x->a, &y->a, dot, num_flops);
+        return mtxbasevector_zdotc(&x->a, &y->a, dot, num_flops);
     } else { return MTX_ERR_INVALID_SYMMETRY; }
 }
 
@@ -2029,7 +2029,7 @@ int mtxmatrix_csr_snrm2(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric) {
-        return mtxvector_base_snrm2(&x->a, nrm2, num_flops);
+        return mtxbasevector_snrm2(&x->a, nrm2, num_flops);
     } else { return MTX_ERR_INVALID_SYMMETRY; }
 }
 
@@ -2043,7 +2043,7 @@ int mtxmatrix_csr_dnrm2(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric) {
-        return mtxvector_base_dnrm2(&x->a, nrm2, num_flops);
+        return mtxbasevector_dnrm2(&x->a, nrm2, num_flops);
     } else { return MTX_ERR_INVALID_SYMMETRY; }
 }
 
@@ -2059,7 +2059,7 @@ int mtxmatrix_csr_sasum(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric) {
-        return mtxvector_base_sasum(&x->a, asum, num_flops);
+        return mtxbasevector_sasum(&x->a, asum, num_flops);
     } else { return MTX_ERR_INVALID_SYMMETRY; }
 }
 
@@ -2075,7 +2075,7 @@ int mtxmatrix_csr_dasum(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric) {
-        return mtxvector_base_dasum(&x->a, asum, num_flops);
+        return mtxbasevector_dasum(&x->a, asum, num_flops);
     } else { return MTX_ERR_INVALID_SYMMETRY; }
 }
 
@@ -2089,7 +2089,7 @@ int mtxmatrix_csr_iamax(
     const struct mtxmatrix_csr * x,
     int * iamax)
 {
-    return mtxvector_base_iamax(&x->a, iamax);
+    return mtxbasevector_iamax(&x->a, iamax);
 }
 
 /*
@@ -2128,11 +2128,11 @@ int mtxmatrix_csr_sgemv(
     int64_t * num_flops)
 {
     int err;
-    const struct mtxvector_base * a = &A->a;
-    if (x->type != mtxvector_base || y->type != mtxvector_base)
+    const struct mtxbasevector * a = &A->a;
+    if (x->type != mtxbasevector || y->type != mtxbasevector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_base * x_ = &x->storage.base;
-    struct mtxvector_base * y_ = &y->storage.base;
+    const struct mtxbasevector * x_ = &x->storage.base;
+    struct mtxbasevector * y_ = &y->storage.base;
     if (x_->field != a->field || y_->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x_->precision != a->precision || y_->precision != a->precision)
@@ -2313,9 +2313,9 @@ int mtxmatrix_csr_sgemv(
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else { return MTX_ERR_INVALID_FIELD; }
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
-        int err = mtxvector_base_usgz(
-            (struct mtxvector_base *) &A->diag,
-            (struct mtxvector_base *) &A->a);
+        int err = mtxbasevector_usgz(
+            (struct mtxbasevector *) &A->diag,
+            (struct mtxbasevector *) &A->a);
         if (err) return err;
         if (a->field == mtx_field_real) {
             if (a->precision == mtx_single) {
@@ -2468,15 +2468,15 @@ int mtxmatrix_csr_sgemv(
                 if (num_flops) *num_flops += 6*A->size + 3*A->diag.num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_FIELD; }
-        err = mtxvector_base_ussc((struct mtxvector_base *) &A->a, &A->diag);
+        err = mtxbasevector_ussc((struct mtxbasevector *) &A->a, &A->diag);
         if (err) return err;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_skew_symmetric) {
         /* TODO: allow skew-symmetric matrices */
         return MTX_ERR_INVALID_SYMMETRY;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
-        int err = mtxvector_base_usgz(
-            (struct mtxvector_base *) &A->diag,
-            (struct mtxvector_base *) &A->a);
+        int err = mtxbasevector_usgz(
+            (struct mtxbasevector *) &A->diag,
+            (struct mtxbasevector *) &A->a);
         if (err) return err;
         if (a->field == mtx_field_complex) {
             if (trans == mtx_notrans || trans == mtx_conjtrans) {
@@ -2561,7 +2561,7 @@ int mtxmatrix_csr_sgemv(
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else { return MTX_ERR_INVALID_FIELD; }
-        err = mtxvector_base_ussc((struct mtxvector_base *) &A->a, &A->diag);
+        err = mtxbasevector_ussc((struct mtxbasevector *) &A->a, &A->diag);
         if (err) return err;
     } else { return MTX_ERR_INVALID_SYMMETRY; }
     return MTX_SUCCESS;
@@ -2599,11 +2599,11 @@ int mtxmatrix_csr_dgemv(
     int64_t * num_flops)
 {
     int err;
-    const struct mtxvector_base * a = &A->a;
-    if (x->type != mtxvector_base || y->type != mtxvector_base)
+    const struct mtxbasevector * a = &A->a;
+    if (x->type != mtxbasevector || y->type != mtxbasevector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_base * x_ = &x->storage.base;
-    struct mtxvector_base * y_ = &y->storage.base;
+    const struct mtxbasevector * x_ = &x->storage.base;
+    struct mtxbasevector * y_ = &y->storage.base;
     if (x_->field != a->field || y_->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x_->precision != a->precision || y_->precision != a->precision)
@@ -2784,9 +2784,9 @@ int mtxmatrix_csr_dgemv(
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else { return MTX_ERR_INVALID_FIELD; }
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
-        int err = mtxvector_base_usgz(
-            (struct mtxvector_base *) &A->diag,
-            (struct mtxvector_base *) &A->a);
+        int err = mtxbasevector_usgz(
+            (struct mtxbasevector *) &A->diag,
+            (struct mtxbasevector *) &A->a);
         if (err) return err;
         if (a->field == mtx_field_real) {
             if (a->precision == mtx_single) {
@@ -2939,15 +2939,15 @@ int mtxmatrix_csr_dgemv(
                 if (num_flops) *num_flops += 6*A->size + 3*A->diag.num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_FIELD; }
-        err = mtxvector_base_ussc((struct mtxvector_base *) &A->a, &A->diag);
+        err = mtxbasevector_ussc((struct mtxbasevector *) &A->a, &A->diag);
         if (err) return err;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_skew_symmetric) {
         /* TODO: allow skew-symmetric matrices */
         return MTX_ERR_INVALID_SYMMETRY;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
-        int err = mtxvector_base_usgz(
-            (struct mtxvector_base *) &A->diag,
-            (struct mtxvector_base *) &A->a);
+        int err = mtxbasevector_usgz(
+            (struct mtxbasevector *) &A->diag,
+            (struct mtxbasevector *) &A->a);
         if (err) return err;
         if (a->field == mtx_field_complex) {
             if (trans == mtx_notrans || trans == mtx_conjtrans) {
@@ -3032,7 +3032,7 @@ int mtxmatrix_csr_dgemv(
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else { return MTX_ERR_INVALID_FIELD; }
-        err = mtxvector_base_ussc((struct mtxvector_base *) &A->a, &A->diag);
+        err = mtxbasevector_ussc((struct mtxbasevector *) &A->a, &A->diag);
         if (err) return err;
     } else { return MTX_ERR_INVALID_SYMMETRY; }
     return MTX_SUCCESS;
@@ -3066,11 +3066,11 @@ int mtxmatrix_csr_cgemv(
     int64_t * num_flops)
 {
     int err;
-    const struct mtxvector_base * a = &A->a;
-    if (x->type != mtxvector_base || y->type != mtxvector_base)
+    const struct mtxbasevector * a = &A->a;
+    if (x->type != mtxbasevector || y->type != mtxbasevector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_base * x_ = &x->storage.base;
-    struct mtxvector_base * y_ = &y->storage.base;
+    const struct mtxbasevector * x_ = &x->storage.base;
+    struct mtxbasevector * y_ = &y->storage.base;
     if (x_->field != a->field || y_->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x_->precision != a->precision || y_->precision != a->precision)
@@ -3167,9 +3167,9 @@ int mtxmatrix_csr_cgemv(
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
-        int err = mtxvector_base_usgz(
-            (struct mtxvector_base *) &A->diag,
-            (struct mtxvector_base *) &A->a);
+        int err = mtxbasevector_usgz(
+            (struct mtxbasevector *) &A->diag,
+            (struct mtxbasevector *) &A->a);
         if (err) return err;
         if (trans == mtx_notrans || trans == mtx_trans) {
             if (a->precision == mtx_single) {
@@ -3252,12 +3252,12 @@ int mtxmatrix_csr_cgemv(
                 if (num_flops) *num_flops += 40*A->size + 20*A->diag.num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
-        err = mtxvector_base_ussc((struct mtxvector_base *) &A->a, &A->diag);
+        err = mtxbasevector_ussc((struct mtxbasevector *) &A->a, &A->diag);
         if (err) return err;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
-        int err = mtxvector_base_usgz(
-            (struct mtxvector_base *) &A->diag,
-            (struct mtxvector_base *) &A->a);
+        int err = mtxbasevector_usgz(
+            (struct mtxbasevector *) &A->diag,
+            (struct mtxbasevector *) &A->a);
         if (err) return err;
         if (trans == mtx_notrans || trans == mtx_conjtrans) {
             if (a->precision == mtx_single) {
@@ -3340,7 +3340,7 @@ int mtxmatrix_csr_cgemv(
                 if (num_flops) *num_flops += 40*A->size + 20*A->diag.num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
-        err = mtxvector_base_ussc((struct mtxvector_base *) &A->a, &A->diag);
+        err = mtxbasevector_ussc((struct mtxbasevector *) &A->a, &A->diag);
         if (err) return err;
     } else { return MTX_ERR_INVALID_SYMMETRY; }
     return MTX_SUCCESS;
@@ -3374,11 +3374,11 @@ int mtxmatrix_csr_zgemv(
     int64_t * num_flops)
 {
     int err;
-    const struct mtxvector_base * a = &A->a;
-    if (x->type != mtxvector_base || y->type != mtxvector_base)
+    const struct mtxbasevector * a = &A->a;
+    if (x->type != mtxbasevector || y->type != mtxbasevector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_base * x_ = &x->storage.base;
-    struct mtxvector_base * y_ = &y->storage.base;
+    const struct mtxbasevector * x_ = &x->storage.base;
+    struct mtxbasevector * y_ = &y->storage.base;
     if (x_->field != a->field || y_->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x_->precision != a->precision || y_->precision != a->precision)
@@ -3475,9 +3475,9 @@ int mtxmatrix_csr_zgemv(
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
-        int err = mtxvector_base_usgz(
-            (struct mtxvector_base *) &A->diag,
-            (struct mtxvector_base *) &A->a);
+        int err = mtxbasevector_usgz(
+            (struct mtxbasevector *) &A->diag,
+            (struct mtxbasevector *) &A->a);
         if (err) return err;
         if (trans == mtx_notrans || trans == mtx_trans) {
             if (a->precision == mtx_single) {
@@ -3560,12 +3560,12 @@ int mtxmatrix_csr_zgemv(
                 if (num_flops) *num_flops += 40*A->size + 20*A->diag.num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
-        err = mtxvector_base_ussc((struct mtxvector_base *) &A->a, &A->diag);
+        err = mtxbasevector_ussc((struct mtxbasevector *) &A->a, &A->diag);
         if (err) return err;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
-        int err = mtxvector_base_usgz(
-            (struct mtxvector_base *) &A->diag,
-            (struct mtxvector_base *) &A->a);
+        int err = mtxbasevector_usgz(
+            (struct mtxbasevector *) &A->diag,
+            (struct mtxbasevector *) &A->a);
         if (err) return err;
         if (trans == mtx_notrans || trans == mtx_conjtrans) {
             if (a->precision == mtx_single) {
@@ -3648,7 +3648,7 @@ int mtxmatrix_csr_zgemv(
                 if (num_flops) *num_flops += 40*A->size + 20*A->diag.num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
-        err = mtxvector_base_ussc((struct mtxvector_base *) &A->a, &A->diag);
+        err = mtxbasevector_ussc((struct mtxbasevector *) &A->a, &A->diag);
         if (err) return err;
     } else { return MTX_ERR_INVALID_SYMMETRY; }
     return MTX_SUCCESS;

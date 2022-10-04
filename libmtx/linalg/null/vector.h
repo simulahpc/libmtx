@@ -56,7 +56,7 @@ struct mtxnullvector
     /**
      * ‘base’ is the underlying vector.
      */
-    struct mtxvector_base base;
+    struct mtxbasevector base;
 };
 
 /*

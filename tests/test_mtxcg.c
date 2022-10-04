@@ -60,18 +60,18 @@ int test_mtxcg_2x2(void)
     struct mtxvector b;
     double bdata[] = {1.0, 0.0};
     err = mtxvector_init_real_double(
-        &b, mtxvector_base, sizeof(bdata)/sizeof(*bdata), bdata);
+        &b, mtxbasevector, sizeof(bdata)/sizeof(*bdata), bdata);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     struct mtxvector x;
     double xdata[] = {0.0, 0.0};
     err = mtxvector_init_real_double(
-        &x, mtxvector_base, sizeof(xdata)/sizeof(*xdata), xdata);
+        &x, mtxbasevector, sizeof(xdata)/sizeof(*xdata), xdata);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* solve */
     struct mtxcg cg;
-    err = mtxcg_init(&cg, &A, mtxvector_base);
+    err = mtxcg_init(&cg, &A, mtxbasevector);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     double atol = 1e-15;
@@ -85,7 +85,7 @@ int test_mtxcg_2x2(void)
         &num_iterations, &b_nrm2, &r_nrm2, NULL, NULL);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
-    const struct mtxvector_base * xbase = &x.storage.base;
+    const struct mtxbasevector * xbase = &x.storage.base;
     TEST_ASSERT_EQ(mtx_field_real, xbase->field);
     TEST_ASSERT_EQ(mtx_double, xbase->precision);
     TEST_ASSERT_EQ(2, xbase->size);
@@ -148,18 +148,18 @@ int test_mtxcg_poisson(void)
         bdata[i] = h*h * sin(2.0*M_PI*(i+1)*h);
 
     err = mtxvector_init_real_double(
-        &b, mtxvector_base, sizeof(bdata)/sizeof(*bdata), bdata);
+        &b, mtxbasevector, sizeof(bdata)/sizeof(*bdata), bdata);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     struct mtxvector x;
     double xdata[N-1] = {};
     err = mtxvector_init_real_double(
-        &x, mtxvector_base, sizeof(xdata)/sizeof(*xdata), xdata);
+        &x, mtxbasevector, sizeof(xdata)/sizeof(*xdata), xdata);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* solve */
     struct mtxcg cg;
-    err = mtxcg_init(&cg, &A, mtxvector_base);
+    err = mtxcg_init(&cg, &A, mtxbasevector);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     double atol = 1e-15;
@@ -173,7 +173,7 @@ int test_mtxcg_poisson(void)
         &num_iterations, &b_nrm2, &r_nrm2, NULL, NULL);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
-    const struct mtxvector_base * xbase = &x.storage.base;
+    const struct mtxbasevector * xbase = &x.storage.base;
     TEST_ASSERT_EQ(mtx_field_real, xbase->field);
     TEST_ASSERT_EQ(mtx_double, xbase->precision);
     TEST_ASSERT_EQ(num_rows, xbase->size);

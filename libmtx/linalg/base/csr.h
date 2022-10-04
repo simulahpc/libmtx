@@ -99,12 +99,12 @@ struct mtxmatrix_csr
     /**
      * ‘a’ is a vector storing the underlying nonzero matrix entries.
      */
-    struct mtxvector_base a;
+    struct mtxbasevector a;
 
     /**
      * ‘diag’ is a vector storing the diagonal nonzero matrix entries.
      */
-    struct mtxvector_base diag;
+    struct mtxbasevector diag;
 };
 
 /*

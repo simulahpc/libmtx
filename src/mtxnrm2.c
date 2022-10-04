@@ -82,7 +82,7 @@ static int program_options_init(
     args->x_path = NULL;
     args->format = NULL;
     args->precision = mtx_double;
-    args->vector_type = mtxvector_base;
+    args->vector_type = mtxbasevector;
     args->gzip = false;
     args->partition = mtx_block;
     args->partition_path = NULL;

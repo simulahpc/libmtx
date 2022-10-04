@@ -83,7 +83,7 @@ struct mtxmatrix_dense
     /**
      * ‘a’ is a vector storing the underlying nonzero matrix entries.
      */
-    struct mtxvector_base a;
+    struct mtxbasevector a;
 };
 
 /*

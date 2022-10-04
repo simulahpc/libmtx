@@ -2153,11 +2153,11 @@ int mtxblasdense_sgemv(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * a = &A->a.base;
-    if (x->type != mtxvector_base || y->type != mtxvector_base)
+    const struct mtxbasevector * a = &A->a.base;
+    if (x->type != mtxbasevector || y->type != mtxbasevector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_base * xbase = &x->storage.base;
-    struct mtxvector_base * ybase = &y->storage.base;
+    const struct mtxbasevector * xbase = &x->storage.base;
+    struct mtxbasevector * ybase = &y->storage.base;
     if (xbase->field != a->field || ybase->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (xbase->precision != a->precision || ybase->precision != a->precision)
@@ -2401,11 +2401,11 @@ int mtxblasdense_dgemv(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * a = &A->a.base;
-    if (x->type != mtxvector_base || y->type != mtxvector_base)
+    const struct mtxbasevector * a = &A->a.base;
+    if (x->type != mtxbasevector || y->type != mtxbasevector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_base * xbase = &x->storage.base;
-    struct mtxvector_base * ybase = &y->storage.base;
+    const struct mtxbasevector * xbase = &x->storage.base;
+    struct mtxbasevector * ybase = &y->storage.base;
     if (xbase->field != a->field || ybase->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (xbase->precision != a->precision || ybase->precision != a->precision)
@@ -2647,11 +2647,11 @@ int mtxblasdense_cgemv(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * a = &A->a.base;
-    if (x->type != mtxvector_base || y->type != mtxvector_base)
+    const struct mtxbasevector * a = &A->a.base;
+    if (x->type != mtxbasevector || y->type != mtxbasevector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_base * xbase = &x->storage.base;
-    struct mtxvector_base * ybase = &y->storage.base;
+    const struct mtxbasevector * xbase = &x->storage.base;
+    struct mtxbasevector * ybase = &y->storage.base;
     if (xbase->field != a->field || ybase->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (xbase->precision != a->precision || ybase->precision != a->precision)
@@ -2810,11 +2810,11 @@ int mtxblasdense_zgemv(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * a = &A->a.base;
-    if (x->type != mtxvector_base || y->type != mtxvector_base)
+    const struct mtxbasevector * a = &A->a.base;
+    if (x->type != mtxbasevector || y->type != mtxbasevector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_base * xbase = &x->storage.base;
-    struct mtxvector_base * ybase = &y->storage.base;
+    const struct mtxbasevector * xbase = &x->storage.base;
+    struct mtxbasevector * ybase = &y->storage.base;
     if (xbase->field != a->field || ybase->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (xbase->precision != a->precision || ybase->precision != a->precision)

@@ -2195,9 +2195,9 @@ int mtxompcsr_sgemv(
     if (x->type != mtxompvector || y->type != mtxompvector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     const struct mtxompvector * xomp = &x->storage.omp;
-    const struct mtxvector_base * xbase = &xomp->base;
+    const struct mtxbasevector * xbase = &xomp->base;
     struct mtxompvector * yomp = &y->storage.omp;
-    struct mtxvector_base * ybase = &yomp->base;
+    struct mtxbasevector * ybase = &yomp->base;
     if (xbase->field != field || ybase->field != field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (xbase->precision != precision || ybase->precision != precision)
@@ -2679,9 +2679,9 @@ int mtxompcsr_dgemv(
     if (x->type != mtxompvector || y->type != mtxompvector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     const struct mtxompvector * xomp = &x->storage.omp;
-    const struct mtxvector_base * xbase = &xomp->base;
+    const struct mtxbasevector * xbase = &xomp->base;
     struct mtxompvector * yomp = &y->storage.omp;
-    struct mtxvector_base * ybase = &yomp->base;
+    struct mtxbasevector * ybase = &yomp->base;
     if (xbase->field != field || ybase->field != field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (xbase->precision != precision || ybase->precision != precision)
@@ -3159,9 +3159,9 @@ int mtxompcsr_cgemv(
     if (x->type != mtxompvector || y->type != mtxompvector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     const struct mtxompvector * xomp = &x->storage.omp;
-    const struct mtxvector_base * xbase = &xomp->base;
+    const struct mtxbasevector * xbase = &xomp->base;
     struct mtxompvector * yomp = &y->storage.omp;
-    struct mtxvector_base * ybase = &yomp->base;
+    struct mtxbasevector * ybase = &yomp->base;
     if (xbase->field != field || ybase->field != field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (xbase->precision != precision || ybase->precision != precision)
@@ -3476,9 +3476,9 @@ int mtxompcsr_zgemv(
     if (x->type != mtxompvector || y->type != mtxompvector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     const struct mtxompvector * xomp = &x->storage.omp;
-    const struct mtxvector_base * xbase = &xomp->base;
+    const struct mtxbasevector * xbase = &xomp->base;
     struct mtxompvector * yomp = &y->storage.omp;
-    struct mtxvector_base * ybase = &yomp->base;
+    struct mtxbasevector * ybase = &yomp->base;
     if (xbase->field != field || ybase->field != field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (xbase->precision != precision || ybase->precision != precision)

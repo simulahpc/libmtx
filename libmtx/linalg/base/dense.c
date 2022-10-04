@@ -51,7 +51,7 @@
  */
 enum mtxfield mtxmatrix_dense_field(const struct mtxmatrix_dense * A)
 {
-    return mtxvector_base_field(&A->a);
+    return mtxbasevector_field(&A->a);
 }
 
 /**
@@ -59,7 +59,7 @@ enum mtxfield mtxmatrix_dense_field(const struct mtxmatrix_dense * A)
  */
 enum mtxprecision mtxmatrix_dense_precision(const struct mtxmatrix_dense * A)
 {
-    return mtxvector_base_precision(&A->a);
+    return mtxbasevector_precision(&A->a);
 }
 
 /**
@@ -158,7 +158,7 @@ int mtxmatrix_dense_rowcolidx(
 void mtxmatrix_dense_free(
     struct mtxmatrix_dense * A)
 {
-    mtxvector_base_free(&A->a);
+    mtxbasevector_free(&A->a);
 }
 
 /**
@@ -232,7 +232,7 @@ int mtxmatrix_dense_alloc_entries(
         A->num_nonzeros = num_entries-num_rows;
         A->size = num_rows*(num_columns-1)/2;
     } else { return MTX_ERR_INVALID_SYMMETRY; }
-    return mtxvector_base_alloc(&A->a, field, precision, A->size);
+    return mtxbasevector_alloc(&A->a, field, precision, A->size);
 }
 
 /**
@@ -1070,7 +1070,7 @@ int mtxmatrix_dense_init_cliques_pattern(
 int mtxmatrix_dense_setzero(
     struct mtxmatrix_dense * A)
 {
-    return mtxvector_base_setzero(&A->a);
+    return mtxbasevector_setzero(&A->a);
 }
 
 /**
@@ -1083,7 +1083,7 @@ int mtxmatrix_dense_set_real_single(
     int stride,
     const float * a)
 {
-    return mtxvector_base_set_real_single(&A->a, size, stride, a);
+    return mtxbasevector_set_real_single(&A->a, size, stride, a);
 }
 
 /**
@@ -1096,7 +1096,7 @@ int mtxmatrix_dense_set_real_double(
     int stride,
     const double * a)
 {
-    return mtxvector_base_set_real_double(&A->a, size, stride, a);
+    return mtxbasevector_set_real_double(&A->a, size, stride, a);
 }
 
 /**
@@ -1110,7 +1110,7 @@ int mtxmatrix_dense_set_complex_single(
     int stride,
     const float (*a)[2])
 {
-    return mtxvector_base_set_complex_single(&A->a, size, stride, a);
+    return mtxbasevector_set_complex_single(&A->a, size, stride, a);
 }
 
 /**
@@ -1124,7 +1124,7 @@ int mtxmatrix_dense_set_complex_double(
     int stride,
     const double (*a)[2])
 {
-    return mtxvector_base_set_complex_double(&A->a, size, stride, a);
+    return mtxbasevector_set_complex_double(&A->a, size, stride, a);
 }
 
 /**
@@ -1137,7 +1137,7 @@ int mtxmatrix_dense_set_integer_single(
     int stride,
     const int32_t * a)
 {
-    return mtxvector_base_set_integer_single(&A->a, size, stride, a);
+    return mtxbasevector_set_integer_single(&A->a, size, stride, a);
 }
 
 /**
@@ -1150,7 +1150,7 @@ int mtxmatrix_dense_set_integer_double(
     int stride,
     const int64_t * a)
 {
-    return mtxvector_base_set_integer_double(&A->a, size, stride, a);
+    return mtxbasevector_set_integer_double(&A->a, size, stride, a);
 }
 
 /*
@@ -1772,7 +1772,7 @@ int mtxmatrix_dense_swap(
     struct mtxmatrix_dense * x,
     struct mtxmatrix_dense * y)
 {
-    return mtxvector_base_swap(&x->a, &y->a);
+    return mtxbasevector_swap(&x->a, &y->a);
 }
 
 /**
@@ -1786,7 +1786,7 @@ int mtxmatrix_dense_copy(
     struct mtxmatrix_dense * y,
     const struct mtxmatrix_dense * x)
 {
-    return mtxvector_base_copy(&y->a, &x->a);
+    return mtxbasevector_copy(&y->a, &x->a);
 }
 
 /**
@@ -1798,7 +1798,7 @@ int mtxmatrix_dense_sscal(
     struct mtxmatrix_dense * x,
     int64_t * num_flops)
 {
-    return mtxvector_base_sscal(a, &x->a, num_flops);
+    return mtxbasevector_sscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1810,7 +1810,7 @@ int mtxmatrix_dense_dscal(
     struct mtxmatrix_dense * x,
     int64_t * num_flops)
 {
-    return mtxvector_base_dscal(a, &x->a, num_flops);
+    return mtxbasevector_dscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1822,7 +1822,7 @@ int mtxmatrix_dense_cscal(
     struct mtxmatrix_dense * x,
     int64_t * num_flops)
 {
-    return mtxvector_base_cscal(a, &x->a, num_flops);
+    return mtxbasevector_cscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1834,7 +1834,7 @@ int mtxmatrix_dense_zscal(
     struct mtxmatrix_dense * x,
     int64_t * num_flops)
 {
-    return mtxvector_base_zscal(a, &x->a, num_flops);
+    return mtxbasevector_zscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1851,7 +1851,7 @@ int mtxmatrix_dense_saxpy(
     struct mtxmatrix_dense * y,
     int64_t * num_flops)
 {
-    return mtxvector_base_saxpy(a, &x->a, &y->a, num_flops);
+    return mtxbasevector_saxpy(a, &x->a, &y->a, num_flops);
 }
 
 /**
@@ -1868,7 +1868,7 @@ int mtxmatrix_dense_daxpy(
     struct mtxmatrix_dense * y,
     int64_t * num_flops)
 {
-    return mtxvector_base_daxpy(a, &x->a, &y->a, num_flops);
+    return mtxbasevector_daxpy(a, &x->a, &y->a, num_flops);
 }
 
 /**
@@ -1885,7 +1885,7 @@ int mtxmatrix_dense_saypx(
     const struct mtxmatrix_dense * x,
     int64_t * num_flops)
 {
-    return mtxvector_base_saypx(a, &y->a, &x->a, num_flops);
+    return mtxbasevector_saypx(a, &y->a, &x->a, num_flops);
 }
 
 /**
@@ -1902,7 +1902,7 @@ int mtxmatrix_dense_daypx(
     const struct mtxmatrix_dense * x,
     int64_t * num_flops)
 {
-    return mtxvector_base_daypx(a, &y->a, &x->a, num_flops);
+    return mtxbasevector_daypx(a, &y->a, &x->a, num_flops);
 }
 
 /**
@@ -1919,7 +1919,7 @@ int mtxmatrix_dense_sdot(
     float * dot,
     int64_t * num_flops)
 {
-    return mtxvector_base_sdot(&x->a, &y->a, dot, num_flops);
+    return mtxbasevector_sdot(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1936,7 +1936,7 @@ int mtxmatrix_dense_ddot(
     double * dot,
     int64_t * num_flops)
 {
-    return mtxvector_base_ddot(&x->a, &y->a, dot, num_flops);
+    return mtxbasevector_ddot(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1954,7 +1954,7 @@ int mtxmatrix_dense_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_base_cdotu(&x->a, &y->a, dot, num_flops);
+    return mtxbasevector_cdotu(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1972,7 +1972,7 @@ int mtxmatrix_dense_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_base_zdotu(&x->a, &y->a, dot, num_flops);
+    return mtxbasevector_zdotu(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1990,7 +1990,7 @@ int mtxmatrix_dense_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_base_cdotc(&x->a, &y->a, dot, num_flops);
+    return mtxbasevector_cdotc(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -2008,7 +2008,7 @@ int mtxmatrix_dense_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_base_zdotc(&x->a, &y->a, dot, num_flops);
+    return mtxbasevector_zdotc(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -2020,7 +2020,7 @@ int mtxmatrix_dense_snrm2(
     float * nrm2,
     int64_t * num_flops)
 {
-    return mtxvector_base_snrm2(&x->a, nrm2, num_flops);
+    return mtxbasevector_snrm2(&x->a, nrm2, num_flops);
 }
 
 /**
@@ -2032,7 +2032,7 @@ int mtxmatrix_dense_dnrm2(
     double * nrm2,
     int64_t * num_flops)
 {
-    return mtxvector_base_dnrm2(&x->a, nrm2, num_flops);
+    return mtxbasevector_dnrm2(&x->a, nrm2, num_flops);
 }
 
 /**
@@ -2046,7 +2046,7 @@ int mtxmatrix_dense_sasum(
     float * asum,
     int64_t * num_flops)
 {
-    return mtxvector_base_sasum(&x->a, asum, num_flops);
+    return mtxbasevector_sasum(&x->a, asum, num_flops);
 }
 
 /**
@@ -2060,7 +2060,7 @@ int mtxmatrix_dense_dasum(
     double * asum,
     int64_t * num_flops)
 {
-    return mtxvector_base_dasum(&x->a, asum, num_flops);
+    return mtxbasevector_dasum(&x->a, asum, num_flops);
 }
 
 /**
@@ -2074,7 +2074,7 @@ int mtxmatrix_dense_iamax(
     const struct mtxmatrix_dense * x,
     int * iamax)
 {
-    return mtxvector_base_iamax(&x->a, iamax);
+    return mtxbasevector_iamax(&x->a, iamax);
 }
 
 /*
@@ -2112,11 +2112,11 @@ int mtxmatrix_dense_sgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * a = &A->a;
-    if (x->type != mtxvector_base || y->type != mtxvector_base)
+    const struct mtxbasevector * a = &A->a;
+    if (x->type != mtxbasevector || y->type != mtxbasevector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_base * xbase = &x->storage.base;
-    struct mtxvector_base * ybase = &y->storage.base;
+    const struct mtxbasevector * xbase = &x->storage.base;
+    struct mtxbasevector * ybase = &y->storage.base;
     if (xbase->field != a->field || ybase->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (xbase->precision != a->precision || ybase->precision != a->precision)
@@ -2527,11 +2527,11 @@ int mtxmatrix_dense_dgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * a = &A->a;
-    if (x->type != mtxvector_base || y->type != mtxvector_base)
+    const struct mtxbasevector * a = &A->a;
+    if (x->type != mtxbasevector || y->type != mtxbasevector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_base * xbase = &x->storage.base;
-    struct mtxvector_base * ybase = &y->storage.base;
+    const struct mtxbasevector * xbase = &x->storage.base;
+    struct mtxbasevector * ybase = &y->storage.base;
     if (xbase->field != a->field || ybase->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (xbase->precision != a->precision || ybase->precision != a->precision)
@@ -2940,11 +2940,11 @@ int mtxmatrix_dense_cgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * a = &A->a;
-    if (x->type != mtxvector_base || y->type != mtxvector_base)
+    const struct mtxbasevector * a = &A->a;
+    if (x->type != mtxbasevector || y->type != mtxbasevector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_base * xbase = &x->storage.base;
-    struct mtxvector_base * ybase = &y->storage.base;
+    const struct mtxbasevector * xbase = &x->storage.base;
+    struct mtxbasevector * ybase = &y->storage.base;
     if (xbase->field != a->field || ybase->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (xbase->precision != a->precision || ybase->precision != a->precision)
@@ -3211,11 +3211,11 @@ int mtxmatrix_dense_zgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * a = &A->a;
-    if (x->type != mtxvector_base || y->type != mtxvector_base)
+    const struct mtxbasevector * a = &A->a;
+    if (x->type != mtxbasevector || y->type != mtxbasevector)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_base * xbase = &x->storage.base;
-    struct mtxvector_base * ybase = &y->storage.base;
+    const struct mtxbasevector * xbase = &x->storage.base;
+    struct mtxbasevector * ybase = &y->storage.base;
     if (xbase->field != a->field || ybase->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (xbase->precision != a->precision || ybase->precision != a->precision)

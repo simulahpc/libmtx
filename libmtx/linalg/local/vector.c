@@ -54,7 +54,7 @@ const char * mtxvectortype_str(
     enum mtxvectortype type)
 {
     switch (type) {
-    case mtxvector_base: return "base";
+    case mtxbasevector: return "base";
     case mtxblasvector: return "blas";
     case mtxnullvector: return "null";
     case mtxompvector: return "omp";
@@ -93,7 +93,7 @@ int mtxvectortype_parse(
     const char * t = s;
     if (strncmp("base", t, strlen("base")) == 0) {
         t += strlen("base");
-        *vector_type = mtxvector_base;
+        *vector_type = mtxbasevector;
     } else if (strncmp("blas", t, strlen("blas")) == 0) {
         t += strlen("blas");
         *vector_type = mtxblasvector;
@@ -125,7 +125,7 @@ int mtxvector_field(
     const struct mtxvector * x,
     enum mtxfield * field)
 {
-    if (x->type == mtxvector_base) {
+    if (x->type == mtxbasevector) {
         *field = x->storage.base.field;
         return MTX_SUCCESS;
     } else if (x->type == mtxblasvector) {
@@ -155,7 +155,7 @@ int mtxvector_precision(
     const struct mtxvector * x,
     enum mtxprecision * precision)
 {
-    if (x->type == mtxvector_base) {
+    if (x->type == mtxbasevector) {
         *precision = x->storage.base.precision;
         return MTX_SUCCESS;
     } else if (x->type == mtxblasvector) {
@@ -185,8 +185,8 @@ int mtxvector_size(
     const struct mtxvector * x,
     int64_t * size)
 {
-    if (x->type == mtxvector_base) {
-        *size = mtxvector_base_size(&x->storage.base);
+    if (x->type == mtxbasevector) {
+        *size = mtxbasevector_size(&x->storage.base);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         *size = mtxblasvector_size(&x->storage.blas);
@@ -213,8 +213,8 @@ int mtxvector_num_nonzeros(
     const struct mtxvector * x,
     int64_t * num_nonzeros)
 {
-    if (x->type == mtxvector_base) {
-        *num_nonzeros = mtxvector_base_num_nonzeros(&x->storage.base);
+    if (x->type == mtxbasevector) {
+        *num_nonzeros = mtxbasevector_num_nonzeros(&x->storage.base);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         *num_nonzeros = mtxblasvector_num_nonzeros(&x->storage.blas);
@@ -241,8 +241,8 @@ int mtxvector_idx(
     const struct mtxvector * x,
     int64_t ** idx)
 {
-    if (x->type == mtxvector_base) {
-        *idx = mtxvector_base_idx(&x->storage.base);
+    if (x->type == mtxbasevector) {
+        *idx = mtxbasevector_idx(&x->storage.base);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         *idx = mtxblasvector_idx(&x->storage.blas);
@@ -271,8 +271,8 @@ int mtxvector_idx(
 void mtxvector_free(
     struct mtxvector * x)
 {
-    if (x->type == mtxvector_base) {
-        mtxvector_base_free(&x->storage.base);
+    if (x->type == mtxbasevector) {
+        mtxbasevector_free(&x->storage.base);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         mtxblasvector_free(&x->storage.blas);
@@ -294,9 +294,9 @@ int mtxvector_alloc_copy(
     struct mtxvector * dst,
     const struct mtxvector * src)
 {
-    if (src->type == mtxvector_base) {
-        dst->type = mtxvector_base;
-        return mtxvector_base_alloc_copy(&dst->storage.base, &src->storage.base);
+    if (src->type == mtxbasevector) {
+        dst->type = mtxbasevector;
+        return mtxbasevector_alloc_copy(&dst->storage.base, &src->storage.base);
     } else if (src->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         dst->type = mtxblasvector;
@@ -325,9 +325,9 @@ int mtxvector_init_copy(
     struct mtxvector * dst,
     const struct mtxvector * src)
 {
-    if (src->type == mtxvector_base) {
-        dst->type = mtxvector_base;
-        return mtxvector_base_init_copy(&dst->storage.base, &src->storage.base);
+    if (src->type == mtxbasevector) {
+        dst->type = mtxbasevector;
+        return mtxbasevector_init_copy(&dst->storage.base, &src->storage.base);
     } else if (src->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         dst->type = mtxblasvector;
@@ -363,9 +363,9 @@ int mtxvector_alloc(
     enum mtxprecision precision,
     int64_t size)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_alloc(&x->storage.base, field, precision, size);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_alloc(&x->storage.base, field, precision, size);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -396,9 +396,9 @@ int mtxvector_init_real_single(
     int64_t size,
     const float * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_real_single(&x->storage.base, size, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_real_single(&x->storage.base, size, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -429,9 +429,9 @@ int mtxvector_init_real_double(
     int64_t size,
     const double * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_real_double(&x->storage.base, size, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_real_double(&x->storage.base, size, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -462,9 +462,9 @@ int mtxvector_init_complex_single(
     int64_t size,
     const float (* data)[2])
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_complex_single(&x->storage.base, size, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_complex_single(&x->storage.base, size, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -495,9 +495,9 @@ int mtxvector_init_complex_double(
     int64_t size,
     const double (* data)[2])
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_complex_double(&x->storage.base, size, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_complex_double(&x->storage.base, size, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -528,9 +528,9 @@ int mtxvector_init_integer_single(
     int64_t size,
     const int32_t * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_integer_single(&x->storage.base, size, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_integer_single(&x->storage.base, size, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -561,9 +561,9 @@ int mtxvector_init_integer_double(
     int64_t size,
     const int64_t * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_integer_double(&x->storage.base, size, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_integer_double(&x->storage.base, size, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -593,9 +593,9 @@ int mtxvector_init_pattern(
     enum mtxvectortype type,
     int64_t size)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_pattern(&x->storage.base, size);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_pattern(&x->storage.base, size);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -627,9 +627,9 @@ int mtxvector_init_strided_real_single(
     int stride,
     const float * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_strided_real_single(&x->storage.base, size, stride, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_strided_real_single(&x->storage.base, size, stride, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -661,9 +661,9 @@ int mtxvector_init_strided_real_double(
     int stride,
     const double * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_strided_real_double(&x->storage.base, size, stride, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_strided_real_double(&x->storage.base, size, stride, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -695,9 +695,9 @@ int mtxvector_init_strided_complex_single(
     int stride,
     const float (* data)[2])
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_strided_complex_single(&x->storage.base, size, stride, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_strided_complex_single(&x->storage.base, size, stride, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -729,9 +729,9 @@ int mtxvector_init_strided_complex_double(
     int stride,
     const double (* data)[2])
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_strided_complex_double(&x->storage.base, size, stride, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_strided_complex_double(&x->storage.base, size, stride, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -763,9 +763,9 @@ int mtxvector_init_strided_integer_single(
     int stride,
     const int32_t * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_strided_integer_single(&x->storage.base, size, stride, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_strided_integer_single(&x->storage.base, size, stride, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -797,9 +797,9 @@ int mtxvector_init_strided_integer_double(
     int stride,
     const int64_t * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_strided_integer_double(&x->storage.base, size, stride, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_strided_integer_double(&x->storage.base, size, stride, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -836,9 +836,9 @@ int mtxvector_alloc_packed(
     int64_t num_nonzeros,
     const int64_t * idx)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_alloc_packed(&x->storage.base, field, precision, size, num_nonzeros, idx);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_alloc_packed(&x->storage.base, field, precision, size, num_nonzeros, idx);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -871,9 +871,9 @@ int mtxvector_init_packed_real_single(
     const int64_t * idx,
     const float * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_real_single(&x->storage.base, size, num_nonzeros, idx, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_real_single(&x->storage.base, size, num_nonzeros, idx, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -906,9 +906,9 @@ int mtxvector_init_packed_real_double(
     const int64_t * idx,
     const double * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_real_double(&x->storage.base, size, num_nonzeros, idx, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_real_double(&x->storage.base, size, num_nonzeros, idx, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -941,9 +941,9 @@ int mtxvector_init_packed_complex_single(
     const int64_t * idx,
     const float (* data)[2])
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_complex_single(&x->storage.base, size, num_nonzeros, idx, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_complex_single(&x->storage.base, size, num_nonzeros, idx, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -976,9 +976,9 @@ int mtxvector_init_packed_complex_double(
     const int64_t * idx,
     const double (* data)[2])
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_complex_double(&x->storage.base, size, num_nonzeros, idx, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_complex_double(&x->storage.base, size, num_nonzeros, idx, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -1011,9 +1011,9 @@ int mtxvector_init_packed_integer_single(
     const int64_t * idx,
     const int32_t * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_integer_single(&x->storage.base, size, num_nonzeros, idx, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_integer_single(&x->storage.base, size, num_nonzeros, idx, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -1046,9 +1046,9 @@ int mtxvector_init_packed_integer_double(
     const int64_t * idx,
     const int64_t * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_integer_double(&x->storage.base, size, num_nonzeros, idx, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_integer_double(&x->storage.base, size, num_nonzeros, idx, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -1080,9 +1080,9 @@ int mtxvector_init_packed_pattern(
     int64_t num_nonzeros,
     const int64_t * idx)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_pattern(&x->storage.base, size, num_nonzeros, idx);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_pattern(&x->storage.base, size, num_nonzeros, idx);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -1122,9 +1122,9 @@ int mtxvector_alloc_packed_strided(
     int idxbase,
     const int64_t * idx)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_alloc_packed_strided(&x->storage.base, field, precision, size, num_nonzeros, idxstride, idxbase, idx);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_alloc_packed_strided(&x->storage.base, field, precision, size, num_nonzeros, idxstride, idxbase, idx);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -1160,9 +1160,9 @@ int mtxvector_init_packed_strided_real_single(
     int datastride,
     const float * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_strided_real_single(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_strided_real_single(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -1198,9 +1198,9 @@ int mtxvector_init_packed_strided_real_double(
     int datastride,
     const double * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_strided_real_double(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_strided_real_double(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -1236,9 +1236,9 @@ int mtxvector_init_packed_strided_complex_single(
     int datastride,
     const float (* data)[2])
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_strided_complex_single(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_strided_complex_single(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -1274,9 +1274,9 @@ int mtxvector_init_packed_strided_complex_double(
     int datastride,
     const double (* data)[2])
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_strided_complex_double(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_strided_complex_double(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -1312,9 +1312,9 @@ int mtxvector_init_packed_strided_integer_single(
     int datastride,
     const int32_t * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_strided_integer_single(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_strided_integer_single(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -1350,9 +1350,9 @@ int mtxvector_init_packed_strided_integer_double(
     int datastride,
     const int64_t * data)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_strided_integer_double(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_strided_integer_double(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -1387,9 +1387,9 @@ int mtxvector_init_packed_strided_pattern(
     int idxbase,
     const int64_t * idx)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_packed_strided_pattern(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_init_packed_strided_pattern(&x->storage.base, size, num_nonzeros, idxstride, idxbase, idx);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -1428,8 +1428,8 @@ int mtxvector_get_real_single(
     int stride,
     float * a)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_get_real_single(&x->storage.base, size, stride, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_get_real_single(&x->storage.base, size, stride, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_get_real_single(&x->storage.blas, size, stride, a);
@@ -1461,8 +1461,8 @@ int mtxvector_get_real_double(
     int stride,
     double * a)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_get_real_double(&x->storage.base, size, stride, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_get_real_double(&x->storage.base, size, stride, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_get_real_double(&x->storage.blas, size, stride, a);
@@ -1494,8 +1494,8 @@ int mtxvector_get_complex_single(
     int stride,
     float (* a)[2])
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_get_complex_single(&x->storage.base, size, stride, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_get_complex_single(&x->storage.base, size, stride, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_get_complex_single(&x->storage.blas, size, stride, a);
@@ -1527,8 +1527,8 @@ int mtxvector_get_complex_double(
     int stride,
     double (* a)[2])
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_get_complex_double(&x->storage.base, size, stride, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_get_complex_double(&x->storage.base, size, stride, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_get_complex_double(&x->storage.blas, size, stride, a);
@@ -1560,8 +1560,8 @@ int mtxvector_get_integer_single(
     int stride,
     int32_t * a)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_get_integer_single(&x->storage.base, size, stride, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_get_integer_single(&x->storage.base, size, stride, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_get_integer_single(&x->storage.blas, size, stride, a);
@@ -1593,8 +1593,8 @@ int mtxvector_get_integer_double(
     int stride,
     int64_t * a)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_get_integer_double(&x->storage.base, size, stride, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_get_integer_double(&x->storage.base, size, stride, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_get_integer_double(&x->storage.blas, size, stride, a);
@@ -1622,8 +1622,8 @@ int mtxvector_get_integer_double(
 int mtxvector_setzero(
     struct mtxvector * x)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_setzero(&x->storage.base);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_setzero(&x->storage.base);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_setzero(&x->storage.blas);
@@ -1649,8 +1649,8 @@ int mtxvector_setzero(
 int mtxvector_set_constant_real_single(
     struct mtxvector * x, float a)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_set_constant_real_single(&x->storage.base, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_set_constant_real_single(&x->storage.base, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_set_constant_real_single(&x->storage.blas, a);
@@ -1677,8 +1677,8 @@ int mtxvector_set_constant_real_single(
 int mtxvector_set_constant_real_double(
     struct mtxvector * x, double a)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_set_constant_real_double(&x->storage.base, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_set_constant_real_double(&x->storage.base, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_set_constant_real_double(&x->storage.blas, a);
@@ -1705,8 +1705,8 @@ int mtxvector_set_constant_real_double(
 int mtxvector_set_constant_complex_single(
     struct mtxvector * x, float a[2])
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_set_constant_complex_single(&x->storage.base, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_set_constant_complex_single(&x->storage.base, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_set_constant_complex_single(&x->storage.blas, a);
@@ -1733,8 +1733,8 @@ int mtxvector_set_constant_complex_single(
 int mtxvector_set_constant_complex_double(
     struct mtxvector * x, double a[2])
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_set_constant_complex_double(&x->storage.base, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_set_constant_complex_double(&x->storage.base, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_set_constant_complex_double(&x->storage.blas, a);
@@ -1760,8 +1760,8 @@ int mtxvector_set_constant_complex_double(
 int mtxvector_set_constant_integer_single(
     struct mtxvector * x, int32_t a)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_set_constant_integer_single(&x->storage.base, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_set_constant_integer_single(&x->storage.base, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_set_constant_integer_single(&x->storage.blas, a);
@@ -1787,8 +1787,8 @@ int mtxvector_set_constant_integer_single(
 int mtxvector_set_constant_integer_double(
     struct mtxvector * x, int64_t a)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_set_constant_integer_double(&x->storage.base, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_set_constant_integer_double(&x->storage.base, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_set_constant_integer_double(&x->storage.blas, a);
@@ -1817,8 +1817,8 @@ int mtxvector_set_real_single(
     int stride,
     const float * a)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_set_real_single(&x->storage.base, size, stride, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_set_real_single(&x->storage.base, size, stride, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_set_real_single(&x->storage.blas, size, stride, a);
@@ -1846,8 +1846,8 @@ int mtxvector_set_real_double(
     int stride,
     const double * a)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_set_real_double(&x->storage.base, size, stride, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_set_real_double(&x->storage.base, size, stride, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_set_real_double(&x->storage.blas, size, stride, a);
@@ -1875,8 +1875,8 @@ int mtxvector_set_complex_single(
     int stride,
     const float (*a)[2])
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_set_complex_single(&x->storage.base, size, stride, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_set_complex_single(&x->storage.base, size, stride, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_set_complex_single(&x->storage.blas, size, stride, a);
@@ -1904,8 +1904,8 @@ int mtxvector_set_complex_double(
     int stride,
     const double (*a)[2])
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_set_complex_double(&x->storage.base, size, stride, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_set_complex_double(&x->storage.base, size, stride, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_set_complex_double(&x->storage.blas, size, stride, a);
@@ -1933,8 +1933,8 @@ int mtxvector_set_integer_single(
     int stride,
     const int32_t * a)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_set_integer_single(&x->storage.base, size, stride, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_set_integer_single(&x->storage.base, size, stride, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_set_integer_single(&x->storage.blas, size, stride, a);
@@ -1962,8 +1962,8 @@ int mtxvector_set_integer_double(
     int stride,
     const int64_t * a)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_set_integer_double(&x->storage.base, size, stride, a);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_set_integer_double(&x->storage.base, size, stride, a);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_set_integer_double(&x->storage.blas, size, stride, a);
@@ -1994,9 +1994,9 @@ int mtxvector_from_mtxfile(
     const struct mtxfile * mtxfile,
     enum mtxvectortype type)
 {
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_from_mtxfile(&x->storage.base, mtxfile);
+    if (type == mtxbasevector) {
+        x->type = mtxbasevector;
+        return mtxbasevector_from_mtxfile(&x->storage.base, mtxfile);
     } else if (type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxblasvector;
@@ -2028,8 +2028,8 @@ int mtxvector_to_mtxfile(
     const int64_t * idx,
     enum mtxfileformat mtxfmt)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_to_mtxfile(mtxfile, &x->storage.base, num_rows, idx, mtxfmt);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_to_mtxfile(mtxfile, &x->storage.base, num_rows, idx, mtxfmt);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_to_mtxfile(mtxfile, &x->storage.blas, num_rows, idx, mtxfmt);
@@ -2345,15 +2345,15 @@ int mtxvector_split(
     int * parts,
     int64_t * invperm)
 {
-    if (src->type == mtxvector_base) {
-        struct mtxvector_base ** basedsts = malloc(
-            num_parts * sizeof(struct mtxvector_base *));
+    if (src->type == mtxbasevector) {
+        struct mtxbasevector ** basedsts = malloc(
+            num_parts * sizeof(struct mtxbasevector *));
         if (!basedsts) return MTX_ERR_ERRNO;
         for (int p = 0; p < num_parts; p++) {
-            dsts[p]->type = mtxvector_base;
+            dsts[p]->type = mtxbasevector;
             basedsts[p] = &dsts[p]->storage.base;
         }
-        int err = mtxvector_base_split(
+        int err = mtxbasevector_split(
             num_parts, basedsts, &src->storage.base, size, parts, invperm);
         free(basedsts);
         return err;
@@ -2417,8 +2417,8 @@ int mtxvector_swap(
     struct mtxvector * y)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_swap(&x->storage.base, &y->storage.base);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_swap(&x->storage.base, &y->storage.base);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_swap(&x->storage.blas, &y->storage.blas);
@@ -2444,8 +2444,8 @@ int mtxvector_copy(
     const struct mtxvector * x)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (y->type == mtxvector_base) {
-        return mtxvector_base_copy(&y->storage.base, &x->storage.base);
+    if (y->type == mtxbasevector) {
+        return mtxbasevector_copy(&y->storage.base, &x->storage.base);
     } else if (y->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_copy(&y->storage.blas, &x->storage.blas);
@@ -2472,8 +2472,8 @@ int mtxvector_sscal(
     struct mtxvector * x,
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_sscal(a, &x->storage.base, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_sscal(a, &x->storage.base, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_sscal(a, &x->storage.blas, num_flops);
@@ -2500,8 +2500,8 @@ int mtxvector_dscal(
     struct mtxvector * x,
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_dscal(a, &x->storage.base, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_dscal(a, &x->storage.base, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_dscal(a, &x->storage.blas, num_flops);
@@ -2528,8 +2528,8 @@ int mtxvector_cscal(
     struct mtxvector * x,
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_cscal(a, &x->storage.base, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_cscal(a, &x->storage.base, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_cscal(a, &x->storage.blas, num_flops);
@@ -2556,8 +2556,8 @@ int mtxvector_zscal(
     struct mtxvector * x,
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_zscal(a, &x->storage.base, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_zscal(a, &x->storage.base, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_zscal(a, &x->storage.blas, num_flops);
@@ -2585,9 +2585,9 @@ int mtxvector_saxpy(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    if (y->type == mtxvector_base) {
+    if (y->type == mtxbasevector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-        return mtxvector_base_saxpy(a, &x->storage.base, &y->storage.base, num_flops);
+        return mtxbasevector_saxpy(a, &x->storage.base, &y->storage.base, num_flops);
     } else if (y->type == mtxblasvector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
 #ifdef LIBMTX_HAVE_BLAS
@@ -2618,9 +2618,9 @@ int mtxvector_daxpy(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    if (y->type == mtxvector_base) {
+    if (y->type == mtxbasevector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-        return mtxvector_base_daxpy(a, &x->storage.base, &y->storage.base, num_flops);
+        return mtxbasevector_daxpy(a, &x->storage.base, &y->storage.base, num_flops);
     } else if (y->type == mtxblasvector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
 #ifdef LIBMTX_HAVE_BLAS
@@ -2651,9 +2651,9 @@ int mtxvector_saypx(
     const struct mtxvector * x,
     int64_t * num_flops)
 {
-    if (y->type == mtxvector_base) {
+    if (y->type == mtxbasevector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-        return mtxvector_base_saypx(a, &y->storage.base, &x->storage.base, num_flops);
+        return mtxbasevector_saypx(a, &y->storage.base, &x->storage.base, num_flops);
     } else if (y->type == mtxblasvector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
 #ifdef LIBMTX_HAVE_BLAS
@@ -2684,9 +2684,9 @@ int mtxvector_daypx(
     const struct mtxvector * x,
     int64_t * num_flops)
 {
-    if (y->type == mtxvector_base) {
+    if (y->type == mtxbasevector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-        return mtxvector_base_daypx(a, &y->storage.base, &x->storage.base, num_flops);
+        return mtxbasevector_daypx(a, &y->storage.base, &x->storage.base, num_flops);
     } else if (y->type == mtxblasvector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
 #ifdef LIBMTX_HAVE_BLAS
@@ -2717,9 +2717,9 @@ int mtxvector_sdot(
     float * dot,
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
+    if (x->type == mtxbasevector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-        return mtxvector_base_sdot(&x->storage.base, &y->storage.base, dot, num_flops);
+        return mtxbasevector_sdot(&x->storage.base, &y->storage.base, dot, num_flops);
     } else if (x->type == mtxblasvector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
 #ifdef LIBMTX_HAVE_BLAS
@@ -2750,9 +2750,9 @@ int mtxvector_ddot(
     double * dot,
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
+    if (x->type == mtxbasevector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-        return mtxvector_base_ddot(&x->storage.base, &y->storage.base, dot, num_flops);
+        return mtxbasevector_ddot(&x->storage.base, &y->storage.base, dot, num_flops);
     } else if (x->type == mtxblasvector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
 #ifdef LIBMTX_HAVE_BLAS
@@ -2784,9 +2784,9 @@ int mtxvector_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
+    if (x->type == mtxbasevector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-        return mtxvector_base_cdotu(&x->storage.base, &y->storage.base, dot, num_flops);
+        return mtxbasevector_cdotu(&x->storage.base, &y->storage.base, dot, num_flops);
     } else if (x->type == mtxblasvector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
 #ifdef LIBMTX_HAVE_BLAS
@@ -2818,9 +2818,9 @@ int mtxvector_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
+    if (x->type == mtxbasevector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-        return mtxvector_base_zdotu(&x->storage.base, &y->storage.base, dot, num_flops);
+        return mtxbasevector_zdotu(&x->storage.base, &y->storage.base, dot, num_flops);
     } else if (x->type == mtxblasvector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
 #ifdef LIBMTX_HAVE_BLAS
@@ -2851,9 +2851,9 @@ int mtxvector_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
+    if (x->type == mtxbasevector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-        return mtxvector_base_cdotc(&x->storage.base, &y->storage.base, dot, num_flops);
+        return mtxbasevector_cdotc(&x->storage.base, &y->storage.base, dot, num_flops);
     } else if (x->type == mtxblasvector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
 #ifdef LIBMTX_HAVE_BLAS
@@ -2884,9 +2884,9 @@ int mtxvector_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
+    if (x->type == mtxbasevector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-        return mtxvector_base_zdotc(&x->storage.base, &y->storage.base, dot, num_flops);
+        return mtxbasevector_zdotc(&x->storage.base, &y->storage.base, dot, num_flops);
     } else if (x->type == mtxblasvector) {
         if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
 #ifdef LIBMTX_HAVE_BLAS
@@ -2916,8 +2916,8 @@ int mtxvector_snrm2(
     float * nrm2,
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_snrm2(&x->storage.base, nrm2, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_snrm2(&x->storage.base, nrm2, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_snrm2(&x->storage.blas, nrm2, num_flops);
@@ -2944,8 +2944,8 @@ int mtxvector_dnrm2(
     double * nrm2,
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_dnrm2(&x->storage.base, nrm2, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_dnrm2(&x->storage.base, nrm2, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_dnrm2(&x->storage.blas, nrm2, num_flops);
@@ -2974,8 +2974,8 @@ int mtxvector_sasum(
     float * asum,
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_sasum(&x->storage.base, asum, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_sasum(&x->storage.base, asum, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_sasum(&x->storage.blas, asum, num_flops);
@@ -3004,8 +3004,8 @@ int mtxvector_dasum(
     double * asum,
     int64_t * num_flops)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_dasum(&x->storage.base, asum, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_dasum(&x->storage.base, asum, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_dasum(&x->storage.blas, asum, num_flops);
@@ -3033,8 +3033,8 @@ int mtxvector_iamax(
     const struct mtxvector * x,
     int * iamax)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_iamax(&x->storage.base, iamax);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_iamax(&x->storage.base, iamax);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_iamax(&x->storage.blas, iamax);
@@ -3072,8 +3072,8 @@ int mtxvector_ussdot(
     int64_t * num_flops)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_ussdot(&x->storage.base, &y->storage.base, dot, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_ussdot(&x->storage.base, &y->storage.base, dot, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_ussdot(&x->storage.blas, &y->storage.blas, dot, num_flops);
@@ -3107,8 +3107,8 @@ int mtxvector_usddot(
     int64_t * num_flops)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_usddot(&x->storage.base, &y->storage.base, dot, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_usddot(&x->storage.base, &y->storage.base, dot, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_usddot(&x->storage.blas, &y->storage.blas, dot, num_flops);
@@ -3143,8 +3143,8 @@ int mtxvector_uscdotu(
     int64_t * num_flops)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_uscdotu(&x->storage.base, &y->storage.base, dot, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_uscdotu(&x->storage.base, &y->storage.base, dot, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_uscdotu(&x->storage.blas, &y->storage.blas, dot, num_flops);
@@ -3179,8 +3179,8 @@ int mtxvector_uszdotu(
     int64_t * num_flops)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_uszdotu(&x->storage.base, &y->storage.base, dot, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_uszdotu(&x->storage.base, &y->storage.base, dot, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_uszdotu(&x->storage.blas, &y->storage.blas, dot, num_flops);
@@ -3214,8 +3214,8 @@ int mtxvector_uscdotc(
     int64_t * num_flops)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_uscdotc(&x->storage.base, &y->storage.base, dot, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_uscdotc(&x->storage.base, &y->storage.base, dot, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_uscdotc(&x->storage.blas, &y->storage.blas, dot, num_flops);
@@ -3249,8 +3249,8 @@ int mtxvector_uszdotc(
     int64_t * num_flops)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_uszdotc(&x->storage.base, &y->storage.base, dot, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_uszdotc(&x->storage.base, &y->storage.base, dot, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_uszdotc(&x->storage.blas, &y->storage.blas, dot, num_flops);
@@ -3284,8 +3284,8 @@ int mtxvector_ussaxpy(
     int64_t * num_flops)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_ussaxpy(alpha, &x->storage.base, &y->storage.base, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_ussaxpy(alpha, &x->storage.base, &y->storage.base, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_ussaxpy(alpha, &x->storage.blas, &y->storage.blas, num_flops);
@@ -3319,8 +3319,8 @@ int mtxvector_usdaxpy(
     int64_t * num_flops)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_usdaxpy(alpha, &x->storage.base, &y->storage.base, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_usdaxpy(alpha, &x->storage.base, &y->storage.base, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_usdaxpy(alpha, &x->storage.blas, &y->storage.blas, num_flops);
@@ -3354,8 +3354,8 @@ int mtxvector_uscaxpy(
     int64_t * num_flops)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_uscaxpy(alpha, &x->storage.base, &y->storage.base, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_uscaxpy(alpha, &x->storage.base, &y->storage.base, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_uscaxpy(alpha, &x->storage.blas, &y->storage.blas, num_flops);
@@ -3389,8 +3389,8 @@ int mtxvector_uszaxpy(
     int64_t * num_flops)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_uszaxpy(alpha, &x->storage.base, &y->storage.base, num_flops);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_uszaxpy(alpha, &x->storage.base, &y->storage.base, num_flops);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_uszaxpy(alpha, &x->storage.blas, &y->storage.blas, num_flops);
@@ -3418,8 +3418,8 @@ int mtxvector_usga(
     const struct mtxvector * y)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_usga(&x->storage.base, &y->storage.base);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_usga(&x->storage.base, &y->storage.base);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_usga(&x->storage.blas, &y->storage.blas);
@@ -3448,8 +3448,8 @@ int mtxvector_usgz(
     struct mtxvector * y)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_usgz(&x->storage.base, &y->storage.base);
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_usgz(&x->storage.base, &y->storage.base);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_usgz(&x->storage.blas, &y->storage.blas);
@@ -3477,8 +3477,8 @@ int mtxvector_ussc(
     const struct mtxvector * x)
 {
     if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (y->type == mtxvector_base) {
-        return mtxvector_base_ussc(&y->storage.base, &x->storage.base);
+    if (y->type == mtxbasevector) {
+        return mtxbasevector_ussc(&y->storage.base, &x->storage.base);
     } else if (y->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_ussc(&y->storage.blas, &x->storage.blas);
@@ -3512,8 +3512,8 @@ int mtxvector_usscga(
     const struct mtxvector * x)
 {
     if (x->type != z->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (z->type == mtxvector_base) {
-        return mtxvector_base_usscga(&z->storage.base, &x->storage.base);
+    if (z->type == mtxbasevector) {
+        return mtxbasevector_usscga(&z->storage.base, &x->storage.base);
     } else if (z->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
         return mtxblasvector_usscga(&z->storage.blas, &x->storage.blas);
@@ -3551,8 +3551,8 @@ int mtxvector_send(
     MPI_Comm comm,
     int * mpierrcode)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_send(
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_send(
             &x->storage.base, offset, count, recipient, tag, comm, mpierrcode);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
@@ -3590,8 +3590,8 @@ int mtxvector_recv(
     MPI_Status * status,
     int * mpierrcode)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_recv(
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_recv(
             &x->storage.base, offset, count, sender, tag, comm, status, mpierrcode);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS
@@ -3630,8 +3630,8 @@ int mtxvector_irecv(
     MPI_Request * request,
     int * mpierrcode)
 {
-    if (x->type == mtxvector_base) {
-        return mtxvector_base_irecv(
+    if (x->type == mtxbasevector) {
+        return mtxbasevector_irecv(
             &x->storage.base, offset, count, sender, tag, comm, request, mpierrcode);
     } else if (x->type == mtxblasvector) {
 #ifdef LIBMTX_HAVE_BLAS

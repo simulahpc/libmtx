@@ -51,7 +51,7 @@
  */
 enum mtxvectortype
 {
-    mtxvector_base,       /* basic vectors */
+    mtxbasevector,        /* basic vectors */
     mtxblasvector,        /* vectors with vector operations
                            * performed by an external BLAS library */
     mtxnullvector,        /* vectors where vector operations do
@@ -115,7 +115,7 @@ struct mtxvector
      */
     union
     {
-        struct mtxvector_base base;
+        struct mtxbasevector base;
         struct mtxblasvector blas;
         struct mtxnullvector null;
 #ifdef LIBMTX_HAVE_OPENMP

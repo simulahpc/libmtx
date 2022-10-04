@@ -256,11 +256,11 @@ tests/test_mtxdistfile_parallel:  tests/test_mtxdistfile
 endif
 
 # vector
-tests_test_mtxvector_base_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxvector_base_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxvector_base_SOURCES = tests/test_mtxvector_base.c tests/test.h
-check_PROGRAMS += tests/test_mtxvector_base
-TESTS += tests/test_mtxvector_base
+tests_test_mtxbasevector_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxbasevector_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxbasevector_SOURCES = tests/test_mtxbasevector.c tests/test.h
+check_PROGRAMS += tests/test_mtxbasevector
+TESTS += tests/test_mtxbasevector
 
 if HAVE_BLAS
 tests_test_mtxblasvector_CPPFLAGS = $(MPICPPFLAGS)

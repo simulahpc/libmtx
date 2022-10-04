@@ -53,7 +53,7 @@
  */
 enum mtxfield mtxblasvector_field(const struct mtxblasvector * x)
 {
-    return mtxvector_base_field(&x->base);
+    return mtxbasevector_field(&x->base);
 }
 
 /**
@@ -61,7 +61,7 @@ enum mtxfield mtxblasvector_field(const struct mtxblasvector * x)
  */
 enum mtxprecision mtxblasvector_precision(const struct mtxblasvector * x)
 {
-    return mtxvector_base_precision(&x->base);
+    return mtxbasevector_precision(&x->base);
 }
 
 /**
@@ -69,7 +69,7 @@ enum mtxprecision mtxblasvector_precision(const struct mtxblasvector * x)
  */
 int64_t mtxblasvector_size(const struct mtxblasvector * x)
 {
-    return mtxvector_base_size(&x->base);
+    return mtxbasevector_size(&x->base);
 }
 
 /**
@@ -78,7 +78,7 @@ int64_t mtxblasvector_size(const struct mtxblasvector * x)
  */
 int64_t mtxblasvector_num_nonzeros(const struct mtxblasvector * x)
 {
-    return mtxvector_base_num_nonzeros(&x->base);
+    return mtxbasevector_num_nonzeros(&x->base);
 }
 
 /**
@@ -88,7 +88,7 @@ int64_t mtxblasvector_num_nonzeros(const struct mtxblasvector * x)
  */
 int64_t * mtxblasvector_idx(const struct mtxblasvector * x)
 {
-    return mtxvector_base_idx(&x->base);
+    return mtxbasevector_idx(&x->base);
 }
 
 /*
@@ -101,7 +101,7 @@ int64_t * mtxblasvector_idx(const struct mtxblasvector * x)
 void mtxblasvector_free(
     struct mtxblasvector * x)
 {
-    mtxvector_base_free(&x->base);
+    mtxbasevector_free(&x->base);
 }
 
 /**
@@ -112,7 +112,7 @@ int mtxblasvector_alloc_copy(
     struct mtxblasvector * dst,
     const struct mtxblasvector * src)
 {
-    return mtxvector_base_alloc_copy(&dst->base, &src->base);
+    return mtxbasevector_alloc_copy(&dst->base, &src->base);
 }
 
 /**
@@ -123,7 +123,7 @@ int mtxblasvector_init_copy(
     struct mtxblasvector * dst,
     const struct mtxblasvector * src)
 {
-    return mtxvector_base_init_copy(&dst->base, &src->base);
+    return mtxbasevector_init_copy(&dst->base, &src->base);
 }
 
 /*
@@ -139,7 +139,7 @@ int mtxblasvector_alloc(
     enum mtxprecision precision,
     int64_t size)
 {
-    return mtxvector_base_alloc(&x->base, field, precision, size);
+    return mtxbasevector_alloc(&x->base, field, precision, size);
 }
 
 /**
@@ -151,7 +151,7 @@ int mtxblasvector_init_real_single(
     int64_t size,
     const float * data)
 {
-    return mtxvector_base_init_real_single(&x->base, size, data);
+    return mtxbasevector_init_real_single(&x->base, size, data);
 }
 
 /**
@@ -163,7 +163,7 @@ int mtxblasvector_init_real_double(
     int64_t size,
     const double * data)
 {
-    return mtxvector_base_init_real_double(&x->base, size, data);
+    return mtxbasevector_init_real_double(&x->base, size, data);
 }
 
 /**
@@ -175,7 +175,7 @@ int mtxblasvector_init_complex_single(
     int64_t size,
     const float (* data)[2])
 {
-    return mtxvector_base_init_complex_single(&x->base, size, data);
+    return mtxbasevector_init_complex_single(&x->base, size, data);
 }
 
 /**
@@ -187,7 +187,7 @@ int mtxblasvector_init_complex_double(
     int64_t size,
     const double (* data)[2])
 {
-    return mtxvector_base_init_complex_double(&x->base, size, data);
+    return mtxbasevector_init_complex_double(&x->base, size, data);
 }
 
 /**
@@ -199,7 +199,7 @@ int mtxblasvector_init_integer_single(
     int64_t size,
     const int32_t * data)
 {
-    return mtxvector_base_init_integer_single(&x->base, size, data);
+    return mtxbasevector_init_integer_single(&x->base, size, data);
 }
 
 /**
@@ -211,7 +211,7 @@ int mtxblasvector_init_integer_double(
     int64_t size,
     const int64_t * data)
 {
-    return mtxvector_base_init_integer_double(&x->base, size, data);
+    return mtxbasevector_init_integer_double(&x->base, size, data);
 }
 
 /**
@@ -222,7 +222,7 @@ int mtxblasvector_init_pattern(
     struct mtxblasvector * x,
     int64_t size)
 {
-    return mtxvector_base_init_pattern(&x->base, size);
+    return mtxbasevector_init_pattern(&x->base, size);
 }
 
 /*
@@ -239,7 +239,7 @@ int mtxblasvector_init_strided_real_single(
     int64_t stride,
     const float * data)
 {
-    return mtxvector_base_init_strided_real_single(&x->base, size, stride, data);
+    return mtxbasevector_init_strided_real_single(&x->base, size, stride, data);
 }
 
 /**
@@ -252,7 +252,7 @@ int mtxblasvector_init_strided_real_double(
     int64_t stride,
     const double * data)
 {
-    return mtxvector_base_init_strided_real_double(&x->base, size, stride, data);
+    return mtxbasevector_init_strided_real_double(&x->base, size, stride, data);
 }
 
 /**
@@ -265,7 +265,7 @@ int mtxblasvector_init_strided_complex_single(
     int64_t stride,
     const float (* data)[2])
 {
-    return mtxvector_base_init_strided_complex_single(&x->base, size, stride, data);
+    return mtxbasevector_init_strided_complex_single(&x->base, size, stride, data);
 }
 
 /**
@@ -278,7 +278,7 @@ int mtxblasvector_init_strided_complex_double(
     int64_t stride,
     const double (* data)[2])
 {
-    return mtxvector_base_init_strided_complex_double(&x->base, size, stride, data);
+    return mtxbasevector_init_strided_complex_double(&x->base, size, stride, data);
 }
 
 /**
@@ -291,7 +291,7 @@ int mtxblasvector_init_strided_integer_single(
     int64_t stride,
     const int32_t * data)
 {
-    return mtxvector_base_init_strided_integer_single(&x->base, size, stride, data);
+    return mtxbasevector_init_strided_integer_single(&x->base, size, stride, data);
 }
 
 /**
@@ -304,7 +304,7 @@ int mtxblasvector_init_strided_integer_double(
     int64_t stride,
     const int64_t * data)
 {
-    return mtxvector_base_init_strided_integer_double(&x->base, size, stride, data);
+    return mtxbasevector_init_strided_integer_double(&x->base, size, stride, data);
 }
 
 /*
@@ -323,7 +323,7 @@ int mtxblasvector_alloc_packed(
     int64_t num_nonzeros,
     const int64_t * idx)
 {
-    return mtxvector_base_alloc_packed(&x->base, field, precision, size, num_nonzeros, idx);
+    return mtxbasevector_alloc_packed(&x->base, field, precision, size, num_nonzeros, idx);
 }
 
 /**
@@ -337,7 +337,7 @@ int mtxblasvector_init_packed_real_single(
     const int64_t * idx,
     const float * data)
 {
-    return mtxvector_base_init_packed_real_single(&x->base, size, num_nonzeros, idx, data);
+    return mtxbasevector_init_packed_real_single(&x->base, size, num_nonzeros, idx, data);
 }
 
 /**
@@ -351,7 +351,7 @@ int mtxblasvector_init_packed_real_double(
     const int64_t * idx,
     const double * data)
 {
-    return mtxvector_base_init_packed_real_double(&x->base, size, num_nonzeros, idx, data);
+    return mtxbasevector_init_packed_real_double(&x->base, size, num_nonzeros, idx, data);
 }
 
 /**
@@ -365,7 +365,7 @@ int mtxblasvector_init_packed_complex_single(
     const int64_t * idx,
     const float (* data)[2])
 {
-    return mtxvector_base_init_packed_complex_single(&x->base, size, num_nonzeros, idx, data);
+    return mtxbasevector_init_packed_complex_single(&x->base, size, num_nonzeros, idx, data);
 }
 
 /**
@@ -379,7 +379,7 @@ int mtxblasvector_init_packed_complex_double(
     const int64_t * idx,
     const double (* data)[2])
 {
-    return mtxvector_base_init_packed_complex_double(&x->base, size, num_nonzeros, idx, data);
+    return mtxbasevector_init_packed_complex_double(&x->base, size, num_nonzeros, idx, data);
 }
 
 /**
@@ -393,7 +393,7 @@ int mtxblasvector_init_packed_integer_single(
     const int64_t * idx,
     const int32_t * data)
 {
-    return mtxvector_base_init_packed_integer_single(&x->base, size, num_nonzeros, idx, data);
+    return mtxbasevector_init_packed_integer_single(&x->base, size, num_nonzeros, idx, data);
 }
 
 /**
@@ -407,7 +407,7 @@ int mtxblasvector_init_packed_integer_double(
     const int64_t * idx,
     const int64_t * data)
 {
-    return mtxvector_base_init_packed_integer_double(&x->base, size, num_nonzeros, idx, data);
+    return mtxbasevector_init_packed_integer_double(&x->base, size, num_nonzeros, idx, data);
 }
 
 /**
@@ -420,7 +420,7 @@ int mtxblasvector_init_packed_pattern(
     int64_t num_nonzeros,
     const int64_t * idx)
 {
-    return mtxvector_base_init_packed_pattern(&x->base, size, num_nonzeros, idx);
+    return mtxbasevector_init_packed_pattern(&x->base, size, num_nonzeros, idx);
 }
 
 /*
@@ -441,7 +441,7 @@ int mtxblasvector_alloc_packed_strided(
     int idxbase,
     const int64_t * idx)
 {
-    return mtxvector_base_alloc_packed_strided(&x->base, field, precision, size, num_nonzeros, idxstride, idxbase, idx);
+    return mtxbasevector_alloc_packed_strided(&x->base, field, precision, size, num_nonzeros, idxstride, idxbase, idx);
 }
 
 /**
@@ -458,7 +458,7 @@ int mtxblasvector_init_packed_strided_real_single(
     int datastride,
     const float * data)
 {
-    return mtxvector_base_init_packed_strided_real_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    return mtxbasevector_init_packed_strided_real_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
 }
 
 /**
@@ -475,7 +475,7 @@ int mtxblasvector_init_packed_strided_real_double(
     int datastride,
     const double * data)
 {
-    return mtxvector_base_init_packed_strided_real_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    return mtxbasevector_init_packed_strided_real_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
 }
 
 /**
@@ -492,7 +492,7 @@ int mtxblasvector_init_packed_strided_complex_single(
     int datastride,
     const float (* data)[2])
 {
-    return mtxvector_base_init_packed_strided_complex_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    return mtxbasevector_init_packed_strided_complex_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
 }
 
 /**
@@ -509,7 +509,7 @@ int mtxblasvector_init_packed_strided_complex_double(
     int datastride,
     const double (* data)[2])
 {
-    return mtxvector_base_init_packed_strided_complex_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    return mtxbasevector_init_packed_strided_complex_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
 }
 
 /**
@@ -526,7 +526,7 @@ int mtxblasvector_init_packed_strided_integer_single(
     int datastride,
     const int32_t * data)
 {
-    return mtxvector_base_init_packed_strided_integer_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    return mtxbasevector_init_packed_strided_integer_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
 }
 
 /**
@@ -543,7 +543,7 @@ int mtxblasvector_init_packed_strided_integer_double(
     int datastride,
     const int64_t * data)
 {
-    return mtxvector_base_init_packed_strided_integer_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    return mtxbasevector_init_packed_strided_integer_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
 }
 
 /**
@@ -559,7 +559,7 @@ int mtxblasvector_init_packed_strided_pattern(
     int idxbase,
     const int64_t * idx)
 {
-    return mtxvector_base_init_packed_strided_pattern(&x->base, size, num_nonzeros, idxstride, idxbase, idx);
+    return mtxbasevector_init_packed_strided_pattern(&x->base, size, num_nonzeros, idxstride, idxbase, idx);
 }
 
 /*
@@ -580,7 +580,7 @@ int mtxblasvector_get_real_single(
     int stride,
     float * a)
 {
-    return mtxvector_base_get_real_single(&x->base, size, stride, a);
+    return mtxbasevector_get_real_single(&x->base, size, stride, a);
 }
 
 /**
@@ -597,7 +597,7 @@ int mtxblasvector_get_real_double(
     int stride,
     double * a)
 {
-    return mtxvector_base_get_real_double(&x->base, size, stride, a);
+    return mtxbasevector_get_real_double(&x->base, size, stride, a);
 }
 
 /**
@@ -614,7 +614,7 @@ int mtxblasvector_get_complex_single(
     int stride,
     float (* a)[2])
 {
-    return mtxvector_base_get_complex_single(&x->base, size, stride, a);
+    return mtxbasevector_get_complex_single(&x->base, size, stride, a);
 }
 
 /**
@@ -631,7 +631,7 @@ int mtxblasvector_get_complex_double(
     int stride,
     double (* a)[2])
 {
-    return mtxvector_base_get_complex_double(&x->base, size, stride, a);
+    return mtxbasevector_get_complex_double(&x->base, size, stride, a);
 }
 
 /**
@@ -648,7 +648,7 @@ int mtxblasvector_get_integer_single(
     int stride,
     int32_t * a)
 {
-    return mtxvector_base_get_integer_single(&x->base, size, stride, a);
+    return mtxbasevector_get_integer_single(&x->base, size, stride, a);
 }
 
 /**
@@ -665,7 +665,7 @@ int mtxblasvector_get_integer_double(
     int stride,
     int64_t * a)
 {
-    return mtxvector_base_get_integer_double(&x->base, size, stride, a);
+    return mtxbasevector_get_integer_double(&x->base, size, stride, a);
 }
 
 /*
@@ -678,7 +678,7 @@ int mtxblasvector_get_integer_double(
 int mtxblasvector_setzero(
     struct mtxblasvector * x)
 {
-    return mtxvector_base_setzero(&x->base);
+    return mtxbasevector_setzero(&x->base);
 }
 
 /**
@@ -689,7 +689,7 @@ int mtxblasvector_set_constant_real_single(
     struct mtxblasvector * x,
     float a)
 {
-    return mtxvector_base_set_constant_real_single(&x->base, a);
+    return mtxbasevector_set_constant_real_single(&x->base, a);
 }
 
 /**
@@ -700,7 +700,7 @@ int mtxblasvector_set_constant_real_double(
     struct mtxblasvector * x,
     double a)
 {
-    return mtxvector_base_set_constant_real_double(&x->base, a);
+    return mtxbasevector_set_constant_real_double(&x->base, a);
 }
 
 /**
@@ -712,7 +712,7 @@ int mtxblasvector_set_constant_complex_single(
     struct mtxblasvector * x,
     float a[2])
 {
-    return mtxvector_base_set_constant_complex_single(&x->base, a);
+    return mtxbasevector_set_constant_complex_single(&x->base, a);
 }
 
 /**
@@ -724,7 +724,7 @@ int mtxblasvector_set_constant_complex_double(
     struct mtxblasvector * x,
     double a[2])
 {
-    return mtxvector_base_set_constant_complex_double(&x->base, a);
+    return mtxbasevector_set_constant_complex_double(&x->base, a);
 }
 
 /**
@@ -735,7 +735,7 @@ int mtxblasvector_set_constant_integer_single(
     struct mtxblasvector * x,
     int32_t a)
 {
-    return mtxvector_base_set_constant_integer_single(&x->base, a);
+    return mtxbasevector_set_constant_integer_single(&x->base, a);
 }
 
 /**
@@ -746,7 +746,7 @@ int mtxblasvector_set_constant_integer_double(
     struct mtxblasvector * x,
     int64_t a)
 {
-    return mtxvector_base_set_constant_integer_double(&x->base, a);
+    return mtxbasevector_set_constant_integer_double(&x->base, a);
 }
 
 /**
@@ -759,7 +759,7 @@ int mtxblasvector_set_real_single(
     int stride,
     const float * a)
 {
-    return mtxvector_base_set_real_single(&x->base, size, stride, a);
+    return mtxbasevector_set_real_single(&x->base, size, stride, a);
 }
 
 /**
@@ -772,7 +772,7 @@ int mtxblasvector_set_real_double(
     int stride,
     const double * a)
 {
-    return mtxvector_base_set_real_double(&x->base, size, stride, a);
+    return mtxbasevector_set_real_double(&x->base, size, stride, a);
 }
 
 /**
@@ -785,7 +785,7 @@ int mtxblasvector_set_complex_single(
     int stride,
     const float (*a)[2])
 {
-    return mtxvector_base_set_complex_single(&x->base, size, stride, a);
+    return mtxbasevector_set_complex_single(&x->base, size, stride, a);
 }
 
 /**
@@ -798,7 +798,7 @@ int mtxblasvector_set_complex_double(
     int stride,
     const double (*a)[2])
 {
-    return mtxvector_base_set_complex_double(&x->base, size, stride, a);
+    return mtxbasevector_set_complex_double(&x->base, size, stride, a);
 }
 
 /**
@@ -811,7 +811,7 @@ int mtxblasvector_set_integer_single(
     int stride,
     const int32_t * a)
 {
-    return mtxvector_base_set_integer_single(&x->base, size, stride, a);
+    return mtxbasevector_set_integer_single(&x->base, size, stride, a);
 }
 
 /**
@@ -824,7 +824,7 @@ int mtxblasvector_set_integer_double(
     int stride,
     const int64_t * a)
 {
-    return mtxvector_base_set_integer_double(&x->base, size, stride, a);
+    return mtxbasevector_set_integer_double(&x->base, size, stride, a);
 }
 
 /*
@@ -839,7 +839,7 @@ int mtxblasvector_from_mtxfile(
     struct mtxblasvector * x,
     const struct mtxfile * mtxfile)
 {
-    return mtxvector_base_from_mtxfile(&x->base, mtxfile);
+    return mtxbasevector_from_mtxfile(&x->base, mtxfile);
 }
 
 /**
@@ -853,7 +853,7 @@ int mtxblasvector_to_mtxfile(
     const int64_t * idx,
     enum mtxfileformat mtxfmt)
 {
-    return mtxvector_base_to_mtxfile(mtxfile, &x->base, num_rows, idx, mtxfmt);
+    return mtxbasevector_to_mtxfile(mtxfile, &x->base, num_rows, idx, mtxfmt);
 }
 
 /*
@@ -894,11 +894,11 @@ int mtxblasvector_split(
     int * parts,
     int64_t * invperm)
 {
-    struct mtxvector_base ** basedsts = malloc(
-        num_parts * sizeof(struct mtxvector_base *));
+    struct mtxbasevector ** basedsts = malloc(
+        num_parts * sizeof(struct mtxbasevector *));
     if (!basedsts) return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) basedsts[p] = &dsts[p]->base;
-    int err = mtxvector_base_split(
+    int err = mtxbasevector_split(
         num_parts, basedsts, &src->base, size, parts, invperm);
     free(basedsts);
     return err;
@@ -920,8 +920,8 @@ int mtxblasvector_swap(
     struct mtxblasvector * yblas)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    struct mtxvector_base * x = &xblas->base;
-    struct mtxvector_base * y = &yblas->base;
+    struct mtxbasevector * x = &xblas->base;
+    struct mtxbasevector * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -950,7 +950,7 @@ int mtxblasvector_swap(
             if (mtxblaserror()) return MTX_ERR_BLAS;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
-        return mtxvector_base_swap(x, y);
+        return mtxbasevector_swap(x, y);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -969,8 +969,8 @@ int mtxblasvector_copy(
     const struct mtxblasvector * xblas)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
-    struct mtxvector_base * y = &yblas->base;
+    const struct mtxbasevector * x = &xblas->base;
+    struct mtxbasevector * y = &yblas->base;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (y->precision != x->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (y->size != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -999,7 +999,7 @@ int mtxblasvector_copy(
             if (mtxblaserror()) return MTX_ERR_BLAS;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (y->field == mtx_field_integer) {
-        return mtxvector_base_copy(y, x);
+        return mtxbasevector_copy(y, x);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -1017,7 +1017,7 @@ int mtxblasvector_sscal(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    struct mtxvector_base * x = &xblas->base;
+    struct mtxbasevector * x = &xblas->base;
     if (a == 1) return MTX_SUCCESS;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1044,7 +1044,7 @@ int mtxblasvector_sscal(
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
-        return mtxvector_base_sscal(a, x, num_flops);
+        return mtxbasevector_sscal(a, x, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -1062,7 +1062,7 @@ int mtxblasvector_dscal(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    struct mtxvector_base * x = &xblas->base;
+    struct mtxbasevector * x = &xblas->base;
     if (a == 1) return MTX_SUCCESS;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1089,7 +1089,7 @@ int mtxblasvector_dscal(
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
-        return mtxvector_base_dscal(a, x, num_flops);
+        return mtxbasevector_dscal(a, x, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -1107,7 +1107,7 @@ int mtxblasvector_cscal(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    struct mtxvector_base * x = &xblas->base;
+    struct mtxbasevector * x = &xblas->base;
     if (x->field != mtx_field_complex) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision == mtx_single) {
         float (* xdata)[2] = x->data.complex_single;
@@ -1137,7 +1137,7 @@ int mtxblasvector_zscal(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    struct mtxvector_base * x = &xblas->base;
+    struct mtxbasevector * x = &xblas->base;
     if (x->field != mtx_field_complex) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision == mtx_single) {
         float (* xdata)[2] = x->data.complex_single;
@@ -1171,8 +1171,8 @@ int mtxblasvector_saxpy(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
-    struct mtxvector_base * y = &yblas->base;
+    const struct mtxbasevector * x = &xblas->base;
+    struct mtxbasevector * y = &yblas->base;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (y->precision != x->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (y->size != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -1205,7 +1205,7 @@ int mtxblasvector_saxpy(
             if (num_flops) *num_flops += 4*y->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (y->field == mtx_field_integer) {
-        return mtxvector_base_saxpy(a, x, y, num_flops);
+        return mtxbasevector_saxpy(a, x, y, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -1227,8 +1227,8 @@ int mtxblasvector_daxpy(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
-    struct mtxvector_base * y = &yblas->base;
+    const struct mtxbasevector * x = &xblas->base;
+    struct mtxbasevector * y = &yblas->base;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (y->precision != x->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (y->size != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -1261,7 +1261,7 @@ int mtxblasvector_daxpy(
             if (num_flops) *num_flops += 4*y->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (y->field == mtx_field_integer) {
-        return mtxvector_base_daxpy(a, x, y, num_flops);
+        return mtxbasevector_daxpy(a, x, y, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -1314,9 +1314,9 @@ int mtxblasvector_saypx(
     const struct mtxblasvector * xblas,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xblas->base;
-    struct mtxvector_base * y = &yblas->base;
-    return mtxvector_base_saypx(a, y, x, num_flops);
+    const struct mtxbasevector * x = &xblas->base;
+    struct mtxbasevector * y = &yblas->base;
+    return mtxbasevector_saypx(a, y, x, num_flops);
 }
 
 /**
@@ -1332,9 +1332,9 @@ int mtxblasvector_daypx(
     const struct mtxblasvector * xblas,
     int64_t * num_flops)
 {
-    const struct mtxvector_base * x = &xblas->base;
-    struct mtxvector_base * y = &yblas->base;
-    return mtxvector_base_daypx(a, y, x, num_flops);
+    const struct mtxbasevector * x = &xblas->base;
+    struct mtxbasevector * y = &yblas->base;
+    return mtxbasevector_daypx(a, y, x, num_flops);
 }
 
 /**
@@ -1351,8 +1351,8 @@ int mtxblasvector_sdot(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
+    const struct mtxbasevector * x = &xblas->base;
+    const struct mtxbasevector * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -1371,7 +1371,7 @@ int mtxblasvector_sdot(
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
-        return mtxvector_base_sdot(x, y, dot, num_flops);
+        return mtxbasevector_sdot(x, y, dot, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -1393,8 +1393,8 @@ int mtxblasvector_ddot(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
+    const struct mtxbasevector * x = &xblas->base;
+    const struct mtxbasevector * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -1413,7 +1413,7 @@ int mtxblasvector_ddot(
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
-        return mtxvector_base_ddot(x, y, dot, num_flops);
+        return mtxbasevector_ddot(x, y, dot, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -1436,8 +1436,8 @@ int mtxblasvector_cdotu(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
+    const struct mtxbasevector * x = &xblas->base;
+    const struct mtxbasevector * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -1482,8 +1482,8 @@ int mtxblasvector_zdotu(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
+    const struct mtxbasevector * x = &xblas->base;
+    const struct mtxbasevector * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -1527,8 +1527,8 @@ int mtxblasvector_cdotc(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
+    const struct mtxbasevector * x = &xblas->base;
+    const struct mtxbasevector * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -1572,8 +1572,8 @@ int mtxblasvector_zdotc(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
+    const struct mtxbasevector * x = &xblas->base;
+    const struct mtxbasevector * y = &yblas->base;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -1613,7 +1613,7 @@ int mtxblasvector_snrm2(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
+    const struct mtxbasevector * x = &xblas->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             const float * xdata = x->data.real_single;
@@ -1643,7 +1643,7 @@ int mtxblasvector_snrm2(
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (x->field == mtx_field_integer) {
-        return mtxvector_base_snrm2(x, nrm2, num_flops);
+        return mtxbasevector_snrm2(x, nrm2, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -1661,7 +1661,7 @@ int mtxblasvector_dnrm2(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
+    const struct mtxbasevector * x = &xblas->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             const float * xdata = x->data.real_single;
@@ -1691,7 +1691,7 @@ int mtxblasvector_dnrm2(
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (x->field == mtx_field_integer) {
-        return mtxvector_base_dnrm2(x, nrm2, num_flops);
+        return mtxbasevector_dnrm2(x, nrm2, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -1711,7 +1711,7 @@ int mtxblasvector_sasum(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
+    const struct mtxbasevector * x = &xblas->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             const float * xdata = x->data.real_single;
@@ -1737,7 +1737,7 @@ int mtxblasvector_sasum(
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
-        return mtxvector_base_sasum(x, asum, num_flops);
+        return mtxbasevector_sasum(x, asum, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -1757,7 +1757,7 @@ int mtxblasvector_dasum(
     int64_t * num_flops)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
+    const struct mtxbasevector * x = &xblas->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             const float * xdata = x->data.real_single;
@@ -1783,7 +1783,7 @@ int mtxblasvector_dasum(
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
-        return mtxvector_base_dasum(x, asum, num_flops);
+        return mtxbasevector_dasum(x, asum, num_flops);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -1802,7 +1802,7 @@ int mtxblasvector_iamax(
     int * iamax)
 {
 #ifdef LIBMTX_HAVE_BLAS
-    const struct mtxvector_base * x = &xblas->base;
+    const struct mtxbasevector * x = &xblas->base;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             const float * xdata = x->data.real_single;
@@ -1824,7 +1824,7 @@ int mtxblasvector_iamax(
             if (mtxblaserror()) return MTX_ERR_BLAS;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
-        return mtxvector_base_iamax(x, iamax);
+        return mtxbasevector_iamax(x, iamax);
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 #else
@@ -1855,7 +1855,7 @@ int mtxblasvector_ussdot(
     float * dot,
     int64_t * num_flops)
 {
-    return mtxvector_base_ussdot(&x->base, &y->base, dot, num_flops);
+    return mtxbasevector_ussdot(&x->base, &y->base, dot, num_flops);
 }
 
 /**
@@ -1873,7 +1873,7 @@ int mtxblasvector_usddot(
     double * dot,
     int64_t * num_flops)
 {
-    return mtxvector_base_usddot(&x->base, &y->base, dot, num_flops);
+    return mtxbasevector_usddot(&x->base, &y->base, dot, num_flops);
 }
 
 /**
@@ -1892,7 +1892,7 @@ int mtxblasvector_uscdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_base_uscdotu(&x->base, &y->base, dot, num_flops);
+    return mtxbasevector_uscdotu(&x->base, &y->base, dot, num_flops);
 }
 
 /**
@@ -1911,7 +1911,7 @@ int mtxblasvector_uszdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_base_uszdotu(&x->base, &y->base, dot, num_flops);
+    return mtxbasevector_uszdotu(&x->base, &y->base, dot, num_flops);
 }
 
 /**
@@ -1929,7 +1929,7 @@ int mtxblasvector_uscdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_base_uscdotc(&x->base, &y->base, dot, num_flops);
+    return mtxbasevector_uscdotc(&x->base, &y->base, dot, num_flops);
 }
 
 /**
@@ -1947,7 +1947,7 @@ int mtxblasvector_uszdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_base_uszdotc(&x->base, &y->base, dot, num_flops);
+    return mtxbasevector_uszdotc(&x->base, &y->base, dot, num_flops);
 }
 
 /**
@@ -1965,7 +1965,7 @@ int mtxblasvector_ussaxpy(
     struct mtxblasvector * y,
     int64_t * num_flops)
 {
-    return mtxvector_base_ussaxpy(alpha, &x->base, &y->base, num_flops);
+    return mtxbasevector_ussaxpy(alpha, &x->base, &y->base, num_flops);
 }
 
 /**
@@ -1983,7 +1983,7 @@ int mtxblasvector_usdaxpy(
     struct mtxblasvector * y,
     int64_t * num_flops)
 {
-    return mtxvector_base_usdaxpy(alpha, &x->base, &y->base, num_flops);
+    return mtxbasevector_usdaxpy(alpha, &x->base, &y->base, num_flops);
 }
 
 /**
@@ -2001,7 +2001,7 @@ int mtxblasvector_uscaxpy(
     struct mtxblasvector * y,
     int64_t * num_flops)
 {
-    return mtxvector_base_uscaxpy(alpha, &x->base, &y->base, num_flops);
+    return mtxbasevector_uscaxpy(alpha, &x->base, &y->base, num_flops);
 }
 
 /**
@@ -2019,7 +2019,7 @@ int mtxblasvector_uszaxpy(
     struct mtxblasvector * y,
     int64_t * num_flops)
 {
-    return mtxvector_base_uszaxpy(alpha, &x->base, &y->base, num_flops);
+    return mtxbasevector_uszaxpy(alpha, &x->base, &y->base, num_flops);
 }
 
 /**
@@ -2031,7 +2031,7 @@ int mtxblasvector_usga(
     struct mtxblasvector * x,
     const struct mtxblasvector * y)
 {
-    return mtxvector_base_usga(&x->base, &y->base);
+    return mtxbasevector_usga(&x->base, &y->base);
 }
 
 /**
@@ -2044,7 +2044,7 @@ int mtxblasvector_usgz(
     struct mtxblasvector * x,
     struct mtxblasvector * y)
 {
-    return mtxvector_base_usgz(&x->base, &y->base);
+    return mtxbasevector_usgz(&x->base, &y->base);
 }
 
 /**
@@ -2057,7 +2057,7 @@ int mtxblasvector_ussc(
     struct mtxblasvector * y,
     const struct mtxblasvector * x)
 {
-    return mtxvector_base_ussc(&y->base, &x->base);
+    return mtxbasevector_ussc(&y->base, &x->base);
 }
 
 /*
@@ -2075,7 +2075,7 @@ int mtxblasvector_usscga(
     struct mtxblasvector * z,
     const struct mtxblasvector * x)
 {
-    return mtxvector_base_usscga(&z->base, &x->base);
+    return mtxbasevector_usscga(&z->base, &x->base);
 }
 
 /*
@@ -2098,7 +2098,7 @@ int mtxblasvector_send(
     MPI_Comm comm,
     int * mpierrcode)
 {
-    return mtxvector_base_send(
+    return mtxbasevector_send(
         &x->base, offset, count, recipient, tag, comm, mpierrcode);
 }
 
@@ -2118,7 +2118,7 @@ int mtxblasvector_recv(
     MPI_Status * status,
     int * mpierrcode)
 {
-    return mtxvector_base_recv(
+    return mtxbasevector_recv(
         &x->base, offset, count, sender, tag, comm, status, mpierrcode);
 }
 
@@ -2139,7 +2139,7 @@ int mtxblasvector_irecv(
     MPI_Request * request,
     int * mpierrcode)
 {
-    return mtxvector_base_irecv(
+    return mtxbasevector_irecv(
         &x->base, offset, count, sender, tag, comm, request, mpierrcode);
 }
 #endif

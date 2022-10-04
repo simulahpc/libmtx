@@ -53,7 +53,7 @@
  */
 enum mtxfield mtxnullvector_field(const struct mtxnullvector * x)
 {
-    return mtxvector_base_field(&x->base);
+    return mtxbasevector_field(&x->base);
 }
 
 /**
@@ -61,7 +61,7 @@ enum mtxfield mtxnullvector_field(const struct mtxnullvector * x)
  */
 enum mtxprecision mtxnullvector_precision(const struct mtxnullvector * x)
 {
-    return mtxvector_base_precision(&x->base);
+    return mtxbasevector_precision(&x->base);
 }
 
 /**
@@ -69,7 +69,7 @@ enum mtxprecision mtxnullvector_precision(const struct mtxnullvector * x)
  */
 int64_t mtxnullvector_size(const struct mtxnullvector * x)
 {
-    return mtxvector_base_size(&x->base);
+    return mtxbasevector_size(&x->base);
 }
 
 /**
@@ -78,7 +78,7 @@ int64_t mtxnullvector_size(const struct mtxnullvector * x)
  */
 int64_t mtxnullvector_num_nonzeros(const struct mtxnullvector * x)
 {
-    return mtxvector_base_num_nonzeros(&x->base);
+    return mtxbasevector_num_nonzeros(&x->base);
 }
 
 /**
@@ -88,7 +88,7 @@ int64_t mtxnullvector_num_nonzeros(const struct mtxnullvector * x)
  */
 int64_t * mtxnullvector_idx(const struct mtxnullvector * x)
 {
-    return mtxvector_base_idx(&x->base);
+    return mtxbasevector_idx(&x->base);
 }
 
 /*
@@ -101,7 +101,7 @@ int64_t * mtxnullvector_idx(const struct mtxnullvector * x)
 void mtxnullvector_free(
     struct mtxnullvector * x)
 {
-    mtxvector_base_free(&x->base);
+    mtxbasevector_free(&x->base);
 }
 
 /**
@@ -112,7 +112,7 @@ int mtxnullvector_alloc_copy(
     struct mtxnullvector * dst,
     const struct mtxnullvector * src)
 {
-    return mtxvector_base_alloc_copy(&dst->base, &src->base);
+    return mtxbasevector_alloc_copy(&dst->base, &src->base);
 }
 
 /**
@@ -123,7 +123,7 @@ int mtxnullvector_init_copy(
     struct mtxnullvector * dst,
     const struct mtxnullvector * src)
 {
-    return mtxvector_base_init_copy(&dst->base, &src->base);
+    return mtxbasevector_init_copy(&dst->base, &src->base);
 }
 
 /*
@@ -139,7 +139,7 @@ int mtxnullvector_alloc(
     enum mtxprecision precision,
     int64_t size)
 {
-    return mtxvector_base_alloc(&x->base, field, precision, size);
+    return mtxbasevector_alloc(&x->base, field, precision, size);
 }
 
 /**
@@ -151,7 +151,7 @@ int mtxnullvector_init_real_single(
     int64_t size,
     const float * data)
 {
-    return mtxvector_base_init_real_single(&x->base, size, data);
+    return mtxbasevector_init_real_single(&x->base, size, data);
 }
 
 /**
@@ -163,7 +163,7 @@ int mtxnullvector_init_real_double(
     int64_t size,
     const double * data)
 {
-    return mtxvector_base_init_real_double(&x->base, size, data);
+    return mtxbasevector_init_real_double(&x->base, size, data);
 }
 
 /**
@@ -175,7 +175,7 @@ int mtxnullvector_init_complex_single(
     int64_t size,
     const float (* data)[2])
 {
-    return mtxvector_base_init_complex_single(&x->base, size, data);
+    return mtxbasevector_init_complex_single(&x->base, size, data);
 }
 
 /**
@@ -187,7 +187,7 @@ int mtxnullvector_init_complex_double(
     int64_t size,
     const double (* data)[2])
 {
-    return mtxvector_base_init_complex_double(&x->base, size, data);
+    return mtxbasevector_init_complex_double(&x->base, size, data);
 }
 
 /**
@@ -199,7 +199,7 @@ int mtxnullvector_init_integer_single(
     int64_t size,
     const int32_t * data)
 {
-    return mtxvector_base_init_integer_single(&x->base, size, data);
+    return mtxbasevector_init_integer_single(&x->base, size, data);
 }
 
 /**
@@ -211,7 +211,7 @@ int mtxnullvector_init_integer_double(
     int64_t size,
     const int64_t * data)
 {
-    return mtxvector_base_init_integer_double(&x->base, size, data);
+    return mtxbasevector_init_integer_double(&x->base, size, data);
 }
 
 /**
@@ -222,7 +222,7 @@ int mtxnullvector_init_pattern(
     struct mtxnullvector * x,
     int64_t size)
 {
-    return mtxvector_base_init_pattern(&x->base, size);
+    return mtxbasevector_init_pattern(&x->base, size);
 }
 
 /*
@@ -239,7 +239,7 @@ int mtxnullvector_init_strided_real_single(
     int64_t stride,
     const float * data)
 {
-    return mtxvector_base_init_strided_real_single(&x->base, size, stride, data);
+    return mtxbasevector_init_strided_real_single(&x->base, size, stride, data);
 }
 
 /**
@@ -252,7 +252,7 @@ int mtxnullvector_init_strided_real_double(
     int64_t stride,
     const double * data)
 {
-    return mtxvector_base_init_strided_real_double(&x->base, size, stride, data);
+    return mtxbasevector_init_strided_real_double(&x->base, size, stride, data);
 }
 
 /**
@@ -265,7 +265,7 @@ int mtxnullvector_init_strided_complex_single(
     int64_t stride,
     const float (* data)[2])
 {
-    return mtxvector_base_init_strided_complex_single(&x->base, size, stride, data);
+    return mtxbasevector_init_strided_complex_single(&x->base, size, stride, data);
 }
 
 /**
@@ -278,7 +278,7 @@ int mtxnullvector_init_strided_complex_double(
     int64_t stride,
     const double (* data)[2])
 {
-    return mtxvector_base_init_strided_complex_double(&x->base, size, stride, data);
+    return mtxbasevector_init_strided_complex_double(&x->base, size, stride, data);
 }
 
 /**
@@ -291,7 +291,7 @@ int mtxnullvector_init_strided_integer_single(
     int64_t stride,
     const int32_t * data)
 {
-    return mtxvector_base_init_strided_integer_single(&x->base, size, stride, data);
+    return mtxbasevector_init_strided_integer_single(&x->base, size, stride, data);
 }
 
 /**
@@ -304,7 +304,7 @@ int mtxnullvector_init_strided_integer_double(
     int64_t stride,
     const int64_t * data)
 {
-    return mtxvector_base_init_strided_integer_double(&x->base, size, stride, data);
+    return mtxbasevector_init_strided_integer_double(&x->base, size, stride, data);
 }
 
 /*
@@ -323,7 +323,7 @@ int mtxnullvector_alloc_packed(
     int64_t num_nonzeros,
     const int64_t * idx)
 {
-    return mtxvector_base_alloc_packed(&x->base, field, precision, size, num_nonzeros, idx);
+    return mtxbasevector_alloc_packed(&x->base, field, precision, size, num_nonzeros, idx);
 }
 
 /**
@@ -337,7 +337,7 @@ int mtxnullvector_init_packed_real_single(
     const int64_t * idx,
     const float * data)
 {
-    return mtxvector_base_init_packed_real_single(&x->base, size, num_nonzeros, idx, data);
+    return mtxbasevector_init_packed_real_single(&x->base, size, num_nonzeros, idx, data);
 }
 
 /**
@@ -351,7 +351,7 @@ int mtxnullvector_init_packed_real_double(
     const int64_t * idx,
     const double * data)
 {
-    return mtxvector_base_init_packed_real_double(&x->base, size, num_nonzeros, idx, data);
+    return mtxbasevector_init_packed_real_double(&x->base, size, num_nonzeros, idx, data);
 }
 
 /**
@@ -365,7 +365,7 @@ int mtxnullvector_init_packed_complex_single(
     const int64_t * idx,
     const float (* data)[2])
 {
-    return mtxvector_base_init_packed_complex_single(&x->base, size, num_nonzeros, idx, data);
+    return mtxbasevector_init_packed_complex_single(&x->base, size, num_nonzeros, idx, data);
 }
 
 /**
@@ -379,7 +379,7 @@ int mtxnullvector_init_packed_complex_double(
     const int64_t * idx,
     const double (* data)[2])
 {
-    return mtxvector_base_init_packed_complex_double(&x->base, size, num_nonzeros, idx, data);
+    return mtxbasevector_init_packed_complex_double(&x->base, size, num_nonzeros, idx, data);
 }
 
 /**
@@ -393,7 +393,7 @@ int mtxnullvector_init_packed_integer_single(
     const int64_t * idx,
     const int32_t * data)
 {
-    return mtxvector_base_init_packed_integer_single(&x->base, size, num_nonzeros, idx, data);
+    return mtxbasevector_init_packed_integer_single(&x->base, size, num_nonzeros, idx, data);
 }
 
 /**
@@ -407,7 +407,7 @@ int mtxnullvector_init_packed_integer_double(
     const int64_t * idx,
     const int64_t * data)
 {
-    return mtxvector_base_init_packed_integer_double(&x->base, size, num_nonzeros, idx, data);
+    return mtxbasevector_init_packed_integer_double(&x->base, size, num_nonzeros, idx, data);
 }
 
 /**
@@ -420,7 +420,7 @@ int mtxnullvector_init_packed_pattern(
     int64_t num_nonzeros,
     const int64_t * idx)
 {
-    return mtxvector_base_init_packed_pattern(&x->base, size, num_nonzeros, idx);
+    return mtxbasevector_init_packed_pattern(&x->base, size, num_nonzeros, idx);
 }
 
 /*
@@ -441,7 +441,7 @@ int mtxnullvector_alloc_packed_strided(
     int idxbase,
     const int64_t * idx)
 {
-    return mtxvector_base_alloc_packed_strided(&x->base, field, precision, size, num_nonzeros, idxstride, idxbase, idx);
+    return mtxbasevector_alloc_packed_strided(&x->base, field, precision, size, num_nonzeros, idxstride, idxbase, idx);
 }
 
 /**
@@ -458,7 +458,7 @@ int mtxnullvector_init_packed_strided_real_single(
     int datastride,
     const float * data)
 {
-    return mtxvector_base_init_packed_strided_real_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    return mtxbasevector_init_packed_strided_real_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
 }
 
 /**
@@ -475,7 +475,7 @@ int mtxnullvector_init_packed_strided_real_double(
     int datastride,
     const double * data)
 {
-    return mtxvector_base_init_packed_strided_real_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    return mtxbasevector_init_packed_strided_real_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
 }
 
 /**
@@ -492,7 +492,7 @@ int mtxnullvector_init_packed_strided_complex_single(
     int datastride,
     const float (* data)[2])
 {
-    return mtxvector_base_init_packed_strided_complex_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    return mtxbasevector_init_packed_strided_complex_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
 }
 
 /**
@@ -509,7 +509,7 @@ int mtxnullvector_init_packed_strided_complex_double(
     int datastride,
     const double (* data)[2])
 {
-    return mtxvector_base_init_packed_strided_complex_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    return mtxbasevector_init_packed_strided_complex_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
 }
 
 /**
@@ -526,7 +526,7 @@ int mtxnullvector_init_packed_strided_integer_single(
     int datastride,
     const int32_t * data)
 {
-    return mtxvector_base_init_packed_strided_integer_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    return mtxbasevector_init_packed_strided_integer_single(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
 }
 
 /**
@@ -543,7 +543,7 @@ int mtxnullvector_init_packed_strided_integer_double(
     int datastride,
     const int64_t * data)
 {
-    return mtxvector_base_init_packed_strided_integer_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
+    return mtxbasevector_init_packed_strided_integer_double(&x->base, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
 }
 
 /**
@@ -559,7 +559,7 @@ int mtxnullvector_init_packed_strided_pattern(
     int idxbase,
     const int64_t * idx)
 {
-    return mtxvector_base_init_packed_strided_pattern(&x->base, size, num_nonzeros, idxstride, idxbase, idx);
+    return mtxbasevector_init_packed_strided_pattern(&x->base, size, num_nonzeros, idxstride, idxbase, idx);
 }
 
 /*
@@ -580,7 +580,7 @@ int mtxnullvector_get_real_single(
     int stride,
     float * a)
 {
-    return mtxvector_base_get_real_single(&x->base, size, stride, a);
+    return mtxbasevector_get_real_single(&x->base, size, stride, a);
 }
 
 /**
@@ -597,7 +597,7 @@ int mtxnullvector_get_real_double(
     int stride,
     double * a)
 {
-    return mtxvector_base_get_real_double(&x->base, size, stride, a);
+    return mtxbasevector_get_real_double(&x->base, size, stride, a);
 }
 
 /**
@@ -614,7 +614,7 @@ int mtxnullvector_get_complex_single(
     int stride,
     float (* a)[2])
 {
-    return mtxvector_base_get_complex_single(&x->base, size, stride, a);
+    return mtxbasevector_get_complex_single(&x->base, size, stride, a);
 }
 
 /**
@@ -631,7 +631,7 @@ int mtxnullvector_get_complex_double(
     int stride,
     double (* a)[2])
 {
-    return mtxvector_base_get_complex_double(&x->base, size, stride, a);
+    return mtxbasevector_get_complex_double(&x->base, size, stride, a);
 }
 
 /**
@@ -648,7 +648,7 @@ int mtxnullvector_get_integer_single(
     int stride,
     int32_t * a)
 {
-    return mtxvector_base_get_integer_single(&x->base, size, stride, a);
+    return mtxbasevector_get_integer_single(&x->base, size, stride, a);
 }
 
 /**
@@ -665,7 +665,7 @@ int mtxnullvector_get_integer_double(
     int stride,
     int64_t * a)
 {
-    return mtxvector_base_get_integer_double(&x->base, size, stride, a);
+    return mtxbasevector_get_integer_double(&x->base, size, stride, a);
 }
 
 /*
@@ -678,7 +678,7 @@ int mtxnullvector_get_integer_double(
 int mtxnullvector_setzero(
     struct mtxnullvector * x)
 {
-    return mtxvector_base_setzero(&x->base);
+    return mtxbasevector_setzero(&x->base);
 }
 
 /**
@@ -689,7 +689,7 @@ int mtxnullvector_set_constant_real_single(
     struct mtxnullvector * x,
     float a)
 {
-    return mtxvector_base_set_constant_real_single(&x->base, a);
+    return mtxbasevector_set_constant_real_single(&x->base, a);
 }
 
 /**
@@ -700,7 +700,7 @@ int mtxnullvector_set_constant_real_double(
     struct mtxnullvector * x,
     double a)
 {
-    return mtxvector_base_set_constant_real_double(&x->base, a);
+    return mtxbasevector_set_constant_real_double(&x->base, a);
 }
 
 /**
@@ -712,7 +712,7 @@ int mtxnullvector_set_constant_complex_single(
     struct mtxnullvector * x,
     float a[2])
 {
-    return mtxvector_base_set_constant_complex_single(&x->base, a);
+    return mtxbasevector_set_constant_complex_single(&x->base, a);
 }
 
 /**
@@ -724,7 +724,7 @@ int mtxnullvector_set_constant_complex_double(
     struct mtxnullvector * x,
     double a[2])
 {
-    return mtxvector_base_set_constant_complex_double(&x->base, a);
+    return mtxbasevector_set_constant_complex_double(&x->base, a);
 }
 
 /**
@@ -735,7 +735,7 @@ int mtxnullvector_set_constant_integer_single(
     struct mtxnullvector * x,
     int32_t a)
 {
-    return mtxvector_base_set_constant_integer_single(&x->base, a);
+    return mtxbasevector_set_constant_integer_single(&x->base, a);
 }
 
 /**
@@ -746,7 +746,7 @@ int mtxnullvector_set_constant_integer_double(
     struct mtxnullvector * x,
     int64_t a)
 {
-    return mtxvector_base_set_constant_integer_double(&x->base, a);
+    return mtxbasevector_set_constant_integer_double(&x->base, a);
 }
 
 /**
@@ -759,7 +759,7 @@ int mtxnullvector_set_real_single(
     int stride,
     const float * a)
 {
-    return mtxvector_base_set_real_single(&x->base, size, stride, a);
+    return mtxbasevector_set_real_single(&x->base, size, stride, a);
 }
 
 /**
@@ -772,7 +772,7 @@ int mtxnullvector_set_real_double(
     int stride,
     const double * a)
 {
-    return mtxvector_base_set_real_double(&x->base, size, stride, a);
+    return mtxbasevector_set_real_double(&x->base, size, stride, a);
 }
 
 /**
@@ -785,7 +785,7 @@ int mtxnullvector_set_complex_single(
     int stride,
     const float (*a)[2])
 {
-    return mtxvector_base_set_complex_single(&x->base, size, stride, a);
+    return mtxbasevector_set_complex_single(&x->base, size, stride, a);
 }
 
 /**
@@ -798,7 +798,7 @@ int mtxnullvector_set_complex_double(
     int stride,
     const double (*a)[2])
 {
-    return mtxvector_base_set_complex_double(&x->base, size, stride, a);
+    return mtxbasevector_set_complex_double(&x->base, size, stride, a);
 }
 
 /**
@@ -811,7 +811,7 @@ int mtxnullvector_set_integer_single(
     int stride,
     const int32_t * a)
 {
-    return mtxvector_base_set_integer_single(&x->base, size, stride, a);
+    return mtxbasevector_set_integer_single(&x->base, size, stride, a);
 }
 
 /**
@@ -824,7 +824,7 @@ int mtxnullvector_set_integer_double(
     int stride,
     const int64_t * a)
 {
-    return mtxvector_base_set_integer_double(&x->base, size, stride, a);
+    return mtxbasevector_set_integer_double(&x->base, size, stride, a);
 }
 
 /*
@@ -839,7 +839,7 @@ int mtxnullvector_from_mtxfile(
     struct mtxnullvector * x,
     const struct mtxfile * mtxfile)
 {
-    return mtxvector_base_from_mtxfile(&x->base, mtxfile);
+    return mtxbasevector_from_mtxfile(&x->base, mtxfile);
 }
 
 /**
@@ -853,7 +853,7 @@ int mtxnullvector_to_mtxfile(
     const int64_t * idx,
     enum mtxfileformat mtxfmt)
 {
-    return mtxvector_base_to_mtxfile(mtxfile, &x->base, num_rows, idx, mtxfmt);
+    return mtxbasevector_to_mtxfile(mtxfile, &x->base, num_rows, idx, mtxfmt);
 }
 
 /*
@@ -894,11 +894,11 @@ int mtxnullvector_split(
     int * parts,
     int64_t * invperm)
 {
-    struct mtxvector_base ** basedsts = malloc(
-        num_parts * sizeof(struct mtxvector_base *));
+    struct mtxbasevector ** basedsts = malloc(
+        num_parts * sizeof(struct mtxbasevector *));
     if (!basedsts) return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) basedsts[p] = &dsts[p]->base;
-    int err = mtxvector_base_split(
+    int err = mtxbasevector_split(
         num_parts, basedsts, &src->base, size, parts, invperm);
     free(basedsts);
     return err;
@@ -1493,7 +1493,7 @@ int mtxnullvector_send(
     MPI_Comm comm,
     int * mpierrcode)
 {
-    return mtxvector_base_send(
+    return mtxbasevector_send(
         &x->base, offset, count, recipient, tag, comm, mpierrcode);
 }
 
@@ -1513,7 +1513,7 @@ int mtxnullvector_recv(
     MPI_Status * status,
     int * mpierrcode)
 {
-    return mtxvector_base_recv(
+    return mtxbasevector_recv(
         &x->base, offset, count, sender, tag, comm, status, mpierrcode);
 }
 
@@ -1534,7 +1534,7 @@ int mtxnullvector_irecv(
     MPI_Request * request,
     int * mpierrcode)
 {
-    return mtxvector_base_irecv(
+    return mtxbasevector_irecv(
         &x->base, offset, count, sender, tag, comm, request, mpierrcode);
 }
 #endif

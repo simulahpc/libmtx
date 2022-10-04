@@ -90,7 +90,7 @@ struct mtxompvector
     /**
      * ‘base’ is the underlying dense vector.
      */
-    struct mtxvector_base base;
+    struct mtxbasevector base;
 };
 
 /*
