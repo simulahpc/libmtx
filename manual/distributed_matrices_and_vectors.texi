@@ -15,7 +15,7 @@
 @c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-27
+@c Last modified: 2022-10-03
 @c
 @c Libmtx User Guide: Distributed matrices and vectors.
 
@@ -41,7 +41,7 @@ how to work with distributed Matrix Market files in Libmtx.
 @section Distributed vectors
 @cindex distributed vector
 @tindex struct mtxdistvector
-The file @file{libmtx/vector/distvector.h} defines the type
+The file @file{libmtx/linalg/mpi/vector.h} defines the type
 @code{struct mtxdistvector}. This data type builds on top of
 @code{struct mtxvector} (see @ref{Vectors}) to provide different
 options for the underlying storage and implementation of vector
@@ -714,7 +714,7 @@ int mtxdistvector_halo_update(
 @section Distributed matrices
 @cindex distributed matrix
 @tindex struct mtxdistmatrix
-The file @file{libmtx/distmatrix/distmatrix.h} defines the type
+The file @file{libmtx/linalg/mpi/matrix.h} defines the type
 @code{struct mtxdistmatrix}. This data type builds on top of
 @code{struct mtxmatrix} (see @ref{Matrices}) to offer different
 options for the underlying storage and implementation of matrix

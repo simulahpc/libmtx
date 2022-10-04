@@ -28,8 +28,8 @@
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/mtxdistfile.h>
-#include <libmtx/matrix/dist.h>
-#include <libmtx/vector/dist.h>
+#include <libmtx/linalg/mpi/matrix.h>
+#include <libmtx/linalg/mpi/vector.h>
 
 #include <errno.h>
 #include <unistd.h>

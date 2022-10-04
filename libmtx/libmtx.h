@@ -31,10 +31,15 @@
 #include <libmtx/linalg/base/csr.h>
 #include <libmtx/linalg/base/dense.h>
 #include <libmtx/linalg/base/vector.h>
+#include <libmtx/linalg/blas/dense.h>
+#include <libmtx/linalg/blas/vector.h>
+#include <libmtx/linalg/field.h>
+#include <libmtx/linalg/mpi/matrix.h>
+#include <libmtx/linalg/mpi/vector.h>
 #include <libmtx/linalg/null/coo.h>
 #include <libmtx/linalg/null/vector.h>
-#include <libmtx/linalg/blas/dense.h>
-#include <libmtx/matrix/dist.h>
+#include <libmtx/linalg/omp/vector.h>
+#include <libmtx/linalg/precision.h>
 #include <libmtx/matrix/gemvoverlap.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/partition.h>
@@ -44,11 +49,6 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/solver/cg.h>
 #include <libmtx/util/partition.h>
-#include <libmtx/linalg/blas/vector.h>
-#include <libmtx/vector/dist.h>
-#include <libmtx/linalg/field.h>
-#include <libmtx/linalg/omp/vector.h>
-#include <libmtx/linalg/precision.h>
 #include <libmtx/vector/vector.h>
 #include <libmtx/version.h>
 

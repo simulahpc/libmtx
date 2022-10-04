@@ -32,7 +32,7 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/util/sort.h>
-#include <libmtx/vector/dist.h>
+#include <libmtx/linalg/mpi/vector.h>
 #include <libmtx/vector/vector.h>
 
 #include <mpi.h>
