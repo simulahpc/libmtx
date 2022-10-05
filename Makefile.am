@@ -16,7 +16,7 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-10-03
+# Last modified: 2022-10-05
 #
 # Makefile for the top-level directory of Libmtx.
 #
@@ -191,6 +191,12 @@ bin_PROGRAMS += mtxpartition
 mtxpartition_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxpartition_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxpartition_SOURCES = src/mtxpartition.c
+
+# mtxrand
+bin_PROGRAMS += mtxrand
+mtxrand_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxrand_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxrand_SOURCES = src/mtxrand.c
 
 # mtxreorder
 bin_PROGRAMS += mtxreorder

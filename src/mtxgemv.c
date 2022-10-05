@@ -138,7 +138,7 @@ static void program_options_print_help(
     fprintf(f, "\n");
     fprintf(f, " The operation performed is ‘y := alpha*A*x + y’,\n");
     fprintf(f, " where ‘A’ is a matrix, ‘x’ and ‘y’ are vectors, and\n");
-    fprintf(f, " ‘alpha’ and is a scalar constant.\n");
+    fprintf(f, " ‘alpha’ is a scalar constant.\n");
     fprintf(f, "\n");
     fprintf(f, " Positional arguments are:\n");
     fprintf(f, "  alpha\toptional constant scalar, defaults to 1.0\n");

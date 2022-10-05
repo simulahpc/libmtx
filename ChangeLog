@@ -1,3 +1,7 @@
+2022-10-06  James D. Trotter  <james@simula.no>
+
+	* mtxrand: program for generating random matrices and vectors
+
 2022-10-05  James D. Trotter  <james@simula.no>
 
 	* libmtx/linalg/blas/dense.c: add matrix-matrix multiplication

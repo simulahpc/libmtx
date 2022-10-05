@@ -4,7 +4,11 @@
   the nested dissection algorithm as implemented by the METIS graph
   partitioner.
 
-  It is also easier to build with a user-defined BLAS library.
+  It is also now easier to build with a user-defined BLAS library.
+
+  mtxrand was added to generate random matrices and vectors in Matrix
+  Market format.
+
 
 * Noteworthy changes in release 0.2.0 (2022-06-28)
 
