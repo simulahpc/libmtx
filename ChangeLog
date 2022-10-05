@@ -1,3 +1,8 @@
+2022-10-05  James D. Trotter  <james@simula.no>
+
+	* libmtx/linalg/base/dense.c: add basic matrix-matrix
+	multiplication (gemm)
+
 2022-09-28  James D. Trotter  <james@simula.no>
 
 	* configure.ac: make it easier to select user-defined BLAS library
