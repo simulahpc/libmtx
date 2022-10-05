@@ -3531,7 +3531,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double * Adata = a->data.real_double;
                     const double * Bdata = b->data.real_double;
@@ -3542,7 +3542,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_notrans && (Btrans == mtx_trans || Btrans == mtx_conjtrans)) {
                 if (a->precision == mtx_single) {
@@ -3555,7 +3555,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double * Adata = a->data.real_double;
                     const double * Bdata = b->data.real_double;
@@ -3566,7 +3566,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_trans || Atrans == mtx_conjtrans) && Btrans == mtx_notrans) {
                 if (a->precision == mtx_single) {
@@ -3579,7 +3579,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const double * Adata = a->data.real_double;
                     const double * Bdata = b->data.real_double;
@@ -3590,7 +3590,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_trans || Atrans == mtx_conjtrans) && (Btrans == mtx_trans || Btrans == mtx_conjtrans)) {
                 if (a->precision == mtx_single) {
@@ -3603,7 +3603,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const double * Adata = a->data.real_double;
                     const double * Bdata = b->data.real_double;
@@ -3614,7 +3614,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else if (a->field == mtx_field_complex) {
@@ -3631,7 +3631,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -3644,7 +3644,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_notrans && Btrans == mtx_trans) {
                 if (a->precision == mtx_single) {
@@ -3659,7 +3659,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -3672,7 +3672,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_notrans && Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -3687,7 +3687,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -3700,7 +3700,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_trans && Btrans == mtx_notrans) {
                 if (a->precision == mtx_single) {
@@ -3715,7 +3715,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -3728,7 +3728,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_trans && Btrans == mtx_trans) {
                 if (a->precision == mtx_single) {
@@ -3743,7 +3743,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -3756,7 +3756,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_trans && Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -3771,7 +3771,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -3784,7 +3784,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_conjtrans && Btrans == mtx_notrans) {
                 if (a->precision == mtx_single) {
@@ -3799,7 +3799,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -3812,7 +3812,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else if (a->field == mtx_field_integer) {
@@ -3827,7 +3827,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const int64_t * Adata = a->data.integer_double;
                     const int64_t * Bdata = b->data.integer_double;
@@ -3838,7 +3838,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_notrans && (Btrans == mtx_trans || Btrans == mtx_conjtrans)) {
                 if (a->precision == mtx_single) {
@@ -3851,7 +3851,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const int64_t * Adata = a->data.integer_double;
                     const int64_t * Bdata = b->data.integer_double;
@@ -3862,7 +3862,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_trans || Atrans == mtx_conjtrans) && Btrans == mtx_notrans) {
                 if (a->precision == mtx_single) {
@@ -3875,7 +3875,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const int64_t * Adata = a->data.integer_double;
                     const int64_t * Bdata = b->data.integer_double;
@@ -3886,7 +3886,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_trans || Atrans == mtx_conjtrans) && (Btrans == mtx_trans || Btrans == mtx_conjtrans)) {
                 if (a->precision == mtx_single) {
@@ -3899,7 +3899,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const int64_t * Adata = a->data.integer_double;
                     const int64_t * Bdata = b->data.integer_double;
@@ -3910,7 +3910,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else { return MTX_ERR_INVALID_FIELD; }
@@ -3929,7 +3929,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double * Adata = a->data.real_double;
                     const double * Bdata = b->data.real_double;
@@ -3942,7 +3942,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Btrans == mtx_trans || Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -3957,7 +3957,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double * Adata = a->data.real_double;
                     const double * Bdata = b->data.real_double;
@@ -3970,7 +3970,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else if (a->field == mtx_field_complex) {
@@ -3991,7 +3991,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4008,7 +4008,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_notrans || Atrans == mtx_trans) && Btrans == mtx_trans) {
                 if (a->precision == mtx_single) {
@@ -4027,7 +4027,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4044,7 +4044,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_notrans || Atrans == mtx_trans) && Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -4063,7 +4063,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4080,7 +4080,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_conjtrans && Btrans == mtx_notrans) {
                 if (a->precision == mtx_single) {
@@ -4099,7 +4099,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4116,7 +4116,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_conjtrans && Btrans == mtx_trans) {
                 if (a->precision == mtx_single) {
@@ -4135,7 +4135,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4152,7 +4152,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_conjtrans && Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -4171,7 +4171,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4188,7 +4188,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else if (a->field == mtx_field_integer) {
@@ -4205,7 +4205,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const int64_t * Adata = a->data.integer_double;
                     const int64_t * Bdata = b->data.integer_double;
@@ -4218,7 +4218,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Btrans == mtx_trans || Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -4233,7 +4233,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const int64_t * Adata = a->data.integer_double;
                     const int64_t * Bdata = b->data.integer_double;
@@ -4246,7 +4246,7 @@ int mtxbasedense_sgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else { return MTX_ERR_INVALID_FIELD; }
@@ -4272,7 +4272,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4289,7 +4289,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_notrans || Atrans == mtx_conjtrans) && Btrans == mtx_trans) {
                 if (a->precision == mtx_single) {
@@ -4308,7 +4308,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4325,7 +4325,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_notrans || Atrans == mtx_conjtrans) && Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -4344,7 +4344,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4361,7 +4361,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_trans && Btrans == mtx_notrans) {
                 if (a->precision == mtx_single) {
@@ -4380,7 +4380,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4397,7 +4397,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_trans && Btrans == mtx_trans) {
                 if (a->precision == mtx_single) {
@@ -4416,7 +4416,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4433,7 +4433,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_trans && Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -4452,7 +4452,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4469,7 +4469,7 @@ int mtxbasedense_sgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else { return MTX_ERR_INVALID_FIELD; }
@@ -4538,7 +4538,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double * Adata = a->data.real_double;
                     const double * Bdata = b->data.real_double;
@@ -4549,7 +4549,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_notrans && (Btrans == mtx_trans || Btrans == mtx_conjtrans)) {
                 if (a->precision == mtx_single) {
@@ -4562,7 +4562,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double * Adata = a->data.real_double;
                     const double * Bdata = b->data.real_double;
@@ -4573,7 +4573,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_trans || Atrans == mtx_conjtrans) && Btrans == mtx_notrans) {
                 if (a->precision == mtx_single) {
@@ -4586,7 +4586,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const double * Adata = a->data.real_double;
                     const double * Bdata = b->data.real_double;
@@ -4597,7 +4597,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_trans || Atrans == mtx_conjtrans) && (Btrans == mtx_trans || Btrans == mtx_conjtrans)) {
                 if (a->precision == mtx_single) {
@@ -4610,7 +4610,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const double * Adata = a->data.real_double;
                     const double * Bdata = b->data.real_double;
@@ -4621,7 +4621,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else if (a->field == mtx_field_complex) {
@@ -4638,7 +4638,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4651,7 +4651,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_notrans && Btrans == mtx_trans) {
                 if (a->precision == mtx_single) {
@@ -4666,7 +4666,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4679,7 +4679,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_notrans && Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -4694,7 +4694,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4707,7 +4707,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_trans && Btrans == mtx_notrans) {
                 if (a->precision == mtx_single) {
@@ -4722,7 +4722,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4735,7 +4735,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_trans && Btrans == mtx_trans) {
                 if (a->precision == mtx_single) {
@@ -4750,7 +4750,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4763,7 +4763,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_trans && Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -4778,7 +4778,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4791,7 +4791,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_conjtrans && Btrans == mtx_notrans) {
                 if (a->precision == mtx_single) {
@@ -4806,7 +4806,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -4819,7 +4819,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else if (a->field == mtx_field_integer) {
@@ -4834,7 +4834,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const int64_t * Adata = a->data.integer_double;
                     const int64_t * Bdata = b->data.integer_double;
@@ -4845,7 +4845,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_notrans && (Btrans == mtx_trans || Btrans == mtx_conjtrans)) {
                 if (a->precision == mtx_single) {
@@ -4858,7 +4858,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const int64_t * Adata = a->data.integer_double;
                     const int64_t * Bdata = b->data.integer_double;
@@ -4869,7 +4869,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[i*A->num_columns+k]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_trans || Atrans == mtx_conjtrans) && Btrans == mtx_notrans) {
                 if (a->precision == mtx_single) {
@@ -4882,7 +4882,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const int64_t * Adata = a->data.integer_double;
                     const int64_t * Bdata = b->data.integer_double;
@@ -4893,7 +4893,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_trans || Atrans == mtx_conjtrans) && (Btrans == mtx_trans || Btrans == mtx_conjtrans)) {
                 if (a->precision == mtx_single) {
@@ -4906,7 +4906,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else if (a->precision == mtx_double) {
                     const int64_t * Adata = a->data.integer_double;
                     const int64_t * Bdata = b->data.integer_double;
@@ -4917,7 +4917,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[k*A->num_columns+i]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_rows;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_rows;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else { return MTX_ERR_INVALID_FIELD; }
@@ -4936,7 +4936,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double * Adata = a->data.real_double;
                     const double * Bdata = b->data.real_double;
@@ -4949,7 +4949,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Btrans == mtx_trans || Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -4964,7 +4964,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double * Adata = a->data.real_double;
                     const double * Bdata = b->data.real_double;
@@ -4977,7 +4977,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else if (a->field == mtx_field_complex) {
@@ -4998,7 +4998,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -5015,7 +5015,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_notrans || Atrans == mtx_trans) && Btrans == mtx_trans) {
                 if (a->precision == mtx_single) {
@@ -5034,7 +5034,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -5051,7 +5051,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_notrans || Atrans == mtx_trans) && Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -5070,7 +5070,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -5087,7 +5087,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_conjtrans && Btrans == mtx_notrans) {
                 if (a->precision == mtx_single) {
@@ -5106,7 +5106,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -5123,7 +5123,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_conjtrans && Btrans == mtx_trans) {
                 if (a->precision == mtx_single) {
@@ -5142,7 +5142,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -5159,7 +5159,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_conjtrans && Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -5178,7 +5178,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -5195,7 +5195,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else if (a->field == mtx_field_integer) {
@@ -5212,7 +5212,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const int64_t * Adata = a->data.integer_double;
                     const int64_t * Bdata = b->data.integer_double;
@@ -5225,7 +5225,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[k*B->num_columns+j];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Btrans == mtx_trans || Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -5240,7 +5240,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const int64_t * Adata = a->data.integer_double;
                     const int64_t * Bdata = b->data.integer_double;
@@ -5253,7 +5253,7 @@ int mtxbasedense_dgemm(
                                 Cdata[i*C->num_columns+j] += alpha*Adata[touptri(A->num_columns,i,k)]*Bdata[j*B->num_columns+k];
                         }
                     }
-                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 3*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else { return MTX_ERR_INVALID_FIELD; }
@@ -5279,7 +5279,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -5296,7 +5296,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_notrans || Atrans == mtx_conjtrans) && Btrans == mtx_trans) {
                 if (a->precision == mtx_single) {
@@ -5315,7 +5315,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -5332,7 +5332,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if ((Atrans == mtx_notrans || Atrans == mtx_conjtrans) && Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -5351,7 +5351,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -5368,7 +5368,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_trans && Btrans == mtx_notrans) {
                 if (a->precision == mtx_single) {
@@ -5387,7 +5387,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -5404,7 +5404,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_trans && Btrans == mtx_trans) {
                 if (a->precision == mtx_single) {
@@ -5423,7 +5423,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -5440,7 +5440,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (Atrans == mtx_trans && Btrans == mtx_conjtrans) {
                 if (a->precision == mtx_single) {
@@ -5459,7 +5459,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else if (a->precision == mtx_double) {
                     const double (* Adata)[2] = a->data.complex_double;
                     const double (* Bdata)[2] = b->data.complex_double;
@@ -5476,7 +5476,7 @@ int mtxbasedense_dgemm(
                             }
                         }
                     }
-                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*A->num_columns;
+                    if (num_flops) *num_flops += 10*C->num_rows*C->num_columns*(int64_t)A->num_columns;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
         } else { return MTX_ERR_INVALID_FIELD; }
