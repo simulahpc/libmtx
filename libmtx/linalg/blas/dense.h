@@ -1284,4 +1284,50 @@ int mtxblasdense_zgemv(
     struct mtxvector * y,
     int64_t * num_flops);
 
+/*
+ * Level 3 BLAS operations
+ */
+
+/**
+ * ‘mtxblasdense_sgemm()’ multiplies a matrix ‘A’ (or its transpose ‘A'’)
+ * by a real scalar ‘alpha’ (‘α’) and a matrix ‘B’ (or its transpose
+ * ‘B'’), before adding the result to another matrix ‘C’ multiplied by
+ * a real scalar ‘beta’ (‘β’). That is,
+ *
+ * ‘C = α*op(A)*op(B) + β*C’, where ‘op(X)=X’ or ‘op(X)=X'’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ */
+int mtxblasdense_sgemm(
+    enum mtxtransposition Atrans,
+    enum mtxtransposition Btrans,
+    float alpha,
+    const struct mtxblasdense * A,
+    const struct mtxblasdense * B,
+    float beta,
+    struct mtxblasdense * C,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxblasdense_dgemm()’ multiplies a matrix ‘A’ (or its transpose ‘A'’)
+ * by a real scalar ‘alpha’ (‘α’) and a matrix ‘B’ (or its transpose
+ * ‘B'’), before adding the result to another matrix ‘C’ multiplied by
+ * a real scalar ‘beta’ (‘β’). That is,
+ *
+ * ‘C = α*op(A)*op(B) + β*C’, where ‘op(X)=X’ or ‘op(X)=X'’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ */
+int mtxblasdense_dgemm(
+    enum mtxtransposition Atrans,
+    enum mtxtransposition Btrans,
+    double alpha,
+    const struct mtxblasdense * A,
+    const struct mtxblasdense * B,
+    double beta,
+    struct mtxblasdense * C,
+    int64_t * num_flops);
+
 #endif

@@ -4498,7 +4498,6 @@ int mtxbasedense_dgemm(
     struct mtxbasedense * C,
     int64_t * num_flops)
 {
-    int M, N, K;
     const struct mtxbasevector * a = &A->a;
     const struct mtxbasevector * b = &B->a;
     struct mtxbasevector * c = &C->a;

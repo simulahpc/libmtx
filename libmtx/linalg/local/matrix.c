@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-10-05
  *
  * Data structures for matrices.
  */
@@ -2809,21 +2809,20 @@ int mtxmatrix_sgemm(
     int64_t * num_flops)
 {
     if (A->type != B->type || A->type != C->type) return MTX_ERR_INCOMPATIBLE_MATRIX_TYPE;
-/*     if (A->type == mtxblasdense) { */
-/* #ifdef LIBMTX_HAVE_BLAS */
-/*         return mtxblasdense_sgemm( */
-/*             Atrans, Btrans, alpha, &A->storage.blas, &B->storage.blas, beta, &C->storage.blas, num_flops); */
-/* #else */
-/*         return MTX_ERR_BLAS_NOT_SUPPORTED; */
-/* #endif */
-/*     } else if (A->type == mtxbasecoo) { */
-/*         return mtxbasecoo_sgemm( */
-/*             Atrans, Btrans, alpha, &A->storage.coo, &B->storage.coo, beta, &C->storage.coo, num_flops); */
-/*     } else if (A->type == mtxbasecsr) { */
-/*         return mtxbasecsr_sgemm( */
-/*             Atrans, Btrans, alpha, &A->storage.csr, &B->storage.csr, beta, &C->storage.csr, num_flops); */
-/*     } else if (A->type == mtxbasedense) { */
-    if (A->type == mtxbasedense) {
+    if (A->type == mtxblasdense) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxblasdense_sgemm(
+            Atrans, Btrans, alpha, &A->storage.blas, &B->storage.blas, beta, &C->storage.blas, num_flops);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    /* } else if (A->type == mtxbasecoo) { */
+    /*     return mtxbasecoo_sgemm( */
+    /*         Atrans, Btrans, alpha, &A->storage.coo, &B->storage.coo, beta, &C->storage.coo, num_flops); */
+    /* } else if (A->type == mtxbasecsr) { */
+    /*     return mtxbasecsr_sgemm( */
+    /*         Atrans, Btrans, alpha, &A->storage.csr, &B->storage.csr, beta, &C->storage.csr, num_flops); */
+    } else if (A->type == mtxbasedense) {
         return mtxbasedense_sgemm(
             Atrans, Btrans, alpha, &A->storage.dense, &B->storage.dense, beta, &C->storage.dense, num_flops);
     /* } else if (A->type == mtxnullcoo) { */
@@ -2857,21 +2856,20 @@ int mtxmatrix_dgemm(
     int64_t * num_flops)
 {
     if (A->type != B->type || A->type != C->type) return MTX_ERR_INCOMPATIBLE_MATRIX_TYPE;
-/*     if (A->type == mtxblasdense) { */
-/* #ifdef LIBMTX_HAVE_BLAS */
-/*         return mtxblasdense_dgemm( */
-/*             Atrans, Btrans, alpha, &A->storage.blas, &B->storage.blas, beta, &C->storage.blas, num_flops); */
-/* #else */
-/*         return MTX_ERR_BLAS_NOT_SUPPORTED; */
-/* #endif */
+    if (A->type == mtxblasdense) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxblasdense_dgemm(
+            Atrans, Btrans, alpha, &A->storage.blas, &B->storage.blas, beta, &C->storage.blas, num_flops);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
 /*     } else if (A->type == mtxbasecoo) { */
 /*         return mtxbasecoo_dgemm( */
 /*             Atrans, Btrans, alpha, &A->storage.coo, &B->storage.coo, beta, &C->storage.coo, num_flops); */
 /*     } else if (A->type == mtxbasecsr) { */
 /*         return mtxbasecsr_dgemm( */
 /*             Atrans, Btrans, alpha, &A->storage.csr, &B->storage.csr, beta, &C->storage.csr, num_flops); */
-/*     } else if (A->type == mtxbasedense) { */
-    if (A->type == mtxbasedense) {
+    } else if (A->type == mtxbasedense) {
         return mtxbasedense_dgemm(
             Atrans, Btrans, alpha, &A->storage.dense, &B->storage.dense, beta, &C->storage.dense, num_flops);
     /* } else if (A->type == mtxnullcoo) { */
