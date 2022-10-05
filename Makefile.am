@@ -52,7 +52,7 @@ EXTRA_DIST = \
 lib_LTLIBRARIES = libmtx.la
 libmtx_la_CPPFLAGS = -I$(top_srcdir) $(MPICPPFLAGS) $(BLAS_CPPFLAGS) $(libmtx_CPPFLAGS)
 libmtx_la_LDFLAGS = -version-info $(LIBMTX_LT_VERSION) $(BLAS_LDFLAGS) $(MPILDFAGS)
-libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
+libmtx_la_LIBADD = $(BLAS_LIBS) $(BLAS_LDFLAGS) $(MPILDFLAGS)
 
 # Source files
 libmtx_la_SOURCES = \
@@ -153,92 +153,92 @@ bin_PROGRAMS =
 # mtxaxpy
 bin_PROGRAMS += mtxaxpy
 mtxaxpy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxaxpy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxaxpy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxaxpy_SOURCES = src/mtxaxpy.c
 
 # mtxcg
 bin_PROGRAMS += mtxcg
 mtxcg_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxcg_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxcg_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxcg_SOURCES = src/mtxcg.c
 
 # mtxdot
 bin_PROGRAMS += mtxdot
 mtxdot_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxdot_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxdot_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxdot_SOURCES = src/mtxdot.c
 
 # mtxgemm
 bin_PROGRAMS += mtxgemm
 mtxgemm_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxgemm_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxgemm_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxgemm_SOURCES = src/mtxgemm.c
 
 # mtxgemv
 bin_PROGRAMS += mtxgemv
 mtxgemv_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxgemv_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxgemv_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxgemv_SOURCES = src/mtxgemv.c
 
 # mtxinfo
 bin_PROGRAMS += mtxinfo
 mtxinfo_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxinfo_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxinfo_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxinfo_SOURCES = src/mtxinfo.c
 
 # mtxnrm2
 bin_PROGRAMS += mtxnrm2
 mtxnrm2_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxnrm2_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxnrm2_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxnrm2_SOURCES = src/mtxnrm2.c
 
 # mtxpartition
 bin_PROGRAMS += mtxpartition
 mtxpartition_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxpartition_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxpartition_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxpartition_SOURCES = src/mtxpartition.c
 
 # mtxrand
 bin_PROGRAMS += mtxrand
 mtxrand_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxrand_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxrand_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxrand_SOURCES = src/mtxrand.c
 
 # mtxreorder
 bin_PROGRAMS += mtxreorder
 mtxreorder_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxreorder_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxreorder_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxreorder_SOURCES = src/mtxreorder.c
 
 # mtxsplit
 bin_PROGRAMS += mtxsplit
 mtxsplit_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxsplit_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxsplit_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxsplit_SOURCES = src/mtxsplit.c
 
 # mtxscal
 bin_PROGRAMS += mtxscal
 mtxscal_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxscal_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxscal_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxscal_SOURCES = src/mtxscal.c
 
 # mtxsort
 bin_PROGRAMS += mtxsort
 mtxsort_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxsort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxsort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxsort_SOURCES = src/mtxsort.c
 
 # mtxtranspose
 bin_PROGRAMS += mtxtranspose
 mtxtranspose_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxtranspose_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxtranspose_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 mtxtranspose_SOURCES = src/mtxtranspose.c
 
 # mtxspy
 if HAVE_LIBPNG
 bin_PROGRAMS += mtxspy
 mtxspy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS) $(LIBPNG_CPPFLAGS)
-mtxspy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(LIBPNG_LIBS)
+mtxspy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS) $(LIBPNG_LIBS)
 mtxspy_SOURCES = src/mtxspy.c
 endif
 
@@ -249,18 +249,18 @@ endif
 # mtxfile
 check_PROGRAMS = tests/test_mtxfile
 tests_test_mtxfile_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 tests_test_mtxfile_SOURCES = tests/test_mtxfile.c tests/test.h
 TESTS = tests/test_mtxfile
 if HAVE_MPI
 tests_test_mtxfile_mpi_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxfile_mpi_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxfile_mpi_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 tests_test_mtxfile_mpi_SOURCES = tests/test_mtxfile_mpi.c tests/test.h
 check_PROGRAMS += tests/test_mtxfile_mpi
 TESTS += tests/test_mtxfile_mpi_parallel
 tests/test_mtxfile_mpi_parallel: tests/test_mtxfile_mpi
 tests_test_mtxdistfile_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxdistfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxdistfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 tests_test_mtxdistfile_SOURCES = tests/test_mtxdistfile.c tests/test.h
 check_PROGRAMS += tests/test_mtxdistfile
 TESTS += tests/test_mtxdistfile_parallel
@@ -292,7 +292,7 @@ endif
 
 if HAVE_MPI
 tests_test_mtxmpivector_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxmpivector_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxmpivector_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 tests_test_mtxmpivector_SOURCES = tests/test_mtxmpivector.c tests/test.h
 check_PROGRAMS += tests/test_mtxmpivector
 TESTS += tests/test_mtxmpivector_parallel
@@ -331,7 +331,7 @@ TESTS += tests/test_mtxompcsr
 endif
 if HAVE_MPI
 tests_test_mtxmpimatrix_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxmpimatrix_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxmpimatrix_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 tests_test_mtxmpimatrix_SOURCES = tests/test_mtxmpimatrix.c tests/test.h
 check_PROGRAMS += tests/test_mtxmpimatrix
 TESTS += tests/test_mtxmpimatrix_parallel
@@ -383,13 +383,13 @@ check_PROGRAMS += tests/test_sort
 TESTS += tests/test_sort
 if HAVE_MPI
 tests_test_assumedpartition_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_assumedpartition_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_assumedpartition_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 tests_test_assumedpartition_SOURCES = tests/test_assumedpartition.c tests/test.h
 check_PROGRAMS += tests/test_assumedpartition
 TESTS += tests/test_assumedpartition_parallel
 tests/test_assumedpartition_parallel: tests/test_assumedpartition
 tests_test_distsort_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_distsort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_distsort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 tests_test_distsort_SOURCES = tests/test_distsort.c tests/test.h
 check_PROGRAMS += tests/test_distsort
 TESTS += tests/test_distsort_parallel
