@@ -168,6 +168,12 @@ mtxdot_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxdot_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxdot_SOURCES = src/mtxdot.c
 
+# mtxgemm
+bin_PROGRAMS += mtxgemm
+mtxgemm_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxgemm_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxgemm_SOURCES = src/mtxgemm.c
+
 # mtxgemv
 bin_PROGRAMS += mtxgemv
 mtxgemv_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)

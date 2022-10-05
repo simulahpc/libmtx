@@ -9,6 +9,10 @@
   mtxrand was added to generate random matrices and vectors in Matrix
   Market format.
 
+  mtxgemm was added to compute matrix-matrix products. This can be
+  used to benchmark matrix-matrix multiplication (gemm) in BLAS
+  libraries.
+
 
 * Noteworthy changes in release 0.2.0 (2022-06-28)
 
