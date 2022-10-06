@@ -420,15 +420,45 @@ static int mtxfilerand(
                 } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_complex) {
                 if (precision == mtx_single) {
-                    for (int64_t k = 0; k < mtxfile->datasize; k++) {
-                        data->array_complex_single[k][0] = randrange(M,N);
-                        data->array_complex_single[k][1] = randrange(M,N);
-                    }
+                    if (symmetry == mtxfile_general ||
+                        symmetry == mtxfile_symmetric ||
+                        symmetry == mtxfile_skew_symmetric)
+                    {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->array_complex_single[k][0] = randrange(M,N);
+                            data->array_complex_single[k][1] = randrange(M,N);
+                        }
+                    } else if (symmetry == mtxfile_hermitian) {
+                        for (int64_t i = 0, k = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < i; j++, k++) {
+                                data->array_complex_single[k][0] = randrange(M,N);
+                                data->array_complex_single[k][1] = randrange(M,N);
+                            }
+                            data->array_complex_single[k][0] = randrange(M,N);
+                            data->array_complex_single[k][1] = 0;
+                            k++;
+                        }
+                    } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_MTX_SYMMETRY; }
                 } else if (precision == mtx_double) {
-                    for (int64_t k = 0; k < mtxfile->datasize; k++) {
-                        data->array_complex_double[k][0] = randrange(M,N);
-                        data->array_complex_double[k][1] = randrange(M,N);
-                    }
+                    if (symmetry == mtxfile_general ||
+                        symmetry == mtxfile_symmetric ||
+                        symmetry == mtxfile_skew_symmetric)
+                    {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->array_complex_double[k][0] = randrange(M,N);
+                            data->array_complex_double[k][1] = randrange(M,N);
+                        }
+                    } else if (symmetry == mtxfile_hermitian) {
+                        for (int64_t i = 0, k = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < i; j++, k++) {
+                                data->array_complex_double[k][0] = randrange(M,N);
+                                data->array_complex_double[k][1] = randrange(M,N);
+                            }
+                            data->array_complex_double[k][0] = randrange(M,N);
+                            data->array_complex_double[k][1] = 0;
+                            k++;
+                        }
+                    } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_MTX_SYMMETRY; }
                 } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_integer) {
                 if (precision == mtx_single) {
@@ -446,47 +476,145 @@ static int mtxfilerand(
             if (err) return err;
             if (field == mtxfile_real) {
                 if (precision == mtx_single) {
-                    for (int64_t k = 0; k < mtxfile->datasize; k++) {
-                        data->matrix_coordinate_real_single[k].i = randrange(1,num_rows);
-                        data->matrix_coordinate_real_single[k].j = randrange(1,num_columns);
-                        data->matrix_coordinate_real_single[k].a = randrange(M,N);
-                    }
+                    if (symmetry == mtxfile_general ||
+                        symmetry == mtxfile_symmetric ||
+                        symmetry == mtxfile_hermitian)
+                    {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_real_single[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_real_single[k].j = randrange(1,num_columns);
+                            data->matrix_coordinate_real_single[k].a = randrange(M,N);
+                        }
+                    } else if (symmetry == mtxfile_skew_symmetric) {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_real_single[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_real_single[k].j = randrange(1,num_columns);
+                            data->matrix_coordinate_real_single[k].a =
+                                data->matrix_coordinate_real_single[k].i == data->matrix_coordinate_real_single[k].j ? 0 : randrange(M,N);
+                        }
+                    } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_MTX_SYMMETRY; }
                 } else if (precision == mtx_double) {
-                    for (int64_t k = 0; k < mtxfile->datasize; k++) {
-                        data->matrix_coordinate_real_double[k].i = randrange(1,num_rows);
-                        data->matrix_coordinate_real_double[k].j = randrange(1,num_columns);
-                        data->matrix_coordinate_real_double[k].a = randrange(M,N);
-                    }
+                    if (symmetry == mtxfile_general ||
+                        symmetry == mtxfile_symmetric ||
+                        symmetry == mtxfile_hermitian)
+                    {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_real_double[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_real_double[k].j = randrange(1,num_columns);
+                            data->matrix_coordinate_real_double[k].a = randrange(M,N);
+                        }
+                    } else if (symmetry == mtxfile_skew_symmetric) {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_real_double[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_real_double[k].j = randrange(1,num_columns);
+                            data->matrix_coordinate_real_double[k].a =
+                                data->matrix_coordinate_real_double[k].i == data->matrix_coordinate_real_double[k].j ? 0 : randrange(M,N);
+                        }
+                    } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_MTX_SYMMETRY; }
                 } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_complex) {
                 if (precision == mtx_single) {
-                    for (int64_t k = 0; k < mtxfile->datasize; k++) {
-                        data->matrix_coordinate_complex_single[k].i = randrange(1,num_rows);
-                        data->matrix_coordinate_complex_single[k].j = randrange(1,num_columns);
-                        data->matrix_coordinate_complex_single[k].a[0] = randrange(M,N);
-                        data->matrix_coordinate_complex_single[k].a[1] = randrange(M,N);
-                    }
+                    if (symmetry == mtxfile_general || symmetry == mtxfile_symmetric) {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_complex_single[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_complex_single[k].j = randrange(1,num_columns);
+                            data->matrix_coordinate_complex_single[k].a[0] = randrange(M,N);
+                            data->matrix_coordinate_complex_single[k].a[1] = randrange(M,N);
+                        }
+                    } else if (symmetry == mtxfile_skew_symmetric) {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_complex_single[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_complex_single[k].j = randrange(1,num_columns);
+                            if (data->matrix_coordinate_complex_single[k].i != data->matrix_coordinate_complex_single[k].j) {
+                                data->matrix_coordinate_complex_single[k].a[0] = randrange(M,N);
+                                data->matrix_coordinate_complex_single[k].a[1] = randrange(M,N);
+                            } else {
+                                data->matrix_coordinate_complex_single[k].a[0] = 0;
+                                data->matrix_coordinate_complex_single[k].a[1] = 0;
+                            }
+                        }
+                    } else if (symmetry == mtxfile_hermitian) {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_complex_single[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_complex_single[k].j = randrange(1,num_columns);
+                            data->matrix_coordinate_complex_single[k].a[0] = randrange(M,N);
+                            if (data->matrix_coordinate_complex_single[k].i != data->matrix_coordinate_complex_single[k].j) {
+                                data->matrix_coordinate_complex_single[k].a[1] = randrange(M,N);
+                            } else {
+                                data->matrix_coordinate_complex_single[k].a[1] = 0;
+                            }
+                        }
+                    } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_MTX_SYMMETRY; }
                 } else if (precision == mtx_double) {
-                    for (int64_t k = 0; k < mtxfile->datasize; k++) {
-                        data->matrix_coordinate_complex_double[k].i = randrange(1,num_rows);
-                        data->matrix_coordinate_complex_double[k].j = randrange(1,num_columns);
-                        data->matrix_coordinate_complex_double[k].a[0] = randrange(M,N);
-                        data->matrix_coordinate_complex_double[k].a[1] = randrange(M,N);
-                    }
+                    if (symmetry == mtxfile_general || symmetry == mtxfile_symmetric) {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_complex_double[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_complex_double[k].j = randrange(1,num_columns);
+                            data->matrix_coordinate_complex_double[k].a[0] = randrange(M,N);
+                            data->matrix_coordinate_complex_double[k].a[1] = randrange(M,N);
+                        }
+                    } else if (symmetry == mtxfile_skew_symmetric) {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_complex_double[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_complex_double[k].j = randrange(1,num_columns);
+                            if (data->matrix_coordinate_complex_double[k].i != data->matrix_coordinate_complex_double[k].j) {
+                                data->matrix_coordinate_complex_double[k].a[0] = randrange(M,N);
+                                data->matrix_coordinate_complex_double[k].a[1] = randrange(M,N);
+                            } else {
+                                data->matrix_coordinate_complex_double[k].a[0] = 0;
+                                data->matrix_coordinate_complex_double[k].a[1] = 0;
+                            }
+                        }
+                    } else if (symmetry == mtxfile_hermitian) {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_complex_double[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_complex_double[k].j = randrange(1,num_columns);
+                            data->matrix_coordinate_complex_double[k].a[0] = randrange(M,N);
+                            if (data->matrix_coordinate_complex_double[k].i != data->matrix_coordinate_complex_double[k].j) {
+                                data->matrix_coordinate_complex_double[k].a[1] = randrange(M,N);
+                            } else {
+                                data->matrix_coordinate_complex_double[k].a[1] = 0;
+                            }
+                        }
+                    } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_MTX_SYMMETRY; }
                 } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_integer) {
                 if (precision == mtx_single) {
-                    for (int64_t k = 0; k < mtxfile->datasize; k++) {
-                        data->matrix_coordinate_integer_single[k].i = randrange(1,num_rows);
-                        data->matrix_coordinate_integer_single[k].j = randrange(1,num_columns);
-                        data->matrix_coordinate_integer_single[k].a = randrange(M,N);
-                    }
+                    if (symmetry == mtxfile_general ||
+                        symmetry == mtxfile_symmetric ||
+                        symmetry == mtxfile_hermitian)
+                    {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_integer_single[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_integer_single[k].j = randrange(1,num_columns);
+                            data->matrix_coordinate_integer_single[k].a = randrange(M,N);
+                        }
+                    } else if (symmetry == mtxfile_skew_symmetric) {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_integer_single[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_integer_single[k].j = randrange(1,num_columns);
+                            data->matrix_coordinate_integer_single[k].a =
+                                data->matrix_coordinate_integer_single[k].i == data->matrix_coordinate_integer_single[k].j ? 0 : randrange(M,N);
+                        }
+                    } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_MTX_SYMMETRY; }
                 } else if (precision == mtx_double) {
-                    for (int64_t k = 0; k < mtxfile->datasize; k++) {
-                        data->matrix_coordinate_integer_double[k].i = randrange(1,num_rows);
-                        data->matrix_coordinate_integer_double[k].j = randrange(1,num_columns);
-                        data->matrix_coordinate_integer_double[k].a = randrange(M,N);
-                    }
+                    if (symmetry == mtxfile_general ||
+                        symmetry == mtxfile_symmetric ||
+                        symmetry == mtxfile_hermitian)
+                    {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_integer_double[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_integer_double[k].j = randrange(1,num_columns);
+                            data->matrix_coordinate_integer_double[k].a = randrange(M,N);
+                        }
+                    } else if (symmetry == mtxfile_skew_symmetric) {
+                        for (int64_t k = 0; k < mtxfile->datasize; k++) {
+                            data->matrix_coordinate_integer_double[k].i = randrange(1,num_rows);
+                            data->matrix_coordinate_integer_double[k].j = randrange(1,num_columns);
+                            data->matrix_coordinate_integer_double[k].a =
+                                data->matrix_coordinate_integer_double[k].i == data->matrix_coordinate_integer_double[k].j ? 0 : randrange(M,N);
+                        }
+                    } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_MTX_SYMMETRY; }
                 } else { mtxfile_free(mtxfile); return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_pattern) {
                 for (int64_t k = 0; k < mtxfile->datasize; k++) {
