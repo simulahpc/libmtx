@@ -440,10 +440,6 @@ int radix_sort_uint32(
 }
 
 static void swap_int(int * a, int * b) { int tmp = *a; *a = *b; *b = tmp; }
-static void swap_int32_t(int32_t * a, int32_t * b) { int32_t tmp = *a; *a = *b; *b = tmp; }
-static void swap_int64_t(int64_t * a, int64_t * b) { int64_t tmp = *a; *a = *b; *b = tmp; }
-static void swap_uint32_t(uint32_t * a, uint32_t * b) { uint32_t tmp = *a; *a = *b; *b = tmp; }
-static void swap_uint64_t(uint64_t * a, uint64_t * b) { uint64_t tmp = *a; *a = *b; *b = tmp; }
 static void swap_int64ptr(int64_t ** a, int64_t ** b) { int64_t * tmp = *a; *a = *b; *b = tmp; }
 static void swap_uint32ptr(uint32_t ** a, uint32_t ** b) { uint32_t * tmp = *a; *a = *b; *b = tmp; }
 static void swap_uint64ptr(uint64_t ** a, uint64_t ** b) { uint64_t * tmp = *a; *a = *b; *b = tmp; }

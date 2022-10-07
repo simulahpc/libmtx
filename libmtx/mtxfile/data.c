@@ -5093,6 +5093,7 @@ int mtxfiledata_sort_column_major(
         int err = mtxfiledata_transpose(
             data, object, format, field, precision,
             num_rows, num_columns, size);
+        if (err) return err;
         if (perm) {
             for (int64_t i = 0; i < size; i++) {
                 for (int64_t j = 0; j < size; j++)

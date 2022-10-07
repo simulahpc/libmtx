@@ -2326,7 +2326,6 @@ int mtxfile_reorder_nd(
         mtxfile->header.symmetry == mtxfile_symmetric ||
         mtxfile->header.symmetry == mtxfile_skew_symmetric ||
         mtxfile->header.symmetry == mtxfile_hermitian);
-    int num_vertices = square ? num_rows : num_rows + num_columns;
 
     if (symmetric_permutation) *symmetric_permutation = square;
     if (mtxfile->header.object != mtxfile_matrix)

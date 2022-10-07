@@ -1620,7 +1620,7 @@ int mtxbasevector_swap(
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->idx && !y->idx || !x->idx && y->idx) return MTX_ERR_INVALID_VECTOR_TYPE;
+    if ((x->idx && !y->idx) || (!x->idx && y->idx)) return MTX_ERR_INVALID_VECTOR_TYPE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             float * xdata = x->data.real_single;
@@ -3634,7 +3634,6 @@ int mtxbasevector_usscga(
     if (x->field != z->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != z->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (x->size != z->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = x->idx;
     struct mtxbasevector y;
     int err = mtxbasevector_alloc(&y, x->field, x->precision, x->size);
     if (err) return err;
