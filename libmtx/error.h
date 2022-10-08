@@ -16,13 +16,15 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-23
+ * Last modified: 2022-10-08
  *
  * Error handling.
  */
 
 #ifndef LIBMTX_ERROR_H
 #define LIBMTX_ERROR_H
+
+#include <libmtx-config.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -121,19 +123,19 @@ enum mtxerror
  * If ‘err’ may be ‘MTX_ERR_MPI’, then ‘mtxdiststrerror()’ should be
  * used instead.
  */
-const char * mtxstrerror(int err);
+LIBMTX_API const char * mtxstrerror(int err);
 
 /**
  * ‘mtxblaserror()’ returns ‘MTX_ERR_BLAS’ if an error occurred in a
  * BLAS routine, and ‘MTX_SUCCESS’ otherwise.
  */
-int mtxblaserror(void);
+LIBMTX_API int mtxblaserror(void);
 
 /**
  * ‘mtxblaserrorclear()’ clears any error flags that may have been set
  * during error handling in BLAS routines.
  */
-void mtxblaserrorclear(void);
+LIBMTX_API void mtxblaserrorclear(void);
 
 /**
  * ‘mtxdiststrerror()’ is a string describing an error code.
@@ -155,7 +157,7 @@ void mtxblaserrorclear(void);
  * Otherwise, ‘mtxdiststrerror()’ returns the same error description
  * as ‘mtxstrerror()’ for error codes other than ‘MTX_ERR_MPI’.
  */
-const char * mtxdiststrerror(
+LIBMTX_API const char * mtxdiststrerror(
     int err,
     int mpierrcode,
     char * mpierrstr);
@@ -183,7 +185,7 @@ struct mtxdisterror
  * ‘mtxdisterror_alloc()’ allocates storage needed for the MPI error
  * handling data structure ‘mtxdisterror’.
  */
-int mtxdisterror_alloc(
+LIBMTX_API int mtxdisterror_alloc(
     struct mtxdisterror * disterr,
     MPI_Comm comm,
     int * mpierrcode);
@@ -191,7 +193,7 @@ int mtxdisterror_alloc(
 /**
  * ‘mtxdisterror_free()’ frees storage held by ‘struct mtxdisterror’.
  */
-void mtxdisterror_free(
+LIBMTX_API void mtxdisterror_free(
     struct mtxdisterror * disterr);
 
 /**
@@ -202,7 +204,7 @@ void mtxdisterror_free(
  * the pointer that was returned from the previous call will no longer
  * be valid and using it will result in a use-after-free error.
  */
-char * mtxdisterror_description(
+LIBMTX_API char * mtxdisterror_description(
     struct mtxdisterror * disterr);
 
 /**
@@ -250,7 +252,7 @@ char * mtxdisterror_description(
  *     ...
  *
  */
-int mtxdisterror_allreduce(
+LIBMTX_API int mtxdisterror_allreduce(
     struct mtxdisterror * disterr,
     int err);
 #endif

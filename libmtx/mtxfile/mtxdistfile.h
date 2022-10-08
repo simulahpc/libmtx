@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-01
+ * Last modified: 2022-10-08
  *
  * Matrix Market files distributed among multiple processes with MPI
  * for inter-process communication.
@@ -146,7 +146,7 @@ struct mtxdistfile
  * ‘comm’ must be the same MPI communicator that was used to create
  * ‘disterr’.
  */
-int mtxdistfile_alloc(
+LIBMTX_API int mtxdistfile_alloc(
     struct mtxdistfile * mtxdistfile,
     const struct mtxfileheader * header,
     const struct mtxfilecomments * comments,
@@ -161,7 +161,7 @@ int mtxdistfile_alloc(
  * ‘mtxdistfile_free()’ frees storage allocated for a distributed
  * Matrix Market file.
  */
-void mtxdistfile_free(
+LIBMTX_API void mtxdistfile_free(
     struct mtxdistfile * mtxdistfile);
 
 /**
@@ -169,7 +169,7 @@ void mtxdistfile_free(
  * distributed Matrix Market file without initialising the underlying
  * values.
  */
-int mtxdistfile_alloc_copy(
+LIBMTX_API int mtxdistfile_alloc_copy(
     struct mtxdistfile * dst,
     const struct mtxdistfile * src,
     struct mtxdisterror * disterr);
@@ -178,7 +178,7 @@ int mtxdistfile_alloc_copy(
  * ‘mtxdistfile_init_copy()’ creates a copy of a distributed Matrix
  * Market file.
  */
-int mtxdistfile_init_copy(
+LIBMTX_API int mtxdistfile_init_copy(
     struct mtxdistfile * dst,
     const struct mtxdistfile * src,
     struct mtxdisterror * disterr);
@@ -191,7 +191,7 @@ int mtxdistfile_init_copy(
  * ‘mtxdistfile_alloc_matrix_array()’ allocates a distributed matrix
  * in array format.
  */
-int mtxdistfile_alloc_matrix_array(
+LIBMTX_API int mtxdistfile_alloc_matrix_array(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
@@ -208,7 +208,7 @@ int mtxdistfile_alloc_matrix_array(
  * initialises a distributed matrix in array format with real, single
  * precision coefficients.
  */
-int mtxdistfile_init_matrix_array_real_single(
+LIBMTX_API int mtxdistfile_init_matrix_array_real_single(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -223,7 +223,7 @@ int mtxdistfile_init_matrix_array_real_single(
  * ‘mtxdistfile_init_matrix_array_real_double()’ allocates and initialises
  * a matrix in array format with real, double precision coefficients.
  */
-int mtxdistfile_init_matrix_array_real_double(
+LIBMTX_API int mtxdistfile_init_matrix_array_real_double(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -239,7 +239,7 @@ int mtxdistfile_init_matrix_array_real_double(
  * initialises a distributed matrix in array format with complex,
  * single precision coefficients.
  */
-int mtxdistfile_init_matrix_array_complex_single(
+LIBMTX_API int mtxdistfile_init_matrix_array_complex_single(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -255,7 +255,7 @@ int mtxdistfile_init_matrix_array_complex_single(
  * initialises a matrix in array format with complex, double precision
  * coefficients.
  */
-int mtxdistfile_init_matrix_array_complex_double(
+LIBMTX_API int mtxdistfile_init_matrix_array_complex_double(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -271,7 +271,7 @@ int mtxdistfile_init_matrix_array_complex_double(
  * initialises a distributed matrix in array format with integer,
  * single precision coefficients.
  */
-int mtxdistfile_init_matrix_array_integer_single(
+LIBMTX_API int mtxdistfile_init_matrix_array_integer_single(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -287,7 +287,7 @@ int mtxdistfile_init_matrix_array_integer_single(
  * initialises a matrix in array format with integer, double precision
  * coefficients.
  */
-int mtxdistfile_init_matrix_array_integer_double(
+LIBMTX_API int mtxdistfile_init_matrix_array_integer_double(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -306,7 +306,7 @@ int mtxdistfile_init_matrix_array_integer_double(
  * ‘mtxdistfile_alloc_vector_array()’ allocates a distributed vector
  * in array format.
  */
-int mtxdistfile_alloc_vector_array(
+LIBMTX_API int mtxdistfile_alloc_vector_array(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
@@ -321,7 +321,7 @@ int mtxdistfile_alloc_vector_array(
  * initialises a distributed vector in array format with real, single
  * precision coefficients.
  */
-int mtxdistfile_init_vector_array_real_single(
+LIBMTX_API int mtxdistfile_init_vector_array_real_single(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t localdatasize,
@@ -335,7 +335,7 @@ int mtxdistfile_init_vector_array_real_single(
  * initialises a vector in array format with real, double precision
  * coefficients.
  */
-int mtxdistfile_init_vector_array_real_double(
+LIBMTX_API int mtxdistfile_init_vector_array_real_double(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t localdatasize,
@@ -349,7 +349,7 @@ int mtxdistfile_init_vector_array_real_double(
  * initialises a distributed vector in array format with complex,
  * single precision coefficients.
  */
-int mtxdistfile_init_vector_array_complex_single(
+LIBMTX_API int mtxdistfile_init_vector_array_complex_single(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t localdatasize,
@@ -363,7 +363,7 @@ int mtxdistfile_init_vector_array_complex_single(
  * initialises a vector in array format with complex, double precision
  * coefficients.
  */
-int mtxdistfile_init_vector_array_complex_double(
+LIBMTX_API int mtxdistfile_init_vector_array_complex_double(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t localdatasize,
@@ -377,7 +377,7 @@ int mtxdistfile_init_vector_array_complex_double(
  * initialises a distributed vector in array format with integer,
  * single precision coefficients.
  */
-int mtxdistfile_init_vector_array_integer_single(
+LIBMTX_API int mtxdistfile_init_vector_array_integer_single(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t localdatasize,
@@ -391,7 +391,7 @@ int mtxdistfile_init_vector_array_integer_single(
  * initialises a vector in array format with integer, double precision
  * coefficients.
  */
-int mtxdistfile_init_vector_array_integer_double(
+LIBMTX_API int mtxdistfile_init_vector_array_integer_double(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t localdatasize,
@@ -408,7 +408,7 @@ int mtxdistfile_init_vector_array_integer_double(
  * ‘mtxdistfile_alloc_matrix_coordinate()’ allocates a distributed
  * matrix in coordinate format.
  */
-int mtxdistfile_alloc_matrix_coordinate(
+LIBMTX_API int mtxdistfile_alloc_matrix_coordinate(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
@@ -426,7 +426,7 @@ int mtxdistfile_alloc_matrix_coordinate(
  * initialises a distributed matrix in coordinate format with real,
  * single precision coefficients.
  */
-int mtxdistfile_init_matrix_coordinate_real_single(
+LIBMTX_API int mtxdistfile_init_matrix_coordinate_real_single(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -443,7 +443,7 @@ int mtxdistfile_init_matrix_coordinate_real_single(
  * initialises a matrix in coordinate format with real, double
  * precision coefficients.
  */
-int mtxdistfile_init_matrix_coordinate_real_double(
+LIBMTX_API int mtxdistfile_init_matrix_coordinate_real_double(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -460,7 +460,7 @@ int mtxdistfile_init_matrix_coordinate_real_double(
  * initialises a distributed matrix in coordinate format with complex,
  * single precision coefficients.
  */
-int mtxdistfile_init_matrix_coordinate_complex_single(
+LIBMTX_API int mtxdistfile_init_matrix_coordinate_complex_single(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -477,7 +477,7 @@ int mtxdistfile_init_matrix_coordinate_complex_single(
  * initialises a matrix in coordinate format with complex, double
  * precision coefficients.
  */
-int mtxdistfile_init_matrix_coordinate_complex_double(
+LIBMTX_API int mtxdistfile_init_matrix_coordinate_complex_double(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -494,7 +494,7 @@ int mtxdistfile_init_matrix_coordinate_complex_double(
  * initialises a distributed matrix in coordinate format with integer,
  * single precision coefficients.
  */
-int mtxdistfile_init_matrix_coordinate_integer_single(
+LIBMTX_API int mtxdistfile_init_matrix_coordinate_integer_single(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -511,7 +511,7 @@ int mtxdistfile_init_matrix_coordinate_integer_single(
  * initialises a matrix in coordinate format with integer, double
  * precision coefficients.
  */
-int mtxdistfile_init_matrix_coordinate_integer_double(
+LIBMTX_API int mtxdistfile_init_matrix_coordinate_integer_double(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -528,7 +528,7 @@ int mtxdistfile_init_matrix_coordinate_integer_double(
  * initialises a matrix in coordinate format with boolean (pattern)
  * precision coefficients.
  */
-int mtxdistfile_init_matrix_coordinate_pattern(
+LIBMTX_API int mtxdistfile_init_matrix_coordinate_pattern(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -548,7 +548,7 @@ int mtxdistfile_init_matrix_coordinate_pattern(
  * ‘mtxdistfile_alloc_vector_coordinate()’ allocates a distributed
  * vector in coordinate format.
  */
-int mtxdistfile_alloc_vector_coordinate(
+LIBMTX_API int mtxdistfile_alloc_vector_coordinate(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
@@ -564,7 +564,7 @@ int mtxdistfile_alloc_vector_coordinate(
  * initialises a distributed vector in coordinate format with real,
  * single precision coefficients.
  */
-int mtxdistfile_init_vector_coordinate_real_single(
+LIBMTX_API int mtxdistfile_init_vector_coordinate_real_single(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -579,7 +579,7 @@ int mtxdistfile_init_vector_coordinate_real_single(
  * initialises a vector in coordinate format with real, double
  * precision coefficients.
  */
-int mtxdistfile_init_vector_coordinate_real_double(
+LIBMTX_API int mtxdistfile_init_vector_coordinate_real_double(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -594,7 +594,7 @@ int mtxdistfile_init_vector_coordinate_real_double(
  * initialises a distributed vector in coordinate format with complex,
  * single precision coefficients.
  */
-int mtxdistfile_init_vector_coordinate_complex_single(
+LIBMTX_API int mtxdistfile_init_vector_coordinate_complex_single(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -609,7 +609,7 @@ int mtxdistfile_init_vector_coordinate_complex_single(
  * initialises a vector in coordinate format with complex, double
  * precision coefficients.
  */
-int mtxdistfile_init_vector_coordinate_complex_double(
+LIBMTX_API int mtxdistfile_init_vector_coordinate_complex_double(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -624,7 +624,7 @@ int mtxdistfile_init_vector_coordinate_complex_double(
  * initialises a distributed vector in coordinate format with integer,
  * single precision coefficients.
  */
-int mtxdistfile_init_vector_coordinate_integer_single(
+LIBMTX_API int mtxdistfile_init_vector_coordinate_integer_single(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -639,7 +639,7 @@ int mtxdistfile_init_vector_coordinate_integer_single(
  * initialises a vector in coordinate format with integer, double
  * precision coefficients.
  */
-int mtxdistfile_init_vector_coordinate_integer_double(
+LIBMTX_API int mtxdistfile_init_vector_coordinate_integer_double(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -654,7 +654,7 @@ int mtxdistfile_init_vector_coordinate_integer_double(
  * initialises a vector in coordinate format with boolean (pattern)
  * precision coefficients.
  */
-int mtxdistfile_init_vector_coordinate_pattern(
+LIBMTX_API int mtxdistfile_init_vector_coordinate_pattern(
     struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -673,7 +673,7 @@ int mtxdistfile_init_vector_coordinate_pattern(
  * of a matrix or vector equal to a constant, single precision
  * floating point number.
  */
-int mtxdistfile_set_constant_real_single(
+LIBMTX_API int mtxdistfile_set_constant_real_single(
     struct mtxdistfile * mtxdistfile,
     float a,
     struct mtxdisterror * disterr);
@@ -683,7 +683,7 @@ int mtxdistfile_set_constant_real_single(
  * of a matrix or vector equal to a constant, double precision
  * floating point number.
  */
-int mtxdistfile_set_constant_real_double(
+LIBMTX_API int mtxdistfile_set_constant_real_double(
     struct mtxdistfile * mtxdistfile,
     double a,
     struct mtxdisterror * disterr);
@@ -693,7 +693,7 @@ int mtxdistfile_set_constant_real_double(
  * value of a matrix or vector equal to a constant, single precision
  * floating point complex number.
  */
-int mtxdistfile_set_constant_complex_single(
+LIBMTX_API int mtxdistfile_set_constant_complex_single(
     struct mtxdistfile * mtxdistfile,
     float a[2],
     struct mtxdisterror * disterr);
@@ -703,7 +703,7 @@ int mtxdistfile_set_constant_complex_single(
  * value of a matrix or vector equal to a constant, double precision
  * floating point complex number.
  */
-int mtxdistfile_set_constant_complex_double(
+LIBMTX_API int mtxdistfile_set_constant_complex_double(
     struct mtxdistfile * mtxdistfile,
     double a[2],
     struct mtxdisterror * disterr);
@@ -712,7 +712,7 @@ int mtxdistfile_set_constant_complex_double(
  * ‘mtxdistfile_set_constant_integer_single()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, 32-bit integer.
  */
-int mtxdistfile_set_constant_integer_single(
+LIBMTX_API int mtxdistfile_set_constant_integer_single(
     struct mtxdistfile * mtxdistfile,
     int32_t a,
     struct mtxdisterror * disterr);
@@ -721,7 +721,7 @@ int mtxdistfile_set_constant_integer_single(
  * ‘mtxdistfile_set_constant_integer_double()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, 64-bit integer.
  */
-int mtxdistfile_set_constant_integer_double(
+LIBMTX_API int mtxdistfile_set_constant_integer_double(
     struct mtxdistfile * mtxdistfile,
     int64_t a,
     struct mtxdisterror * disterr);
@@ -740,7 +740,7 @@ int mtxdistfile_set_constant_integer_double(
  * requires every process in the communicator to perform matching
  * calls to this function.
  */
-int mtxdistfile_from_mtxfile_rowwise(
+LIBMTX_API int mtxdistfile_from_mtxfile_rowwise(
     struct mtxdistfile * dst,
     struct mtxfile * src,
     enum mtxpartitioning parttype,
@@ -759,7 +759,7 @@ int mtxdistfile_from_mtxfile_rowwise(
  * requires every process in the communicator to perform matching
  * calls to this function.
  */
-int mtxdistfile_to_mtxfile(
+LIBMTX_API int mtxdistfile_to_mtxfile(
     struct mtxfile * dst,
     const struct mtxdistfile * src,
     int root,
@@ -794,7 +794,7 @@ int mtxdistfile_to_mtxfile(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistfile_read_rowwise(
+LIBMTX_API int mtxdistfile_read_rowwise(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     enum mtxpartitioning parttype,
@@ -836,7 +836,7 @@ int mtxdistfile_read_rowwise(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistfile_fread_rowwise(
+LIBMTX_API int mtxdistfile_fread_rowwise(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     enum mtxpartitioning parttype,
@@ -880,7 +880,7 @@ int mtxdistfile_fread_rowwise(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistfile_gzread_rowwise(
+LIBMTX_API int mtxdistfile_gzread_rowwise(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     enum mtxpartitioning parttype,
@@ -927,7 +927,7 @@ int mtxdistfile_gzread_rowwise(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistfile_fwrite(
+LIBMTX_API int mtxdistfile_fwrite(
     const struct mtxdistfile * mtxdistfile,
     FILE * f,
     const char * fmt,

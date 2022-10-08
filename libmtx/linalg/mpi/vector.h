@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-10-03
+ * Last modified: 2022-10-08
  *
  * Data structures and routines for distributed sparse vectors in
  * packed form.
@@ -101,14 +101,14 @@ struct mtxmpivector
 /**
  * ‘mtxmpivector_free()’ frees storage allocated for a vector.
  */
-void mtxmpivector_free(
+LIBMTX_API void mtxmpivector_free(
     struct mtxmpivector * x);
 
 /**
  * ‘mtxmpivector_alloc_copy()’ allocates a copy of a vector without
  * initialising the values.
  */
-int mtxmpivector_alloc_copy(
+LIBMTX_API int mtxmpivector_alloc_copy(
     struct mtxmpivector * dst,
     const struct mtxmpivector * src,
     struct mtxdisterror * disterr);
@@ -117,7 +117,7 @@ int mtxmpivector_alloc_copy(
  * ‘mtxmpivector_init_copy()’ allocates a copy of a vector and also
  * copies the values.
  */
-int mtxmpivector_init_copy(
+LIBMTX_API int mtxmpivector_init_copy(
     struct mtxmpivector * dst,
     const struct mtxmpivector * src,
     struct mtxdisterror * disterr);
@@ -131,7 +131,7 @@ int mtxmpivector_init_copy(
  * where nonzero coefficients are stored in an underlying dense vector
  * of the given type.
  */
-int mtxmpivector_alloc(
+LIBMTX_API int mtxmpivector_alloc(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     enum mtxfield field,
@@ -151,7 +151,7 @@ int mtxmpivector_alloc(
  * respectively, of the vector elements stored on the process. Note
  * that ‘num_nonzeros’ may differ from one process to the next.
  */
-int mtxmpivector_init_real_single(
+LIBMTX_API int mtxmpivector_init_real_single(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -165,7 +165,7 @@ int mtxmpivector_init_real_single(
  * ‘mtxmpivector_init_real_double()’ allocates and initialises a
  * vector with real, double precision coefficients.
  */
-int mtxmpivector_init_real_double(
+LIBMTX_API int mtxmpivector_init_real_double(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -179,7 +179,7 @@ int mtxmpivector_init_real_double(
  * ‘mtxmpivector_init_complex_single()’ allocates and initialises a
  * vector with complex, single precision coefficients.
  */
-int mtxmpivector_init_complex_single(
+LIBMTX_API int mtxmpivector_init_complex_single(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -193,7 +193,7 @@ int mtxmpivector_init_complex_single(
  * ‘mtxmpivector_init_complex_double()’ allocates and initialises a
  * vector with complex, double precision coefficients.
  */
-int mtxmpivector_init_complex_double(
+LIBMTX_API int mtxmpivector_init_complex_double(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -207,7 +207,7 @@ int mtxmpivector_init_complex_double(
  * ‘mtxmpivector_init_integer_single()’ allocates and initialises a
  * vector with integer, single precision coefficients.
  */
-int mtxmpivector_init_integer_single(
+LIBMTX_API int mtxmpivector_init_integer_single(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -221,7 +221,7 @@ int mtxmpivector_init_integer_single(
  * ‘mtxmpivector_init_integer_double()’ allocates and initialises a
  * vector with integer, double precision coefficients.
  */
-int mtxmpivector_init_integer_double(
+LIBMTX_API int mtxmpivector_init_integer_double(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -235,7 +235,7 @@ int mtxmpivector_init_integer_double(
  * ‘mtxmpivector_init_pattern()’ allocates and initialises a binary
  * pattern vector, where every entry has a value of one.
  */
-int mtxmpivector_init_pattern(
+LIBMTX_API int mtxmpivector_init_pattern(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -248,7 +248,7 @@ int mtxmpivector_init_pattern(
  * ‘mtxmpivector_init_strided_real_single()’ allocates and
  * initialises a vector with real, single precision coefficients.
  */
-int mtxmpivector_init_strided_real_single(
+LIBMTX_API int mtxmpivector_init_strided_real_single(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -265,7 +265,7 @@ int mtxmpivector_init_strided_real_single(
  * ‘mtxmpivector_init_strided_real_double()’ allocates and
  * initialises a vector with real, double precision coefficients.
  */
-int mtxmpivector_init_strided_real_double(
+LIBMTX_API int mtxmpivector_init_strided_real_double(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -282,7 +282,7 @@ int mtxmpivector_init_strided_real_double(
  * ‘mtxmpivector_init_strided_complex_single()’ allocates and
  * initialises a vector with complex, single precision coefficients.
  */
-int mtxmpivector_init_strided_complex_single(
+LIBMTX_API int mtxmpivector_init_strided_complex_single(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -299,7 +299,7 @@ int mtxmpivector_init_strided_complex_single(
  * ‘mtxmpivector_init_strided_complex_double()’ allocates and
  * initialises a vector with complex, double precision coefficients.
  */
-int mtxmpivector_init_strided_complex_double(
+LIBMTX_API int mtxmpivector_init_strided_complex_double(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -316,7 +316,7 @@ int mtxmpivector_init_strided_complex_double(
  * ‘mtxmpivector_init_strided_integer_single()’ allocates and
  * initialises a vector with integer, single precision coefficients.
  */
-int mtxmpivector_init_strided_integer_single(
+LIBMTX_API int mtxmpivector_init_strided_integer_single(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -333,7 +333,7 @@ int mtxmpivector_init_strided_integer_single(
  * ‘mtxmpivector_init_strided_integer_double()’ allocates and
  * initialises a vector with integer, double precision coefficients.
  */
-int mtxmpivector_init_strided_integer_double(
+LIBMTX_API int mtxmpivector_init_strided_integer_double(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -350,7 +350,7 @@ int mtxmpivector_init_strided_integer_double(
  * ‘mtxmpivector_init_pattern()’ allocates and initialises a binary
  * pattern vector, where every entry has a value of one.
  */
-int mtxmpivector_init_strided_pattern(
+LIBMTX_API int mtxmpivector_init_strided_pattern(
     struct mtxmpivector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -369,7 +369,7 @@ int mtxmpivector_init_strided_pattern(
  * ‘mtxmpivector_setzero()’ sets every nonzero entry of a vector to
  * zero.
  */
-int mtxmpivector_setzero(
+LIBMTX_API int mtxmpivector_setzero(
     struct mtxmpivector * x,
     struct mtxdisterror * disterr);
 
@@ -378,7 +378,7 @@ int mtxmpivector_setzero(
  * entry of a vector equal to a constant, single precision floating
  * point number.
  */
-int mtxmpivector_set_constant_real_single(
+LIBMTX_API int mtxmpivector_set_constant_real_single(
     struct mtxmpivector * x,
     float a,
     struct mtxdisterror * disterr);
@@ -388,7 +388,7 @@ int mtxmpivector_set_constant_real_single(
  * entry of a vector equal to a constant, double precision floating
  * point number.
  */
-int mtxmpivector_set_constant_real_double(
+LIBMTX_API int mtxmpivector_set_constant_real_double(
     struct mtxmpivector * x,
     double a,
     struct mtxdisterror * disterr);
@@ -398,7 +398,7 @@ int mtxmpivector_set_constant_real_double(
  * entry of a vector equal to a constant, single precision floating
  * point complex number.
  */
-int mtxmpivector_set_constant_complex_single(
+LIBMTX_API int mtxmpivector_set_constant_complex_single(
     struct mtxmpivector * x,
     float a[2],
     struct mtxdisterror * disterr);
@@ -408,7 +408,7 @@ int mtxmpivector_set_constant_complex_single(
  * entry of a vector equal to a constant, double precision floating
  * point complex number.
  */
-int mtxmpivector_set_constant_complex_double(
+LIBMTX_API int mtxmpivector_set_constant_complex_double(
     struct mtxmpivector * x,
     double a[2],
     struct mtxdisterror * disterr);
@@ -417,7 +417,7 @@ int mtxmpivector_set_constant_complex_double(
  * ‘mtxmpivector_set_constant_integer_single()’ sets every nonzero
  * entry of a vector equal to a constant integer.
  */
-int mtxmpivector_set_constant_integer_single(
+LIBMTX_API int mtxmpivector_set_constant_integer_single(
     struct mtxmpivector * x,
     int32_t a,
     struct mtxdisterror * disterr);
@@ -426,7 +426,7 @@ int mtxmpivector_set_constant_integer_single(
  * ‘mtxmpivector_set_constant_integer_double()’ sets every nonzero
  * entry of a vector equal to a constant integer.
  */
-int mtxmpivector_set_constant_integer_double(
+LIBMTX_API int mtxmpivector_set_constant_integer_double(
     struct mtxmpivector * x,
     int64_t a,
     struct mtxdisterror * disterr);
@@ -442,7 +442,7 @@ int mtxmpivector_set_constant_integer_double(
  * The ‘type’ argument may be used to specify a desired storage format
  * or implementation for the underlying ‘mtxvector’ on each process.
  */
-int mtxmpivector_from_mtxfile(
+LIBMTX_API int mtxmpivector_from_mtxfile(
     struct mtxmpivector * x,
     const struct mtxfile * mtxfile,
     enum mtxvectortype type,
@@ -454,7 +454,7 @@ int mtxmpivector_from_mtxfile(
  * ‘mtxmpivector_to_mtxfile()’ converts to a vector in Matrix Market
  * format.
  */
-int mtxmpivector_to_mtxfile(
+LIBMTX_API int mtxmpivector_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxmpivector * x,
     enum mtxfileformat mtxfmt,
@@ -468,7 +468,7 @@ int mtxmpivector_to_mtxfile(
  * The ‘type’ argument may be used to specify a desired storage format
  * or implementation for the underlying ‘mtxvector’ on each process.
  */
-int mtxmpivector_from_mtxdistfile(
+LIBMTX_API int mtxmpivector_from_mtxdistfile(
     struct mtxmpivector * x,
     const struct mtxdistfile * mtxdistfile,
     enum mtxvectortype type,
@@ -479,7 +479,7 @@ int mtxmpivector_from_mtxdistfile(
  * ‘mtxmpivector_to_mtxdistfile()’ converts to a vector in Matrix
  * Market format that is distributed among multiple processes.
  */
-int mtxmpivector_to_mtxdistfile(
+LIBMTX_API int mtxmpivector_to_mtxdistfile(
     struct mtxdistfile * mtxdistfile,
     const struct mtxmpivector * x,
     enum mtxfileformat mtxfmt,
@@ -519,7 +519,7 @@ int mtxmpivector_to_mtxdistfile(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxmpivector_fwrite(
+LIBMTX_API int mtxmpivector_fwrite(
     const struct mtxmpivector * x,
     enum mtxfileformat mtxfmt,
     FILE * f,
@@ -558,7 +558,7 @@ int mtxmpivector_fwrite(
  * The caller is responsible for calling ‘mtxmpivector_free()’ to
  * free storage allocated for each vector in the ‘dsts’ array.
  */
-int mtxmpivector_split(
+LIBMTX_API int mtxmpivector_split(
     int num_parts,
     struct mtxmpivector ** dsts,
     const struct mtxmpivector * src,
@@ -580,7 +580,7 @@ int mtxmpivector_split(
  * given process, both vectors must also have the same number of
  * nonzero elements on that process.
  */
-int mtxmpivector_swap(
+LIBMTX_API int mtxmpivector_swap(
     struct mtxmpivector * x,
     struct mtxmpivector * y,
     struct mtxdisterror * disterr);
@@ -593,7 +593,7 @@ int mtxmpivector_swap(
  * given process, both vectors must also have the same number of
  * nonzero elements on that process.
  */
-int mtxmpivector_copy(
+LIBMTX_API int mtxmpivector_copy(
     struct mtxmpivector * y,
     const struct mtxmpivector * x,
     struct mtxdisterror * disterr);
@@ -602,7 +602,7 @@ int mtxmpivector_copy(
  * ‘mtxmpivector_sscal()’ scales a vector by a single precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxmpivector_sscal(
+LIBMTX_API int mtxmpivector_sscal(
     float a,
     struct mtxmpivector * x,
     int64_t * num_flops,
@@ -612,7 +612,7 @@ int mtxmpivector_sscal(
  * ‘mtxmpivector_dscal()’ scales a vector by a double precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxmpivector_dscal(
+LIBMTX_API int mtxmpivector_dscal(
     double a,
     struct mtxmpivector * x,
     int64_t * num_flops,
@@ -622,7 +622,7 @@ int mtxmpivector_dscal(
  * ‘mtxmpivector_cscal()’ scales a vector by a complex, single
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxmpivector_cscal(
+LIBMTX_API int mtxmpivector_cscal(
     float a[2],
     struct mtxmpivector * x,
     int64_t * num_flops,
@@ -632,7 +632,7 @@ int mtxmpivector_cscal(
  * ‘mtxmpivector_zscal()’ scales a vector by a complex, double
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxmpivector_zscal(
+LIBMTX_API int mtxmpivector_zscal(
     double a[2],
     struct mtxmpivector * x,
     int64_t * num_flops,
@@ -650,7 +650,7 @@ int mtxmpivector_zscal(
  * undefined. However, repeated indices in the dist vectors are
  * allowed.
  */
-int mtxmpivector_saxpy(
+LIBMTX_API int mtxmpivector_saxpy(
     float a,
     const struct mtxmpivector * x,
     struct mtxmpivector * y,
@@ -669,7 +669,7 @@ int mtxmpivector_saxpy(
  * undefined. However, repeated indices in the dist vectors are
  * allowed.
  */
-int mtxmpivector_daxpy(
+LIBMTX_API int mtxmpivector_daxpy(
     double a,
     const struct mtxmpivector * x,
     struct mtxmpivector * y,
@@ -688,7 +688,7 @@ int mtxmpivector_daxpy(
  * undefined. However, repeated indices in the dist vectors are
  * allowed.
  */
-int mtxmpivector_saypx(
+LIBMTX_API int mtxmpivector_saypx(
     float a,
     struct mtxmpivector * y,
     const struct mtxmpivector * x,
@@ -707,7 +707,7 @@ int mtxmpivector_saypx(
  * undefined. However, repeated indices in the dist vectors are
  * allowed.
  */
-int mtxmpivector_daypx(
+LIBMTX_API int mtxmpivector_daypx(
     double a,
     struct mtxmpivector * y,
     const struct mtxmpivector * x,
@@ -726,7 +726,7 @@ int mtxmpivector_daypx(
  * undefined. Moreover, repeated indices in the dist vector are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmpivector_sdot(
+LIBMTX_API int mtxmpivector_sdot(
     const struct mtxmpivector * x,
     const struct mtxmpivector * y,
     float * dot,
@@ -745,7 +745,7 @@ int mtxmpivector_sdot(
  * undefined. Moreover, repeated indices in the dist vector are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmpivector_ddot(
+LIBMTX_API int mtxmpivector_ddot(
     const struct mtxmpivector * x,
     const struct mtxmpivector * y,
     double * dot,
@@ -765,7 +765,7 @@ int mtxmpivector_ddot(
  * undefined. Moreover, repeated indices in the dist vector are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmpivector_cdotu(
+LIBMTX_API int mtxmpivector_cdotu(
     const struct mtxmpivector * x,
     const struct mtxmpivector * y,
     float (* dot)[2],
@@ -785,7 +785,7 @@ int mtxmpivector_cdotu(
  * undefined. Moreover, repeated indices in the dist vector are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmpivector_zdotu(
+LIBMTX_API int mtxmpivector_zdotu(
     const struct mtxmpivector * x,
     const struct mtxmpivector * y,
     double (* dot)[2],
@@ -804,7 +804,7 @@ int mtxmpivector_zdotu(
  * undefined. Moreover, repeated indices in the dist vector are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmpivector_cdotc(
+LIBMTX_API int mtxmpivector_cdotc(
     const struct mtxmpivector * x,
     const struct mtxmpivector * y,
     float (* dot)[2],
@@ -823,7 +823,7 @@ int mtxmpivector_cdotc(
  * undefined. Moreover, repeated indices in the dist vector are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmpivector_zdotc(
+LIBMTX_API int mtxmpivector_zdotc(
     const struct mtxmpivector * x,
     const struct mtxmpivector * y,
     double (* dot)[2],
@@ -835,7 +835,7 @@ int mtxmpivector_zdotc(
  * single precision floating point. Repeated indices in the dist
  * vector are not allowed, otherwise the result is undefined.
  */
-int mtxmpivector_snrm2(
+LIBMTX_API int mtxmpivector_snrm2(
     const struct mtxmpivector * x,
     float * nrm2,
     int64_t * num_flops,
@@ -846,7 +846,7 @@ int mtxmpivector_snrm2(
  * double precision floating point. Repeated indices in the dist
  * vector are not allowed, otherwise the result is undefined.
  */
-int mtxmpivector_dnrm2(
+LIBMTX_API int mtxmpivector_dnrm2(
     const struct mtxmpivector * x,
     double * nrm2,
     int64_t * num_flops,
@@ -859,7 +859,7 @@ int mtxmpivector_dnrm2(
  * the real and imaginary parts is computed. Repeated indices in the
  * dist vector are not allowed, otherwise the result is undefined.
  */
-int mtxmpivector_sasum(
+LIBMTX_API int mtxmpivector_sasum(
     const struct mtxmpivector * x,
     float * asum,
     int64_t * num_flops,
@@ -872,7 +872,7 @@ int mtxmpivector_sasum(
  * the real and imaginary parts is computed. Repeated indices in the
  * dist vector are not allowed, otherwise the result is undefined.
  */
-int mtxmpivector_dasum(
+LIBMTX_API int mtxmpivector_dasum(
     const struct mtxmpivector * x,
     double * asum,
     int64_t * num_flops,
@@ -886,7 +886,7 @@ int mtxmpivector_dasum(
  * parts. Repeated indices in the dist vector are not allowed,
  * otherwise the result is undefined.
  */
-int mtxmpivector_iamax(
+LIBMTX_API int mtxmpivector_iamax(
     const struct mtxmpivector * x,
     int * iamax,
     struct mtxdisterror * disterr);

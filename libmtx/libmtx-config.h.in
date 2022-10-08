@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-09-27
+ * Last modified: 2022-10-08
  *
  * Build configuration
  */
@@ -45,5 +45,16 @@
 
 /* Define if you have OpenMP. */
 #undef LIBMTX_HAVE_OPENMP
+
+/* Define to 1 or 0, depending whether the compiler supports simple visibility
+   declarations. */
+#undef HAVE_VISIBILITY
+
+/* symbol visibility */
+#if HAVE_VISIBILITY && LIBMTX_API_EXPORT
+#define LIBMTX_API __attribute__((__visibility__("default")))
+#else
+#define LIBMTX_API
+#endif
 
 #endif
