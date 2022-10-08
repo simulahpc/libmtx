@@ -50,7 +50,8 @@ EXTRA_DIST = \
 
 # Matrix Market library
 lib_LTLIBRARIES = libmtx.la
-libmtx_la_CPPFLAGS = -I$(top_srcdir) $(MPICPPFLAGS) $(BLAS_CPPFLAGS) $(libmtx_CPPFLAGS)
+libmtx_la_CFLAGS = @CFLAG_VISIBILITY@
+libmtx_la_CPPFLAGS = @CFLAG_VISIBILITY@ -DLIBMTX_API_EXPORT -I$(top_srcdir) $(MPICPPFLAGS) $(BLAS_CPPFLAGS) $(libmtx_CPPFLAGS)
 libmtx_la_LDFLAGS = -version-info $(LIBMTX_LT_VERSION) $(BLAS_LDFLAGS) $(MPILDFAGS)
 libmtx_la_LIBADD = $(BLAS_LIBS) $(BLAS_LDFLAGS) $(MPILDFLAGS)
 

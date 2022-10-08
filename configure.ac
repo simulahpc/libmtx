@@ -61,6 +61,8 @@ AC_F77_LIBRARY_LDFLAGS
 AM_PROG_AR
 LT_INIT
 
+gl_VISIBILITY
+
 dnl Check for x86 features
 AC_CHECK_HEADERS([immintrin.h])
 AC_ARG_ENABLE(bmi2,
