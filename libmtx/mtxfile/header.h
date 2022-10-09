@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-10-08
  *
  * Matrix Market file headers.
  */
@@ -58,10 +58,10 @@ enum mtxfileobject
 };
 
 /**
- * ‘mtxfileobject_str()’ is a string representing the Matrix Market
+ * ‘mtxfileobjectstr()’ is a string representing the Matrix Market
  * object type.
  */
-const char * mtxfileobject_str(
+LIBMTX_API const char * mtxfileobjectstr(
     enum mtxfileobject object);
 
 /**
@@ -103,10 +103,10 @@ enum mtxfileformat
 };
 
 /**
- * ‘mtxfileformat_str()’ is a string representing the Matrix Market
+ * ‘mtxfileformatstr()’ is a string representing the Matrix Market
  * format type.
  */
-const char * mtxfileformat_str(
+LIBMTX_API const char * mtxfileformatstr(
     enum mtxfileformat format);
 
 /**
@@ -150,10 +150,10 @@ enum mtxfilefield
 };
 
 /**
- * ‘mtxfilefield_str()’ is a string representing the Matrix Market
+ * ‘mtxfilefieldstr()’ is a string representing the Matrix Market
  * field type.
  */
-const char * mtxfilefield_str(
+LIBMTX_API const char * mtxfilefieldstr(
     enum mtxfilefield field);
 
 /**
@@ -214,10 +214,10 @@ enum mtxfilesymmetry
 };
 
 /**
- * ‘mtxfilesymmetry_str()’ is a string representing the Matrix Market
+ * ‘mtxfilesymmetrystr()’ is a string representing the Matrix Market
  * symmetry type.
  */
-const char * mtxfilesymmetry_str(
+LIBMTX_API const char * mtxfilesymmetrystr(
     enum mtxfilesymmetry symmetry);
 
 /**

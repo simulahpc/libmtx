@@ -143,21 +143,21 @@ struct mtxmpimatrix
 /**
  * ‘mtxmpimatrix_field()’ gets the field of a matrix.
  */
-int mtxmpimatrix_field(
+int LIBMTX_API mtxmpimatrix_field(
     const struct mtxmpimatrix * A,
     enum mtxfield * field);
 
 /**
  * ‘mtxmpimatrix_precision()’ gets the precision of a matrix.
  */
-int mtxmpimatrix_precision(
+int LIBMTX_API mtxmpimatrix_precision(
     const struct mtxmpimatrix * A,
     enum mtxprecision * precision);
 
 /**
  * ‘mtxmpimatrix_symmetry()’ gets the symmetry of a matrix.
  */
-int mtxmpimatrix_symmetry(
+int LIBMTX_API mtxmpimatrix_symmetry(
     const struct mtxmpimatrix * A,
     enum mtxsymmetry * symmetry);
 
@@ -166,7 +166,7 @@ int mtxmpimatrix_symmetry(
  *  nonzero matrix entries, including those represented implicitly due
  *  to symmetry.
  */
-int mtxmpimatrix_num_nonzeros(
+int LIBMTX_API mtxmpimatrix_num_nonzeros(
     const struct mtxmpimatrix * A,
     int64_t * num_nonzeros);
 
@@ -174,7 +174,7 @@ int mtxmpimatrix_num_nonzeros(
  * ‘mtxmpimatrix_size()’ gets the number of explicitly stored
  * nonzeros of a matrix.
  */
-int mtxmpimatrix_size(
+int LIBMTX_API LIBMTX_API mtxmpimatrix_size(
     const struct mtxmpimatrix * A,
     int64_t * size);
 
@@ -185,14 +185,14 @@ int mtxmpimatrix_size(
 /**
  * ‘mtxmpimatrix_free()’ frees storage allocated for a matrix.
  */
-void mtxmpimatrix_free(
+void LIBMTX_API mtxmpimatrix_free(
     struct mtxmpimatrix * A);
 
 /**
  * ‘mtxmpimatrix_alloc_copy()’ allocates a copy of a matrix without
  * initialising the values.
  */
-int mtxmpimatrix_alloc_copy(
+int LIBMTX_API mtxmpimatrix_alloc_copy(
     struct mtxmpimatrix * dst,
     const struct mtxmpimatrix * src,
     struct mtxdisterror * disterr);
@@ -201,7 +201,7 @@ int mtxmpimatrix_alloc_copy(
  * ‘mtxmpimatrix_init_copy()’ allocates a copy of a matrix and also
  * copies the values.
  */
-int mtxmpimatrix_init_copy(
+int LIBMTX_API mtxmpimatrix_init_copy(
     struct mtxmpimatrix * dst,
     const struct mtxmpimatrix * src,
     struct mtxdisterror * disterr);
@@ -216,7 +216,7 @@ int mtxmpimatrix_init_copy(
  * ‘mtxmpimatrix_alloc_entries_local()’ allocates storage for a
  * matrix based on entrywise data in coordinate format.
  */
-int mtxmpimatrix_alloc_entries_local(
+int LIBMTX_API mtxmpimatrix_alloc_entries_local(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxfield field,
@@ -241,7 +241,7 @@ int mtxmpimatrix_alloc_entries_local(
  * initialises a matrix from data in coordinate format with real,
  * single precision coefficients.
  */
-int mtxmpimatrix_init_entries_local_real_single(
+int LIBMTX_API mtxmpimatrix_init_entries_local_real_single(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -263,7 +263,7 @@ int mtxmpimatrix_init_entries_local_real_single(
  * initialises a matrix from data in coordinate format with real,
  * double precision coefficients.
  */
-int mtxmpimatrix_init_entries_local_real_double(
+int LIBMTX_API mtxmpimatrix_init_entries_local_real_double(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -285,7 +285,7 @@ int mtxmpimatrix_init_entries_local_real_double(
  * initialises a matrix from data in coordinate format with complex,
  * single precision coefficients.
  */
-int mtxmpimatrix_init_entries_local_complex_single(
+int LIBMTX_API mtxmpimatrix_init_entries_local_complex_single(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -307,7 +307,7 @@ int mtxmpimatrix_init_entries_local_complex_single(
  * initialises a matrix from data in coordinate format with complex,
  * double precision coefficients.
  */
-int mtxmpimatrix_init_entries_local_complex_double(
+int LIBMTX_API mtxmpimatrix_init_entries_local_complex_double(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -329,7 +329,7 @@ int mtxmpimatrix_init_entries_local_complex_double(
  * initialises a matrix from data in coordinate format with integer,
  * single precision coefficients.
  */
-int mtxmpimatrix_init_entries_local_integer_single(
+int LIBMTX_API mtxmpimatrix_init_entries_local_integer_single(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -351,7 +351,7 @@ int mtxmpimatrix_init_entries_local_integer_single(
  * initialises a matrix from data in coordinate format with integer,
  * double precision coefficients.
  */
-int mtxmpimatrix_init_entries_local_integer_double(
+int LIBMTX_API mtxmpimatrix_init_entries_local_integer_double(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -373,7 +373,7 @@ int mtxmpimatrix_init_entries_local_integer_double(
  * initialises a matrix from data in coordinate format with integer,
  * double precision coefficients.
  */
-int mtxmpimatrix_init_entries_local_pattern(
+int LIBMTX_API mtxmpimatrix_init_entries_local_pattern(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -399,7 +399,7 @@ int mtxmpimatrix_init_entries_local_pattern(
  * matrix, where the local part of the matrix on each process is
  * stored as a matrix of the given type.
  */
-int mtxmpimatrix_alloc_entries_global(
+int LIBMTX_API mtxmpimatrix_alloc_entries_global(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxfield field,
@@ -424,7 +424,7 @@ int mtxmpimatrix_alloc_entries_global(
  * respectively, of the matrix elements stored on the process. Note
  * that ‘num_nonzeros’ may differ from one process to the next.
  */
-int mtxmpimatrix_init_entries_global_real_single(
+int LIBMTX_API mtxmpimatrix_init_entries_global_real_single(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -441,7 +441,7 @@ int mtxmpimatrix_init_entries_global_real_single(
  * ‘mtxmpimatrix_init_entries_global_real_double()’ allocates and
  * initialises a matrix with real, double precision coefficients.
  */
-int mtxmpimatrix_init_entries_global_real_double(
+int LIBMTX_API mtxmpimatrix_init_entries_global_real_double(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -458,7 +458,7 @@ int mtxmpimatrix_init_entries_global_real_double(
  * ‘mtxmpimatrix_init_entries_global_complex_single()’ allocates and
  * initialises a matrix with complex, single precision coefficients.
  */
-int mtxmpimatrix_init_entries_global_complex_single(
+int LIBMTX_API mtxmpimatrix_init_entries_global_complex_single(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -475,7 +475,7 @@ int mtxmpimatrix_init_entries_global_complex_single(
  * ‘mtxmpimatrix_init_entries_global_complex_double()’ allocates and
  * initialises a matrix with complex, double precision coefficients.
  */
-int mtxmpimatrix_init_entries_global_complex_double(
+int LIBMTX_API mtxmpimatrix_init_entries_global_complex_double(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -492,7 +492,7 @@ int mtxmpimatrix_init_entries_global_complex_double(
  * ‘mtxmpimatrix_init_entries_global_integer_single()’ allocates and
  * initialises a matrix with integer, single precision coefficients.
  */
-int mtxmpimatrix_init_entries_global_integer_single(
+int LIBMTX_API mtxmpimatrix_init_entries_global_integer_single(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -509,7 +509,7 @@ int mtxmpimatrix_init_entries_global_integer_single(
  * ‘mtxmpimatrix_init_entries_global_integer_double()’ allocates and
  * initialises a matrix with integer, double precision coefficients.
  */
-int mtxmpimatrix_init_entries_global_integer_double(
+int LIBMTX_API mtxmpimatrix_init_entries_global_integer_double(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -527,7 +527,7 @@ int mtxmpimatrix_init_entries_global_integer_double(
  * initialises a binary pattern matrix, where every entry has a value
  * of one.
  */
-int mtxmpimatrix_init_entries_global_pattern(
+int LIBMTX_API mtxmpimatrix_init_entries_global_pattern(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -549,7 +549,7 @@ int mtxmpimatrix_init_entries_global_pattern(
  * allocates and initialises a matrix with real, single precision
  * coefficients.
  */
-int mtxmpimatrix_init_entries_global_strided_real_single(
+int LIBMTX_API mtxmpimatrix_init_entries_global_strided_real_single(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -570,7 +570,7 @@ int mtxmpimatrix_init_entries_global_strided_real_single(
  * allocates and initialises a matrix with real, double precision
  * coefficients.
  */
-int mtxmpimatrix_init_entries_global_strided_real_double(
+int LIBMTX_API mtxmpimatrix_init_entries_global_strided_real_double(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -591,7 +591,7 @@ int mtxmpimatrix_init_entries_global_strided_real_double(
  * allocates and initialises a matrix with complex, single precision
  * coefficients.
  */
-int mtxmpimatrix_init_entries_global_strided_complex_single(
+int LIBMTX_API mtxmpimatrix_init_entries_global_strided_complex_single(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -612,7 +612,7 @@ int mtxmpimatrix_init_entries_global_strided_complex_single(
  * allocates and initialises a matrix with complex, double precision
  * coefficients.
  */
-int mtxmpimatrix_init_entries_global_strided_complex_double(
+int LIBMTX_API mtxmpimatrix_init_entries_global_strided_complex_double(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -633,7 +633,7 @@ int mtxmpimatrix_init_entries_global_strided_complex_double(
  * allocates and initialises a matrix with integer, single precision
  * coefficients.
  */
-int mtxmpimatrix_init_entries_global_strided_integer_single(
+int LIBMTX_API mtxmpimatrix_init_entries_global_strided_integer_single(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -654,7 +654,7 @@ int mtxmpimatrix_init_entries_global_strided_integer_single(
  * allocates and initialises a matrix with integer, double precision
  * coefficients.
  */
-int mtxmpimatrix_init_entries_global_strided_integer_double(
+int LIBMTX_API mtxmpimatrix_init_entries_global_strided_integer_double(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -675,7 +675,7 @@ int mtxmpimatrix_init_entries_global_strided_integer_double(
  * initialises a binary pattern matrix, where every entry has a value
  * of one.
  */
-int mtxmpimatrix_init_entries_global_strided_pattern(
+int LIBMTX_API mtxmpimatrix_init_entries_global_strided_pattern(
     struct mtxmpimatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -698,7 +698,7 @@ int mtxmpimatrix_init_entries_global_strided_pattern(
  * entry of a matrix equal to a constant, single precision floating
  * point number.
  */
-int mtxmpimatrix_set_constant_real_single(
+int LIBMTX_API mtxmpimatrix_set_constant_real_single(
     struct mtxmpimatrix * A,
     float a,
     struct mtxdisterror * disterr);
@@ -708,7 +708,7 @@ int mtxmpimatrix_set_constant_real_single(
  * entry of a matrix equal to a constant, double precision floating
  * point number.
  */
-int mtxmpimatrix_set_constant_real_double(
+int LIBMTX_API mtxmpimatrix_set_constant_real_double(
     struct mtxmpimatrix * A,
     double a,
     struct mtxdisterror * disterr);
@@ -718,7 +718,7 @@ int mtxmpimatrix_set_constant_real_double(
  * entry of a matrix equal to a constant, single precision floating
  * point complex number.
  */
-int mtxmpimatrix_set_constant_complex_single(
+int LIBMTX_API mtxmpimatrix_set_constant_complex_single(
     struct mtxmpimatrix * A,
     float a[2],
     struct mtxdisterror * disterr);
@@ -728,7 +728,7 @@ int mtxmpimatrix_set_constant_complex_single(
  * entry of a matrix equal to a constant, double precision floating
  * point complex number.
  */
-int mtxmpimatrix_set_constant_complex_double(
+int LIBMTX_API mtxmpimatrix_set_constant_complex_double(
     struct mtxmpimatrix * A,
     double a[2],
     struct mtxdisterror * disterr);
@@ -737,7 +737,7 @@ int mtxmpimatrix_set_constant_complex_double(
  * ‘mtxmpimatrix_set_constant_integer_single()’ sets every nonzero
  * entry of a matrix equal to a constant integer.
  */
-int mtxmpimatrix_set_constant_integer_single(
+int LIBMTX_API mtxmpimatrix_set_constant_integer_single(
     struct mtxmpimatrix * A,
     int32_t a,
     struct mtxdisterror * disterr);
@@ -746,7 +746,7 @@ int mtxmpimatrix_set_constant_integer_single(
  * ‘mtxmpimatrix_set_constant_integer_double()’ sets every nonzero
  * entry of a matrix equal to a constant integer.
  */
-int mtxmpimatrix_set_constant_integer_double(
+int LIBMTX_API mtxmpimatrix_set_constant_integer_double(
     struct mtxmpimatrix * A,
     int64_t a,
     struct mtxdisterror * disterr);
@@ -760,7 +760,7 @@ int mtxmpimatrix_set_constant_integer_double(
  * given matrix, where a row vector is a vector whose length equal to
  * a single row of the matrix.
  */
-int mtxmpimatrix_alloc_row_vector(
+int LIBMTX_API mtxmpimatrix_alloc_row_vector(
     const struct mtxmpimatrix * A,
     struct mtxmpivector * vector,
     enum mtxvectortype vector_type,
@@ -771,7 +771,7 @@ int mtxmpimatrix_alloc_row_vector(
  * for a given matrix, where a column vector is a vector whose length
  * equal to a single column of the matrix.
  */
-int mtxmpimatrix_alloc_column_vector(
+int LIBMTX_API mtxmpimatrix_alloc_column_vector(
     const struct mtxmpimatrix * A,
     struct mtxmpivector * vector,
     enum mtxvectortype vector_type,
@@ -788,7 +788,7 @@ int mtxmpimatrix_alloc_column_vector(
  * The ‘type’ argument may be used to specify a desired storage format
  * or implementation for the underlying ‘mtxmatrix’ on each process.
  */
-int mtxmpimatrix_from_mtxfile(
+int LIBMTX_API mtxmpimatrix_from_mtxfile(
     struct mtxmpimatrix * A,
     const struct mtxfile * mtxfile,
     enum mtxmatrixtype type,
@@ -800,7 +800,7 @@ int mtxmpimatrix_from_mtxfile(
  * ‘mtxmpimatrix_to_mtxfile()’ converts to a matrix in Matrix Market
  * format.
  */
-int mtxmpimatrix_to_mtxfile(
+int LIBMTX_API mtxmpimatrix_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxmpimatrix * A,
     enum mtxfileformat mtxfmt,
@@ -814,7 +814,7 @@ int mtxmpimatrix_to_mtxfile(
  * The ‘type’ argument may be used to specify a desired storage format
  * or implementation for the underlying ‘mtxmatrix’ on each process.
  */
-int mtxmpimatrix_from_mtxdistfile(
+int LIBMTX_API mtxmpimatrix_from_mtxdistfile(
     struct mtxmpimatrix * A,
     const struct mtxdistfile * mtxdistfile,
     enum mtxmatrixtype type,
@@ -825,7 +825,7 @@ int mtxmpimatrix_from_mtxdistfile(
  * ‘mtxmpimatrix_to_mtxdistfile()’ converts to a matrix in Matrix
  * Market format that is distributed among multiple processes.
  */
-int mtxmpimatrix_to_mtxdistfile(
+int LIBMTX_API mtxmpimatrix_to_mtxdistfile(
     struct mtxdistfile * mtxdistfile,
     const struct mtxmpimatrix * A,
     enum mtxfileformat mtxfmt,
@@ -865,7 +865,7 @@ int mtxmpimatrix_to_mtxdistfile(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxmpimatrix_fwrite(
+int LIBMTX_API mtxmpimatrix_fwrite(
     const struct mtxmpimatrix * A,
     enum mtxfileformat mtxfmt,
     FILE * f,
@@ -1346,7 +1346,7 @@ struct mtxmpimatrix_gemv
  * performed repeatedly, since the setup phase only needs to be
  * carried out once.
  */
-int mtxmpimatrix_gemv_init(
+int LIBMTX_API mtxmpimatrix_gemv_init(
     struct mtxmpimatrix_gemv * gemv,
     enum mtxtransposition trans,
     const struct mtxmpimatrix * A,
@@ -1359,7 +1359,7 @@ int mtxmpimatrix_gemv_init(
  * ‘mtxmpimatrix_gemv_free()’ frees resources associated with a
  * persistent, matrix-vector multiply operation.
  */
-void mtxmpimatrix_gemv_free(
+void LIBMTX_API mtxmpimatrix_gemv_free(
     struct mtxmpimatrix_gemv * gemv);
 
 /**
@@ -1375,7 +1375,7 @@ void mtxmpimatrix_gemv_free(
  * The operation may not complete before ‘mtxmpimatrix_gemv_wait()’
  * is called.
  */
-int mtxmpimatrix_gemv_sgemv(
+int LIBMTX_API mtxmpimatrix_gemv_sgemv(
     struct mtxmpimatrix_gemv * gemv,
     float alpha,
     float beta,
@@ -1394,7 +1394,7 @@ int mtxmpimatrix_gemv_sgemv(
  * The operation may not complete before ‘mtxmpimatrix_gemv_wait()’
  * is called.
  */
-int mtxmpimatrix_gemv_dgemv(
+int LIBMTX_API mtxmpimatrix_gemv_dgemv(
     struct mtxmpimatrix_gemv * gemv,
     double alpha,
     double beta,
@@ -1414,7 +1414,7 @@ int mtxmpimatrix_gemv_dgemv(
  * The operation may not complete before ‘mtxmpimatrix_gemv_wait()’
  * is called.
  */
-int mtxmpimatrix_gemv_cgemv(
+int LIBMTX_API mtxmpimatrix_gemv_cgemv(
     struct mtxmpimatrix_gemv * gemv,
     float alpha[2],
     float beta[2],
@@ -1434,7 +1434,7 @@ int mtxmpimatrix_gemv_cgemv(
  * The operation may not complete before ‘mtxmpimatrix_gemv_wait()’
  * is called.
  */
-int mtxmpimatrix_gemv_zgemv(
+int LIBMTX_API mtxmpimatrix_gemv_zgemv(
     struct mtxmpimatrix_gemv * gemv,
     double alpha[2],
     double beta[2],
@@ -1444,7 +1444,7 @@ int mtxmpimatrix_gemv_zgemv(
  * ‘mtxmpimatrix_gemv_wait()’ waits for a persistent, matrix-vector
  * multiply operation to finish.
  */
-int mtxmpimatrix_gemv_wait(
+int LIBMTX_API mtxmpimatrix_gemv_wait(
     struct mtxmpimatrix_gemv * gemv,
     int64_t * num_flops,
     struct mtxdisterror * disterr);

@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-10-03
+ * Last modified: 2022-10-08
  *
  * Data structures for vectors.
  */
@@ -168,14 +168,14 @@ int mtxvector_idx(
 /**
  * ‘mtxvector_free()’ frees storage allocated for a vector.
  */
-void mtxvector_free(
+LIBMTX_API void mtxvector_free(
     struct mtxvector * x);
 
 /**
  * ‘mtxvector_alloc_copy()’ allocates a copy of a vector without
  * initialising the values.
  */
-int mtxvector_alloc_copy(
+LIBMTX_API int mtxvector_alloc_copy(
     struct mtxvector * dst,
     const struct mtxvector * src);
 
@@ -183,7 +183,7 @@ int mtxvector_alloc_copy(
  * ‘mtxvector_init_copy()’ allocates a copy of a vector and also
  * copies the values.
  */
-int mtxvector_init_copy(
+LIBMTX_API int mtxvector_init_copy(
     struct mtxvector * dst,
     const struct mtxvector * src);
 
@@ -194,7 +194,7 @@ int mtxvector_init_copy(
 /**
  * ‘mtxvector_alloc()’ allocates a vector of the given type.
  */
-int mtxvector_alloc(
+LIBMTX_API int mtxvector_alloc(
     struct mtxvector * x,
     enum mtxvectortype type,
     enum mtxfield field,
@@ -205,7 +205,7 @@ int mtxvector_alloc(
  * ‘mtxvector_init_real_single()’ allocates and initialises a vector
  * with real, single precision coefficients.
  */
-int mtxvector_init_real_single(
+LIBMTX_API int mtxvector_init_real_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -215,7 +215,7 @@ int mtxvector_init_real_single(
  * ‘mtxvector_init_real_double()’ allocates and initialises a vector
  * with real, double precision coefficients.
  */
-int mtxvector_init_real_double(
+LIBMTX_API int mtxvector_init_real_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -225,7 +225,7 @@ int mtxvector_init_real_double(
  * ‘mtxvector_init_complex_single()’ allocates and initialises a
  * vector with complex, single precision coefficients.
  */
-int mtxvector_init_complex_single(
+LIBMTX_API int mtxvector_init_complex_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -235,7 +235,7 @@ int mtxvector_init_complex_single(
  * ‘mtxvector_init_complex_double()’ allocates and initialises a
  * vector with complex, double precision coefficients.
  */
-int mtxvector_init_complex_double(
+LIBMTX_API int mtxvector_init_complex_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -245,7 +245,7 @@ int mtxvector_init_complex_double(
  * ‘mtxvector_init_integer_single()’ allocates and initialises a
  * vector with integer, single precision coefficients.
  */
-int mtxvector_init_integer_single(
+LIBMTX_API int mtxvector_init_integer_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -255,7 +255,7 @@ int mtxvector_init_integer_single(
  * ‘mtxvector_init_integer_double()’ allocates and initialises a
  * vector with integer, double precision coefficients.
  */
-int mtxvector_init_integer_double(
+LIBMTX_API int mtxvector_init_integer_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -265,7 +265,7 @@ int mtxvector_init_integer_double(
  * ‘mtxvector_init_pattern()’ allocates and initialises a vector of
  * ones.
  */
-int mtxvector_init_pattern(
+LIBMTX_API int mtxvector_init_pattern(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size);
@@ -278,7 +278,7 @@ int mtxvector_init_pattern(
  * ‘mtxvector_init_strided_real_single()’ allocates and initialises a
  * vector with real, single precision coefficients.
  */
-int mtxvector_init_strided_real_single(
+LIBMTX_API int mtxvector_init_strided_real_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -289,7 +289,7 @@ int mtxvector_init_strided_real_single(
  * ‘mtxvector_init_strided_real_double()’ allocates and initialises a
  * vector with real, double precision coefficients.
  */
-int mtxvector_init_strided_real_double(
+LIBMTX_API int mtxvector_init_strided_real_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -300,7 +300,7 @@ int mtxvector_init_strided_real_double(
  * ‘mtxvector_init_strided_complex_single()’ allocates and initialises
  * a vector with complex, single precision coefficients.
  */
-int mtxvector_init_strided_complex_single(
+LIBMTX_API int mtxvector_init_strided_complex_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -311,7 +311,7 @@ int mtxvector_init_strided_complex_single(
  * ‘mtxvector_init_strided_complex_double()’ allocates and initialises
  * a vector with complex, double precision coefficients.
  */
-int mtxvector_init_strided_complex_double(
+LIBMTX_API int mtxvector_init_strided_complex_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -322,7 +322,7 @@ int mtxvector_init_strided_complex_double(
  * ‘mtxvector_init_strided_integer_single()’ allocates and initialises
  * a vector with integer, single precision coefficients.
  */
-int mtxvector_init_strided_integer_single(
+LIBMTX_API int mtxvector_init_strided_integer_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -333,7 +333,7 @@ int mtxvector_init_strided_integer_single(
  * ‘mtxvector_init_strided_integer_double()’ allocates and initialises
  * a vector with integer, double precision coefficients.
  */
-int mtxvector_init_strided_integer_double(
+LIBMTX_API int mtxvector_init_strided_integer_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -347,7 +347,7 @@ int mtxvector_init_strided_integer_double(
 /**
  * ‘mtxvector_alloc_packed()’ allocates a vector in packed form.
  */
-int mtxvector_alloc_packed(
+LIBMTX_API int mtxvector_alloc_packed(
     struct mtxvector * x,
     enum mtxvectortype type,
     enum mtxfield field,
@@ -360,7 +360,7 @@ int mtxvector_alloc_packed(
  * ‘mtxvector_init_packed_real_single()’ allocates and initialises a
  * vector with real, single precision coefficients.
  */
-int mtxvector_init_packed_real_single(
+LIBMTX_API int mtxvector_init_packed_real_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -372,7 +372,7 @@ int mtxvector_init_packed_real_single(
  * ‘mtxvector_init_packed_real_double()’ allocates and initialises a
  * vector with real, double precision coefficients.
  */
-int mtxvector_init_packed_real_double(
+LIBMTX_API int mtxvector_init_packed_real_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -384,7 +384,7 @@ int mtxvector_init_packed_real_double(
  * ‘mtxvector_init_packed_complex_single()’ allocates and initialises
  * a vector with complex, single precision coefficients.
  */
-int mtxvector_init_packed_complex_single(
+LIBMTX_API int mtxvector_init_packed_complex_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -396,7 +396,7 @@ int mtxvector_init_packed_complex_single(
  * ‘mtxvector_init_packed_complex_double()’ allocates and initialises
  * a vector with complex, double precision coefficients.
  */
-int mtxvector_init_packed_complex_double(
+LIBMTX_API int mtxvector_init_packed_complex_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -408,7 +408,7 @@ int mtxvector_init_packed_complex_double(
  * ‘mtxvector_init_packed_integer_single()’ allocates and initialises
  * a vector with integer, single precision coefficients.
  */
-int mtxvector_init_packed_integer_single(
+LIBMTX_API int mtxvector_init_packed_integer_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -420,7 +420,7 @@ int mtxvector_init_packed_integer_single(
  * ‘mtxvector_init_packed_integer_double()’ allocates and initialises
  * a vector with integer, double precision coefficients.
  */
-int mtxvector_init_packed_integer_double(
+LIBMTX_API int mtxvector_init_packed_integer_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -432,7 +432,7 @@ int mtxvector_init_packed_integer_double(
  * ‘mtxvector_init_packed_pattern()’ allocates and initialises a
  * binary pattern vector, where every entry has a value of one.
  */
-int mtxvector_init_packed_pattern(
+LIBMTX_API int mtxvector_init_packed_pattern(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -447,7 +447,7 @@ int mtxvector_init_packed_pattern(
  * ‘mtxvector_alloc_packed_strided()’ allocates a vector in
  * packed storage format.
  */
-int mtxvector_alloc_packed_strided(
+LIBMTX_API int mtxvector_alloc_packed_strided(
     struct mtxvector * x,
     enum mtxvectortype type,
     enum mtxfield field,
@@ -462,7 +462,7 @@ int mtxvector_alloc_packed_strided(
  * ‘mtxvector_init_packed_strided_real_single()’ allocates and
  * initialises a vector with real, single precision coefficients.
  */
-int mtxvector_init_packed_strided_real_single(
+LIBMTX_API int mtxvector_init_packed_strided_real_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -477,7 +477,7 @@ int mtxvector_init_packed_strided_real_single(
  * ‘mtxvector_init_packed_strided_real_double()’ allocates and
  * initialises a vector with real, double precision coefficients.
  */
-int mtxvector_init_packed_strided_real_double(
+LIBMTX_API int mtxvector_init_packed_strided_real_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -492,7 +492,7 @@ int mtxvector_init_packed_strided_real_double(
  * ‘mtxvector_init_packed_strided_complex_single()’ allocates and
  * initialises a vector with complex, single precision coefficients.
  */
-int mtxvector_init_packed_strided_complex_single(
+LIBMTX_API int mtxvector_init_packed_strided_complex_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -507,7 +507,7 @@ int mtxvector_init_packed_strided_complex_single(
  * ‘mtxvector_init_packed_strided_complex_double()’ allocates and
  * initialises a vector with complex, double precision coefficients.
  */
-int mtxvector_init_packed_strided_complex_double(
+LIBMTX_API int mtxvector_init_packed_strided_complex_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -522,7 +522,7 @@ int mtxvector_init_packed_strided_complex_double(
  * ‘mtxvector_init_packed_strided_integer_single()’ allocates and
  * initialises a vector with integer, single precision coefficients.
  */
-int mtxvector_init_packed_strided_integer_single(
+LIBMTX_API int mtxvector_init_packed_strided_integer_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -537,7 +537,7 @@ int mtxvector_init_packed_strided_integer_single(
  * ‘mtxvector_init_packed_strided_integer_double()’ allocates and
  * initialises a vector with integer, double precision coefficients.
  */
-int mtxvector_init_packed_strided_integer_double(
+LIBMTX_API int mtxvector_init_packed_strided_integer_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -553,7 +553,7 @@ int mtxvector_init_packed_strided_integer_double(
  * binary pattern vector, where every nonzero entry has a value of
  * one.
  */
-int mtxvector_init_packed_strided_pattern(
+LIBMTX_API int mtxvector_init_packed_strided_pattern(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
@@ -574,7 +574,7 @@ int mtxvector_init_packed_strided_pattern(
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_get_real_single(
+LIBMTX_API int mtxvector_get_real_single(
     const struct mtxvector * x,
     int64_t size,
     int stride,
@@ -588,7 +588,7 @@ int mtxvector_get_real_single(
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_get_real_double(
+LIBMTX_API int mtxvector_get_real_double(
     const struct mtxvector * x,
     int64_t size,
     int stride,
@@ -602,7 +602,7 @@ int mtxvector_get_real_double(
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_get_complex_single(
+LIBMTX_API int mtxvector_get_complex_single(
     struct mtxvector * x,
     int64_t size,
     int stride,
@@ -616,7 +616,7 @@ int mtxvector_get_complex_single(
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_get_complex_double(
+LIBMTX_API int mtxvector_get_complex_double(
     struct mtxvector * x,
     int64_t size,
     int stride,
@@ -630,7 +630,7 @@ int mtxvector_get_complex_double(
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_get_integer_single(
+LIBMTX_API int mtxvector_get_integer_single(
     struct mtxvector * x,
     int64_t size,
     int stride,
@@ -644,7 +644,7 @@ int mtxvector_get_integer_single(
  * separated by the given stride (in bytes), and ‘size’ must be
  * greater than or equal to the number of elements in the vector.
  */
-int mtxvector_get_integer_double(
+LIBMTX_API int mtxvector_get_integer_double(
     struct mtxvector * x,
     int64_t size,
     int stride,
@@ -657,14 +657,14 @@ int mtxvector_get_integer_double(
 /**
  * ‘mtxvector_setzero()’ sets every value of a vector to zero.
  */
-int mtxvector_setzero(
+LIBMTX_API int mtxvector_setzero(
     struct mtxvector * x);
 
 /**
  * ‘mtxvector_set_constant_real_single()’ sets every element of a
  * vector equal to a constant, single precision floating point number.
  */
-int mtxvector_set_constant_real_single(
+LIBMTX_API int mtxvector_set_constant_real_single(
     struct mtxvector * x,
     float a);
 
@@ -672,7 +672,7 @@ int mtxvector_set_constant_real_single(
  * ‘mtxvector_set_constant_real_double()’ sets every element of a
  * vector equal to a constant, double precision floating point number.
  */
-int mtxvector_set_constant_real_double(
+LIBMTX_API int mtxvector_set_constant_real_double(
     struct mtxvector * x,
     double a);
 
@@ -681,7 +681,7 @@ int mtxvector_set_constant_real_double(
  * vector equal to a constant, single precision floating point complex
  * number.
  */
-int mtxvector_set_constant_complex_single(
+LIBMTX_API int mtxvector_set_constant_complex_single(
     struct mtxvector * x,
     float a[2]);
 
@@ -690,7 +690,7 @@ int mtxvector_set_constant_complex_single(
  * vector equal to a constant, double precision floating point complex
  * number.
  */
-int mtxvector_set_constant_complex_double(
+LIBMTX_API int mtxvector_set_constant_complex_double(
     struct mtxvector * x,
     double a[2]);
 
@@ -698,7 +698,7 @@ int mtxvector_set_constant_complex_double(
  * ‘mtxvector_set_constant_integer_single()’ sets every element of a
  * vector equal to a constant integer.
  */
-int mtxvector_set_constant_integer_single(
+LIBMTX_API int mtxvector_set_constant_integer_single(
     struct mtxvector * x,
     int32_t a);
 
@@ -706,7 +706,7 @@ int mtxvector_set_constant_integer_single(
  * ‘mtxvector_set_constant_integer_double()’ sets every element of a
  * vector equal to a constant integer.
  */
-int mtxvector_set_constant_integer_double(
+LIBMTX_API int mtxvector_set_constant_integer_double(
     struct mtxvector * x,
     int64_t a);
 
@@ -714,7 +714,7 @@ int mtxvector_set_constant_integer_double(
  * ‘mtxvector_set_real_single()’ sets values of a vector from an array
  * of single precision floating point numbers.
  */
-int mtxvector_set_real_single(
+LIBMTX_API int mtxvector_set_real_single(
     struct mtxvector * x,
     int64_t size,
     int stride,
@@ -724,7 +724,7 @@ int mtxvector_set_real_single(
  * ‘mtxvector_set_real_double()’ sets values of a vector from an array
  * of double precision floating point numbers.
  */
-int mtxvector_set_real_double(
+LIBMTX_API int mtxvector_set_real_double(
     struct mtxvector * x,
     int64_t size,
     int stride,
@@ -734,7 +734,7 @@ int mtxvector_set_real_double(
  * ‘mtxvector_set_complex_single()’ sets values of a vector from an
  * array of single precision floating point complex numbers.
  */
-int mtxvector_set_complex_single(
+LIBMTX_API int mtxvector_set_complex_single(
     struct mtxvector * x,
     int64_t size,
     int stride,
@@ -744,7 +744,7 @@ int mtxvector_set_complex_single(
  * ‘mtxvector_set_complex_double()’ sets values of a vector from an
  * array of double precision floating point complex numbers.
  */
-int mtxvector_set_complex_double(
+LIBMTX_API int mtxvector_set_complex_double(
     struct mtxvector * x,
     int64_t size,
     int stride,
@@ -754,7 +754,7 @@ int mtxvector_set_complex_double(
  * ‘mtxvector_set_integer_single()’ sets values of a vector from an
  * array of integers.
  */
-int mtxvector_set_integer_single(
+LIBMTX_API int mtxvector_set_integer_single(
     struct mtxvector * x,
     int64_t size,
     int stride,
@@ -764,7 +764,7 @@ int mtxvector_set_integer_single(
  * ‘mtxvector_set_integer_double()’ sets values of a vector from an
  * array of integers.
  */
-int mtxvector_set_integer_double(
+LIBMTX_API int mtxvector_set_integer_double(
     struct mtxvector * x,
     int64_t size,
     int stride,
@@ -778,7 +778,7 @@ int mtxvector_set_integer_double(
  * ‘mtxvector_from_mtxfile()’ converts to a vector from Matrix Market
  * format.
  */
-int mtxvector_from_mtxfile(
+LIBMTX_API int mtxvector_from_mtxfile(
     struct mtxvector * dst,
     const struct mtxfile * src,
     enum mtxvectortype type);
@@ -786,7 +786,7 @@ int mtxvector_from_mtxfile(
 /**
  * ‘mtxvector_to_mtxfile()’ converts a vector to Matrix Market format.
  */
-int mtxvector_to_mtxfile(
+LIBMTX_API int mtxvector_to_mtxfile(
     struct mtxfile * dst,
     const struct mtxvector * src,
     int64_t num_rows,
@@ -816,7 +816,7 @@ int mtxvector_to_mtxfile(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the vector.
  */
-int mtxvector_read(
+LIBMTX_API int mtxvector_read(
     struct mtxvector * x,
     enum mtxprecision precision,
     enum mtxvectortype type,
@@ -839,7 +839,7 @@ int mtxvector_read(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the vector.
  */
-int mtxvector_fread(
+LIBMTX_API int mtxvector_fread(
     struct mtxvector * x,
     enum mtxprecision precision,
     enum mtxvectortype type,
@@ -863,7 +863,7 @@ int mtxvector_fread(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the vector.
  */
-int mtxvector_gzread(
+LIBMTX_API int mtxvector_gzread(
     struct mtxvector * x,
     enum mtxprecision precision,
     enum mtxvectortype type,
@@ -894,7 +894,7 @@ int mtxvector_gzread(
  * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
  * allowed.
  */
-int mtxvector_write(
+LIBMTX_API int mtxvector_write(
     const struct mtxvector * x,
     int64_t num_rows,
     const int64_t * idx,
@@ -924,7 +924,7 @@ int mtxvector_write(
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
  */
-int mtxvector_fwrite(
+LIBMTX_API int mtxvector_fwrite(
     const struct mtxvector * x,
     int64_t num_rows,
     const int64_t * idx,
@@ -954,7 +954,7 @@ int mtxvector_fwrite(
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
  */
-int mtxvector_gzwrite(
+LIBMTX_API int mtxvector_gzwrite(
     const struct mtxvector * x,
     int64_t num_rows,
     const int64_t * idx,

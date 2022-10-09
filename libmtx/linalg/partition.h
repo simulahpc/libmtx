@@ -16,13 +16,15 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-10-03
+ * Last modified: 2022-10-08
  *
  * Matrix partitionings.
  */
 
 #ifndef LIBMTX_LINALG_PARTITION_H
 #define LIBMTX_LINALG_PARTITION_H
+
+#include <libmtx/libmtx-config.h>
 
 #include <stdint.h>
 
@@ -40,10 +42,10 @@ enum mtxmatrixparttype
 };
 
 /**
- * ‘mtxmatrixparttype_str()’ is a string representing the matrix
+ * ‘mtxmatrixparttypestr()’ is a string representing the matrix
  * partitioning type.
  */
-const char * mtxmatrixparttype_str(
+LIBMTX_API const char * mtxmatrixparttypestr(
     enum mtxmatrixparttype matrixparttype);
 
 /**

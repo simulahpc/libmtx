@@ -16,14 +16,14 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-26
+ * Last modified: 2022-10-08
  *
  * Draw an image of a matrix sparsity pattern and save to a PNG file.
  */
 
 #include <libmtx/libmtx.h>
 
-#include "../libmtx/util/parse.h"
+#include "parse.h"
 
 #include <png.h>
 
@@ -203,16 +203,26 @@ static int parse_program_options(
     /* Parse program options. */
     int num_positional_arguments_consumed = 0;
     while (*nargs < argc) {
-        if (strcmp(argv[0], "--precision") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxprecision_parse(&args->precision, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--precision") == argv[0]) {
+            int n = strlen("--precision");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxprecision(&args->precision, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--precision=") == argv[0]) {
-            char * s = argv[0] + strlen("--precision=");
-            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        }
+
+        if (strstr(argv[0], "--output-path") == argv[0]) {
+            int n = strlen("--output-path");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            if (args->outputpath) free(args->outputpath);
+            args->outputpath = strdup(s);
+            if (!args->outputpath) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
         }
 
@@ -235,165 +245,117 @@ static int parse_program_options(
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--output-path") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->outputpath) free(args->outputpath);
-            args->outputpath = strdup(argv[0]);
-            if (!args->outputpath) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--output-path=") == argv[0]) {
-            char * s = argv[0] + strlen("--output-path=");
-            if (args->outputpath) free(args->outputpath);
-            args->outputpath = strdup(s);
-            if (!args->outputpath) { program_options_free(args); return errno; }
+        if (strstr(argv[0], "--max-height") == argv[0]) {
+            int n = strlen("--max-height");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int(&args->max_height, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--max-height") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int(&args->max_height, argv[0], NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--max-height=") == argv[0]) {
-            char * s = argv[0] + strlen("--max-height=");
-            err = parse_int(&args->max_height, s, NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--max-width") == argv[0]) {
+            int n = strlen("--max-width");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int(&args->max_width, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--max-width") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int(&args->max_width, argv[0], NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--max-width=") == argv[0]) {
-            char * s = argv[0] + strlen("--max-width=");
-            err = parse_int(&args->max_width, s, NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--fgcolor") == argv[0]) {
+            int n = strlen("--fgcolor");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int32_hex(&args->fgcolor, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--fgcolor") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int32_hex(
-                argv[0][0] == '#' ? &argv[0][1] : &argv[0][0],
-                NULL, &args->fgcolor, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--fgcolor=") == argv[0]) {
-            char * s = argv[0] + strlen("--fgcolor=");
-            err = parse_int32_hex(
-                s[0] == '#' ? &s[1] : &s[0], NULL, &args->fgcolor, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--bgcolor") == argv[0]) {
+            int n = strlen("--bgcolor");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int32_hex(&args->bgcolor, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--bgcolor") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int32_hex(
-                argv[0][0] == '#' ? &argv[0][1] : &argv[0][0],
-                NULL, &args->bgcolor, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--bgcolor=") == argv[0]) {
-            char * s = argv[0] + strlen("--bgcolor=");
-            err = parse_int32_hex(
-                s[0] == '#' ? &s[1] : &s[0], NULL, &args->bgcolor, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--gamma") == argv[0]) {
+            int n = strlen("--gamma");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_double(&args->gamma, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--gamma") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_double(&args->gamma, argv[0], NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--gamma=") == argv[0]) {
-            char * s = argv[0] + strlen("--gamma=");
-            err = parse_double(&args->gamma, s, NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        }
-        if (strcmp(argv[0], "--title") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->title) free(args->title);
-            args->title = strdup(argv[0]);
-            if (!args->title) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--title=") == argv[0]) {
-            char * s = argv[0] + strlen("--title=");
+        if (strstr(argv[0], "--title") == argv[0]) {
+            int n = strlen("--title");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
             if (args->title) free(args->title);
             args->title = strdup(s);
             if (!args->title) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--author") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->author) free(args->author);
-            args->author = strdup(argv[0]);
-            if (!args->author) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--author=") == argv[0]) {
-            char * s = argv[0] + strlen("--author=");
+        if (strstr(argv[0], "--author") == argv[0]) {
+            int n = strlen("--author");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
             if (args->author) free(args->author);
             args->author = strdup(s);
             if (!args->author) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--description") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->description) free(args->description);
-            args->description = strdup(argv[0]);
-            if (!args->description) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--description=") == argv[0]) {
-            char * s = argv[0] + strlen("--description=");
+        if (strstr(argv[0], "--description") == argv[0]) {
+            int n = strlen("--description");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
             if (args->description) free(args->description);
             args->description = strdup(s);
             if (!args->description) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--copyright") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->copyright) free(args->copyright);
-            args->copyright = strdup(argv[0]);
-            if (!args->copyright) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--copyright=") == argv[0]) {
-            char * s = argv[0] + strlen("--copyright=");
+        if (strstr(argv[0], "--copyright") == argv[0]) {
+            int n = strlen("--copyright");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
             if (args->copyright) free(args->copyright);
             args->copyright = strdup(s);
             if (!args->copyright) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--email") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->email) free(args->email);
-            args->email = strdup(argv[0]);
-            if (!args->email) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--email=") == argv[0]) {
-            char * s = argv[0] + strlen("--email=");
+        if (strstr(argv[0], "--email") == argv[0]) {
+            int n = strlen("--email");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
             if (args->email) free(args->email);
             args->email = strdup(s);
             if (!args->email) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--url") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->url) free(args->url);
-            args->url = strdup(argv[0]);
-            if (!args->url) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--url=") == argv[0]) {
-            char * s = argv[0] + strlen("--url=");
+        if (strstr(argv[0], "--url") == argv[0]) {
+            int n = strlen("--url");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
             if (args->url) free(args->url);
             args->url = strdup(s);
             if (!args->url) { program_options_free(args); return errno; }

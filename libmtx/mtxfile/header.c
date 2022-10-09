@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-10-08
  *
  * Matrix Market file headers.
  */
@@ -48,10 +48,10 @@
  */
 
 /**
- * ‘mtxfileobject_str()’ is a string representing the Matrix Market
+ * ‘mtxfileobjectstr()’ is a string representing the Matrix Market
  * object type.
  */
-const char * mtxfileobject_str(
+const char * mtxfileobjectstr(
     enum mtxfileobject object)
 {
     switch (object) {
@@ -110,10 +110,10 @@ int mtxfileobject_parse(
 }
 
 /**
- * ‘mtxfileformat_str()’ is a string representing the Matrix Market
+ * ‘mtxfileformatstr()’ is a string representing the Matrix Market
  * format type.
  */
-const char * mtxfileformat_str(
+const char * mtxfileformatstr(
     enum mtxfileformat format)
 {
     switch (format) {
@@ -172,10 +172,10 @@ int mtxfileformat_parse(
 }
 
 /**
- * ‘mtxfilefield_str()’ is a string representing the Matrix Market
+ * ‘mtxfilefieldstr()’ is a string representing the Matrix Market
  * field type.
  */
-const char * mtxfilefield_str(
+const char * mtxfilefieldstr(
     enum mtxfilefield field)
 {
     switch (field) {
@@ -279,10 +279,10 @@ int mtxfilefield_to_mtxfield(
 }
 
 /**
- * ‘mtxfilesymmetry_str()’ is a string representing the Matrix Market
+ * ‘mtxfilesymmetrystr()’ is a string representing the Matrix Market
  * symmetry type.
  */
-const char * mtxfilesymmetry_str(
+const char * mtxfilesymmetrystr(
     enum mtxfilesymmetry symmetry)
 {
     switch (symmetry) {
@@ -606,10 +606,10 @@ int mtxfileheader_fwrite(
 {
     int ret = fprintf(
         f, "%%%%MatrixMarket %s %s %s %s\n",
-        mtxfileobject_str(header->object),
-        mtxfileformat_str(header->format),
-        mtxfilefield_str(header->field),
-        mtxfilesymmetry_str(header->symmetry));
+        mtxfileobjectstr(header->object),
+        mtxfileformatstr(header->format),
+        mtxfilefieldstr(header->field),
+        mtxfilesymmetrystr(header->symmetry));
     if (ret < 0)
         return MTX_ERR_ERRNO;
     if (bytes_written)
@@ -632,10 +632,10 @@ int mtxfileheader_gzwrite(
 {
     int ret = gzprintf(
         f, "%%%%MatrixMarket %s %s %s %s\n",
-        mtxfileobject_str(header->object),
-        mtxfileformat_str(header->format),
-        mtxfilefield_str(header->field),
-        mtxfilesymmetry_str(header->symmetry));
+        mtxfileobjectstr(header->object),
+        mtxfileformatstr(header->format),
+        mtxfilefieldstr(header->field),
+        mtxfilesymmetrystr(header->symmetry));
     if (ret < 0)
         return MTX_ERR_ERRNO;
     if (bytes_written)

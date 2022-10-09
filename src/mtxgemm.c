@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-10-05
+ * Last modified: 2022-10-08
  *
  * Multiply a general, unsymmetric matrix with another matrix.
  *
@@ -204,81 +204,69 @@ static int parse_program_options(
     /* Parse program options. */
     int num_positional_arguments_consumed = 0;
     while (*nargs < argc) {
-        if (strcmp(argv[0], "--precision") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxprecision_parse(&args->precision, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--precision=") == argv[0]) {
-            char * s = argv[0] + strlen("--precision=");
-            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--precision") == argv[0]) {
+            int n = strlen("--precision");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxprecision(&args->precision, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--matrix-type") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxmatrixtype_parse(&args->matrix_type, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--matrix-type=") == argv[0]) {
-            char * s = argv[0] + strlen("--matrix-type=");
-            err = mtxmatrixtype_parse(&args->matrix_type, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--vector-type") == argv[0]) {
+            int n = strlen("--vector-type");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxvectortype(&args->vector_type, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--vector-type") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxvectortype_parse(&args->vector_type, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--vector-type=") == argv[0]) {
-            char * s = argv[0] + strlen("--vector-type=");
-            err = mtxvectortype_parse(&args->vector_type, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--matrix-type") == argv[0]) {
+            int n = strlen("--matrix-type");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxmatrixtype(&args->matrix_type, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--A-trans") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxtransposition_parse(&args->Atrans, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--A-trans=") == argv[0]) {
-            char * s = argv[0] + strlen("--A-trans=");
-            err = mtxtransposition_parse(&args->Atrans, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--A-trans") == argv[0]) {
+            int n = strlen("--A-trans");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxtransposition(&args->Atrans, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--B-trans") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxtransposition_parse(&args->Btrans, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--B-trans=") == argv[0]) {
-            char * s = argv[0] + strlen("--B-trans=");
-            err = mtxtransposition_parse(&args->Btrans, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--B-trans") == argv[0]) {
+            int n = strlen("--B-trans");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxtransposition(&args->Btrans, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--repeat") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int32_ex(argv[0], NULL, &args->repeat, NULL);
-            if (err) { program_options_free(args); return err; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--repeat=") == argv[0]) {
-            err = parse_int32_ex(
-                argv[0] + strlen("--repeat="), NULL, &args->repeat, NULL);
-            if (err) { program_options_free(args); return err; }
+        if (strstr(argv[0], "--repeat") == argv[0]) {
+            int n = strlen("--repeat");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int(&args->repeat, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
@@ -348,7 +336,7 @@ static int parse_program_options(
         } else if (num_positional_arguments_consumed == 1) {
             char * argv0 = argv[0];
             argv[0] = args->A_path;
-            err = parse_double_ex(argv[0], NULL, &args->alpha, NULL);
+            err = parse_double(&args->alpha, argv[0], NULL, NULL);
             if (err) { argv[0] = argv0; program_options_free(args); return err; }
             argv[0] = argv0;
             if (args->A_path) free(args->A_path);

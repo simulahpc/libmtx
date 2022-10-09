@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-10-08
  *
  * Matrix Market comment lines.
  */
@@ -109,7 +109,7 @@ void mtxfilecomments_free(
  * the comment line must begin with '%' and end with a newline
  * character, '\n'.
  */
-int mtxfilecomments_write(
+int LIBMTX_API mtxfilecomments_write(
     struct mtxfilecomments * comment,
     const char * comment_line);
 
@@ -123,7 +123,7 @@ int mtxfilecomments_write(
  * a comment line.  The `format' string must also end with a newline
  * character, '\n'.
  */
-int mtxfilecomments_printf(
+int LIBMTX_API mtxfilecomments_printf(
     struct mtxfilecomments * comment,
     const char * format, ...);
 
@@ -169,7 +169,7 @@ int mtxfile_gzread_comments(
  * `mtxfilecomments_fputs()' write Matrix Market comment lines to a
  * stream.
  */
-int mtxfilecomments_fputs(
+int LIBMTX_API mtxfilecomments_fputs(
     const struct mtxfilecomments * comments,
     FILE * f,
     int64_t * bytes_written);
@@ -179,7 +179,7 @@ int mtxfilecomments_fputs(
  * `mtxfilecomments_gzputs()' write Matrix Market comment lines to a
  * gzip-compressed stream.
  */
-int mtxfilecomments_gzputs(
+int LIBMTX_API mtxfilecomments_gzputs(
     const struct mtxfilecomments * comments,
     gzFile f,
     int64_t * bytes_written);

@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-22
+ * Last modified: 2022-10-08
  *
  * Matrix partitionings.
  */
@@ -28,10 +28,10 @@
 #include <string.h>
 
 /**
- * ‘mtxmatrixparttype_str()’ is a string representing the matrix
+ * ‘mtxmatrixparttypestr()’ is a string representing the matrix
  * partitioning type.
  */
-const char * mtxmatrixparttype_str(
+const char * mtxmatrixparttypestr(
     enum mtxmatrixparttype matrixparttype)
 {
     switch (matrixparttype) {

@@ -97,7 +97,7 @@ struct mtxfile
  *
  * ‘comments’ may be ‘NULL’, in which case it is ignored.
  */
-LIBMTX_API int mtxfile_alloc(
+int LIBMTX_API mtxfile_alloc(
     struct mtxfile * mtxfile,
     const struct mtxfileheader * header,
     const struct mtxfilecomments * comments,
@@ -107,21 +107,21 @@ LIBMTX_API int mtxfile_alloc(
 /**
  * ‘mtxfile_free()’ frees storage allocated for a Matrix Market file.
  */
-LIBMTX_API void mtxfile_free(
+void LIBMTX_API mtxfile_free(
     struct mtxfile * mtxfile);
 
 /**
  * ‘mtxfile_alloc_copy()’ allocates storage for a copy of a Matrix
  * Market file without initialising the underlying values.
  */
-LIBMTX_API int mtxfile_alloc_copy(
+int LIBMTX_API mtxfile_alloc_copy(
     struct mtxfile * dst,
     const struct mtxfile * src);
 
 /**
  * ‘mtxfile_init_copy()’ creates a copy of a Matrix Market file.
  */
-LIBMTX_API int mtxfile_init_copy(
+int LIBMTX_API mtxfile_init_copy(
     struct mtxfile * dst,
     const struct mtxfile * src);
 
@@ -132,7 +132,7 @@ LIBMTX_API int mtxfile_init_copy(
 /**
  * ‘mtxfile_alloc_matrix_array()’ allocates a matrix in array format.
  */
-LIBMTX_API int mtxfile_alloc_matrix_array(
+int LIBMTX_API mtxfile_alloc_matrix_array(
     struct mtxfile * mtxfile,
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
@@ -144,7 +144,7 @@ LIBMTX_API int mtxfile_alloc_matrix_array(
  * ‘mtxfile_init_matrix_array_real_single()’ allocates and initialises
  * a matrix in array format with real, single precision coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_array_real_single(
+int LIBMTX_API mtxfile_init_matrix_array_real_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -155,7 +155,7 @@ LIBMTX_API int mtxfile_init_matrix_array_real_single(
  * ‘mtxfile_init_matrix_array_real_double()’ allocates and initialises
  * a matrix in array format with real, double precision coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_array_real_double(
+int LIBMTX_API mtxfile_init_matrix_array_real_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -167,7 +167,7 @@ LIBMTX_API int mtxfile_init_matrix_array_real_double(
  * initialises a matrix in array format with complex, single precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_array_complex_single(
+int LIBMTX_API mtxfile_init_matrix_array_complex_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -179,7 +179,7 @@ LIBMTX_API int mtxfile_init_matrix_array_complex_single(
  * initialises a matrix in array format with complex, double precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_array_complex_double(
+int LIBMTX_API mtxfile_init_matrix_array_complex_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -191,7 +191,7 @@ LIBMTX_API int mtxfile_init_matrix_array_complex_double(
  * initialises a matrix in array format with integer, single precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_array_integer_single(
+int LIBMTX_API mtxfile_init_matrix_array_integer_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -203,7 +203,7 @@ LIBMTX_API int mtxfile_init_matrix_array_integer_single(
  * initialises a matrix in array format with integer, double precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_array_integer_double(
+int LIBMTX_API mtxfile_init_matrix_array_integer_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -217,7 +217,7 @@ LIBMTX_API int mtxfile_init_matrix_array_integer_double(
 /**
  * ‘mtxfile_alloc_vector_array()’ allocates a vector in array format.
  */
-LIBMTX_API int mtxfile_alloc_vector_array(
+int LIBMTX_API mtxfile_alloc_vector_array(
     struct mtxfile * mtxfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
@@ -227,7 +227,7 @@ LIBMTX_API int mtxfile_alloc_vector_array(
  * ‘mtxfile_init_vector_array_real_single()’ allocates and initialises
  * a vector in array format with real, single precision coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_array_real_single(
+int LIBMTX_API mtxfile_init_vector_array_real_single(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     const float * data);
@@ -236,7 +236,7 @@ LIBMTX_API int mtxfile_init_vector_array_real_single(
  * ‘mtxfile_init_vector_array_real_double()’ allocates and initialises
  * a vector in array format with real, double precision coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_array_real_double(
+int LIBMTX_API mtxfile_init_vector_array_real_double(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     const double * data);
@@ -246,7 +246,7 @@ LIBMTX_API int mtxfile_init_vector_array_real_double(
  * initialises a vector in array format with complex, single precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_array_complex_single(
+int LIBMTX_API mtxfile_init_vector_array_complex_single(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     const float (* data)[2]);
@@ -256,7 +256,7 @@ LIBMTX_API int mtxfile_init_vector_array_complex_single(
  * initialises a vector in array format with complex, double precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_array_complex_double(
+int LIBMTX_API mtxfile_init_vector_array_complex_double(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     const double (* data)[2]);
@@ -266,7 +266,7 @@ LIBMTX_API int mtxfile_init_vector_array_complex_double(
  * initialises a vector in array format with integer, single precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_array_integer_single(
+int LIBMTX_API mtxfile_init_vector_array_integer_single(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     const int32_t * data);
@@ -276,7 +276,7 @@ LIBMTX_API int mtxfile_init_vector_array_integer_single(
  * initialises a vector in array format with integer, double precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_array_integer_double(
+int LIBMTX_API mtxfile_init_vector_array_integer_double(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     const int64_t * data);
@@ -289,7 +289,7 @@ LIBMTX_API int mtxfile_init_vector_array_integer_double(
  * ‘mtxfile_alloc_matrix_coordinate()’ allocates a matrix in
  * coordinate format.
  */
-LIBMTX_API int mtxfile_alloc_matrix_coordinate(
+int LIBMTX_API mtxfile_alloc_matrix_coordinate(
     struct mtxfile * mtxfile,
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
@@ -302,7 +302,7 @@ LIBMTX_API int mtxfile_alloc_matrix_coordinate(
  * ‘mtxfile_init_matrix_coordinate_real_single()’ allocates and initialises
  * a matrix in coordinate format with real, single precision coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_coordinate_real_single(
+int LIBMTX_API mtxfile_init_matrix_coordinate_real_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -314,7 +314,7 @@ LIBMTX_API int mtxfile_init_matrix_coordinate_real_single(
  * ‘mtxfile_init_matrix_coordinate_real_double()’ allocates and initialises
  * a matrix in coordinate format with real, double precision coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_coordinate_real_double(
+int LIBMTX_API mtxfile_init_matrix_coordinate_real_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -327,7 +327,7 @@ LIBMTX_API int mtxfile_init_matrix_coordinate_real_double(
  * initialises a matrix in coordinate format with complex, single precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_coordinate_complex_single(
+int LIBMTX_API mtxfile_init_matrix_coordinate_complex_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -340,7 +340,7 @@ LIBMTX_API int mtxfile_init_matrix_coordinate_complex_single(
  * initialises a matrix in coordinate format with complex, double precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_coordinate_complex_double(
+int LIBMTX_API mtxfile_init_matrix_coordinate_complex_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -353,7 +353,7 @@ LIBMTX_API int mtxfile_init_matrix_coordinate_complex_double(
  * initialises a matrix in coordinate format with integer, single precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_coordinate_integer_single(
+int LIBMTX_API mtxfile_init_matrix_coordinate_integer_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -366,7 +366,7 @@ LIBMTX_API int mtxfile_init_matrix_coordinate_integer_single(
  * initialises a matrix in coordinate format with integer, double precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_coordinate_integer_double(
+int LIBMTX_API mtxfile_init_matrix_coordinate_integer_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -379,7 +379,7 @@ LIBMTX_API int mtxfile_init_matrix_coordinate_integer_double(
  * initialises a matrix in coordinate format with boolean (pattern)
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_matrix_coordinate_pattern(
+int LIBMTX_API mtxfile_init_matrix_coordinate_pattern(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
@@ -395,7 +395,7 @@ LIBMTX_API int mtxfile_init_matrix_coordinate_pattern(
  * ‘mtxfile_alloc_vector_coordinate()’ allocates a vector in
  * coordinate format.
  */
-LIBMTX_API int mtxfile_alloc_vector_coordinate(
+int LIBMTX_API mtxfile_alloc_vector_coordinate(
     struct mtxfile * mtxfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
@@ -406,7 +406,7 @@ LIBMTX_API int mtxfile_alloc_vector_coordinate(
  * ‘mtxfile_init_vector_coordinate_real_single()’ allocates and initialises
  * a vector in coordinate format with real, single precision coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_coordinate_real_single(
+int LIBMTX_API mtxfile_init_vector_coordinate_real_single(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -416,7 +416,7 @@ LIBMTX_API int mtxfile_init_vector_coordinate_real_single(
  * ‘mtxfile_init_vector_coordinate_real_double()’ allocates and initialises
  * a vector in coordinate format with real, double precision coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_coordinate_real_double(
+int LIBMTX_API mtxfile_init_vector_coordinate_real_double(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -427,7 +427,7 @@ LIBMTX_API int mtxfile_init_vector_coordinate_real_double(
  * initialises a vector in coordinate format with complex, single precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_coordinate_complex_single(
+int LIBMTX_API mtxfile_init_vector_coordinate_complex_single(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -438,7 +438,7 @@ LIBMTX_API int mtxfile_init_vector_coordinate_complex_single(
  * initialises a vector in coordinate format with complex, double precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_coordinate_complex_double(
+int LIBMTX_API mtxfile_init_vector_coordinate_complex_double(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -449,7 +449,7 @@ LIBMTX_API int mtxfile_init_vector_coordinate_complex_double(
  * initialises a vector in coordinate format with integer, single precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_coordinate_integer_single(
+int LIBMTX_API mtxfile_init_vector_coordinate_integer_single(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -460,7 +460,7 @@ LIBMTX_API int mtxfile_init_vector_coordinate_integer_single(
  * initialises a vector in coordinate format with integer, double precision
  * coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_coordinate_integer_double(
+int LIBMTX_API mtxfile_init_vector_coordinate_integer_double(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -471,7 +471,7 @@ LIBMTX_API int mtxfile_init_vector_coordinate_integer_double(
  * initialises a vector in coordinate format with boolean (pattern)
  * precision coefficients.
  */
-LIBMTX_API int mtxfile_init_vector_coordinate_pattern(
+int LIBMTX_API mtxfile_init_vector_coordinate_pattern(
     struct mtxfile * mtxfile,
     int64_t num_rows,
     int64_t num_nonzeros,
@@ -486,7 +486,7 @@ LIBMTX_API int mtxfile_init_vector_coordinate_pattern(
  * a matrix or vector equal to a constant, single precision floating
  * point number.
  */
-LIBMTX_API int mtxfile_set_constant_real_single(
+int LIBMTX_API mtxfile_set_constant_real_single(
     struct mtxfile * mtxfile,
     float a);
 
@@ -495,7 +495,7 @@ LIBMTX_API int mtxfile_set_constant_real_single(
  * a matrix or vector equal to a constant, double precision floating
  * point number.
  */
-LIBMTX_API int mtxfile_set_constant_real_double(
+int LIBMTX_API mtxfile_set_constant_real_double(
     struct mtxfile * mtxfile,
     double a);
 
@@ -504,7 +504,7 @@ LIBMTX_API int mtxfile_set_constant_real_double(
  * of a matrix or vector equal to a constant, single precision
  * floating point complex number.
  */
-LIBMTX_API int mtxfile_set_constant_complex_single(
+int LIBMTX_API mtxfile_set_constant_complex_single(
     struct mtxfile * mtxfile,
     float a[2]);
 
@@ -513,7 +513,7 @@ LIBMTX_API int mtxfile_set_constant_complex_single(
  * of a matrix or vector equal to a constant, double precision
  * floating point complex number.
  */
-LIBMTX_API int mtxfile_set_constant_complex_double(
+int LIBMTX_API mtxfile_set_constant_complex_double(
     struct mtxfile * mtxfile,
     double a[2]);
 
@@ -521,7 +521,7 @@ LIBMTX_API int mtxfile_set_constant_complex_double(
  * ‘mtxfile_set_constant_integer_single()’ sets every (nonzero) value
  * of a matrix or vector equal to a constant integer.
  */
-LIBMTX_API int mtxfile_set_constant_integer_single(
+int LIBMTX_API mtxfile_set_constant_integer_single(
     struct mtxfile * mtxfile,
     int32_t a);
 
@@ -529,7 +529,7 @@ LIBMTX_API int mtxfile_set_constant_integer_single(
  * ‘mtxfile_set_constant_integer_double()’ sets every (nonzero) value
  * of a matrix or vector equal to a constant integer.
  */
-LIBMTX_API int mtxfile_set_constant_integer_double(
+int LIBMTX_API mtxfile_set_constant_integer_double(
     struct mtxfile * mtxfile,
     int64_t a);
 
@@ -553,7 +553,7 @@ LIBMTX_API int mtxfile_set_constant_integer_double(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-LIBMTX_API int mtxfile_read(
+int LIBMTX_API mtxfile_read(
     struct mtxfile * mtxfile,
     enum mtxprecision precision,
     const char * path,
@@ -578,7 +578,7 @@ LIBMTX_API int mtxfile_read(
  * maximum line length is determined by calling ‘sysconf()’ with
  * ‘_SC_LINE_MAX’.
  */
-LIBMTX_API int mtxfile_fread(
+int LIBMTX_API mtxfile_fread(
     struct mtxfile * mtxfile,
     enum mtxprecision precision,
     FILE * f,
@@ -606,7 +606,7 @@ LIBMTX_API int mtxfile_fread(
  * maximum line length is determined by calling ‘sysconf()’ with
  * ‘_SC_LINE_MAX’.
  */
-LIBMTX_API int mtxfile_gzread(
+int LIBMTX_API mtxfile_gzread(
     struct mtxfile * mtxfile,
     enum mtxprecision precision,
     gzFile f,
@@ -641,7 +641,7 @@ LIBMTX_API int mtxfile_gzread(
  * locale-specific settings, such as the type of decimal point, do not
  * affect output.
  */
-LIBMTX_API int mtxfile_write(
+int LIBMTX_API mtxfile_write(
     const struct mtxfile * mtxfile,
     const char * path,
     bool gzip,
@@ -673,7 +673,7 @@ LIBMTX_API int mtxfile_write(
  * locale-specific settings, such as the type of decimal point, do not
  * affect output.
  */
-LIBMTX_API int mtxfile_fwrite(
+int LIBMTX_API mtxfile_fwrite(
     const struct mtxfile * mtxfile,
     FILE * f,
     const char * fmt,
@@ -706,7 +706,7 @@ LIBMTX_API int mtxfile_fwrite(
  * locale-specific settings, such as the type of decimal point, do not
  * affect output.
  */
-LIBMTX_API int mtxfile_gzwrite(
+int LIBMTX_API mtxfile_gzwrite(
     const struct mtxfile * mtxfile,
     gzFile f,
     const char * fmt,
@@ -720,7 +720,7 @@ LIBMTX_API int mtxfile_gzwrite(
 /**
  * ‘mtxfile_transpose()’ tranposes a Matrix Market file.
  */
-int mtxfile_transpose(
+int LIBMTX_API mtxfile_transpose(
     struct mtxfile * mtxfile);
 
 /**
@@ -748,10 +748,10 @@ enum mtxfilesorting
 };
 
 /**
- * ‘mtxfilesorting_str()’ is a string representing the sorting of a
+ * ‘mtxfilesortingstr()’ is a string representing the sorting of a
  * matrix or vector in Matrix Market format.
  */
-const char * mtxfilesorting_str(
+LIBMTX_API const char * mtxfilesortingstr(
     enum mtxfilesorting sorting);
 
 /**
@@ -800,7 +800,7 @@ int mtxfilesorting_parse(
  * the Matrix Market entries. ‘size’ must therefore be at least equal
  * to the number of data lines in the Matrix Market file ‘mtxfile’.
  */
-LIBMTX_API int mtxfile_sort(
+int LIBMTX_API mtxfile_sort(
     struct mtxfile * mtxfile,
     enum mtxfilesorting sorting,
     int64_t size,
@@ -879,7 +879,7 @@ int mtxfile_assemble(
  * ‘num_parts’, which is used to store the number of items assigned to
  * each part.
  */
-LIBMTX_API int mtxfile_partition_nonzeros(
+int LIBMTX_API mtxfile_partition_nonzeros(
     const struct mtxfile * mtxfile,
     enum mtxpartitioning parttype,
     int num_parts,
@@ -906,7 +906,7 @@ LIBMTX_API int mtxfile_partition_nonzeros(
  * ‘num_parts’, which is used to store the number of items assigned to
  * each part.
  */
-LIBMTX_API int mtxfile_partition_rowwise(
+int LIBMTX_API mtxfile_partition_rowwise(
     const struct mtxfile * mtxfile,
     enum mtxpartitioning parttype,
     int num_parts,
@@ -933,7 +933,7 @@ LIBMTX_API int mtxfile_partition_rowwise(
  * ‘num_parts’, which is used to store the number of items assigned to
  * each part.
  */
-LIBMTX_API int mtxfile_partition_columnwise(
+int LIBMTX_API mtxfile_partition_columnwise(
     const struct mtxfile * mtxfile,
     enum mtxpartitioning parttype,
     int num_parts,
@@ -963,7 +963,7 @@ LIBMTX_API int mtxfile_partition_columnwise(
  * ‘num_parts’, which is used to store the number of items assigned to
  * each part.
  */
-LIBMTX_API int mtxfile_partition_2d(
+int LIBMTX_API mtxfile_partition_2d(
     const struct mtxfile * mtxfile,
     enum mtxpartitioning rowparttype,
     int num_row_parts,
@@ -1032,7 +1032,7 @@ LIBMTX_API int mtxfile_partition_2d(
  * ‘num_parts’, which are then used to store the number of nonzeros,
  * rows and columns assigned to each part, respectively.
  */
-LIBMTX_API int mtxfile_partition(
+int LIBMTX_API mtxfile_partition(
     struct mtxfile * mtxfile,
     enum mtxmatrixparttype matrixparttype,
     enum mtxpartitioning nzparttype,
@@ -1094,7 +1094,7 @@ LIBMTX_API int mtxfile_partition(
  * The user is responsible for freeing storage allocated for each
  * Matrix Market file in the ‘dsts’ array.
  */
-LIBMTX_API int mtxfile_split(
+int LIBMTX_API mtxfile_split(
     int num_parts,
     struct mtxfile ** dsts,
     const struct mtxfile * src,
@@ -1122,7 +1122,7 @@ LIBMTX_API int mtxfile_split(
  * column ‘column_permutation[j-1]’ in the original matrix, for
  * ‘i=1,2,...,M’ and ‘j=1,2,...,N’.
  */
-LIBMTX_API int mtxfile_permute(
+int LIBMTX_API mtxfile_permute(
     struct mtxfile * mtxfile,
     const int * row_permutation,
     const int * column_permutation);
@@ -1140,10 +1140,10 @@ enum mtxfileordering
 };
 
 /**
- * ‘mtxfileordering_str()’ is a string representing the ordering of a
+ * ‘mtxfileorderingstr()’ is a string representing the ordering of a
  *  Matrix Market file.
  */
-const char * mtxfileordering_str(
+LIBMTX_API const char * mtxfileorderingstr(
     enum mtxfileordering ordering);
 
 /**
@@ -1202,7 +1202,7 @@ int mtxfileordering_parse(
  * rows. Similarly, ‘colperm’ is used to store the permutation for
  * reordering the matrix columns.
  */
-LIBMTX_API int mtxfile_reorder_nd(
+int LIBMTX_API mtxfile_reorder_nd(
     struct mtxfile * mtxfile,
     int * rowperm,
     int * rowperminv,
@@ -1255,7 +1255,7 @@ LIBMTX_API int mtxfile_reorder_nd(
  * ‘colperm’ is used to store the permutation for reordering the
  * matrix columns.
  */
-LIBMTX_API int mtxfile_reorder_rcm(
+int LIBMTX_API mtxfile_reorder_rcm(
     struct mtxfile * mtxfile,
     int * rowperm,
     int * colperm,
@@ -1282,7 +1282,7 @@ LIBMTX_API int mtxfile_reorder_rcm(
  * ‘symmetric’ is ‘true’ then ‘rowperm’ and ‘colperm’ are identical,
  * and only one of them is needed.
  */
-LIBMTX_API int mtxfile_reorder(
+int LIBMTX_API mtxfile_reorder(
     struct mtxfile * mtxfile,
     enum mtxfileordering ordering,
     int * rowperm,

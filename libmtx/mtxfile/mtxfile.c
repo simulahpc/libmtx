@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-09-06
+ * Last modified: 2022-10-08
  *
  * Matrix Market files.
  */
@@ -1392,10 +1392,10 @@ int mtxfile_conjugate_transpose(
  */
 
 /**
- * ‘mtxfilesorting_str()’ is a string representing the sorting of a
+ * ‘mtxfilesortingstr()’ is a string representing the sorting of a
  * matrix or vector in Matix Market format.
  */
-const char * mtxfilesorting_str(
+const char * mtxfilesortingstr(
     enum mtxfilesorting sorting)
 {
     switch (sorting) {
@@ -2208,10 +2208,10 @@ int mtxfile_permute(
 }
 
 /**
- * ‘mtxfileordering_str()’ is a string representing the ordering
+ * ‘mtxfileorderingstr()’ is a string representing the ordering
  * of a matrix in Matix Market format.
  */
-const char * mtxfileordering_str(
+const char * mtxfileorderingstr(
     enum mtxfileordering ordering)
 {
     switch (ordering) {

@@ -27,7 +27,7 @@
 
 #include <libmtx/libmtx.h>
 
-#include "../libmtx/util/parse.h"
+#include "parse.h"
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -68,6 +68,7 @@ struct program_options
     enum mtxvectortype vector_type;
     enum mtxpartitioning partition;
     int64_t blksize;
+    char * partition_path;
     int repeat;
     int verbose;
     bool quiet;
@@ -87,6 +88,7 @@ static int program_options_init(
     args->vector_type = mtxbasevector;
     args->partition = mtx_block;
     args->blksize = 1;
+    args->partition_path = NULL;
     args->repeat = 1;
     args->quiet = false;
     args->verbose = 0;
@@ -100,10 +102,9 @@ static int program_options_init(
 static void program_options_free(
     struct program_options * args)
 {
-    if (args->x_path)
-        free(args->x_path);
-    if(args->format)
-        free(args->format);
+    if (args->x_path) free(args->x_path);
+    if (args->format) free(args->format);
+    if (args->partition_path) free(args->partition_path);
 }
 
 /**
@@ -138,13 +139,15 @@ static void program_options_print_help(
     fprintf(f, "  --vector-type=TYPE\ttype of vectors: ‘base’ (default), ‘blas’ or ‘omp’.\n");
     fprintf(f, "  --partition=TYPE\tmethod of partitioning: ‘block’ (default), ‘block-cyclic’.\n");
     fprintf(f, "  --blksize=N\t\tblock size to use for block-cyclic partitioning\n");
+    fprintf(f, "  --partition-path=FILE\tpath to Matrix Market file for reading partition\n");
+    fprintf(f, "\t\t\twhen the partition is ‘custom’.\n");
+    fprintf(f, "  --repeat=N\t\trepeat the calculation N times\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
     fprintf(f, "\t\t\tFor real, double and complex values, the format specifiers\n");
     fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
     fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
-    fprintf(f, "  --repeat=N\t\trepeat the calculation N times\n");
     fprintf(f, "  -q, --quiet\t\tdo not print Matrix Market output\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
@@ -169,205 +172,129 @@ static void program_options_print_version(
  * ‘parse_program_options()’ parses program options.
  */
 static int parse_program_options(
-    int * argc,
-    char *** argv,
-    struct program_options * args)
+    int argc,
+    char ** argv,
+    struct program_options * args,
+    int * nargs)
 {
     int err;
+    *nargs = 0;
 
     /* Set program invocation name. */
-    program_invocation_name = (*argv)[0];
+    program_invocation_name = argv[0];
     program_invocation_short_name = (
         strrchr(program_invocation_name, '/')
         ? strrchr(program_invocation_name, '/') + 1
         : program_invocation_name);
-    (*argc)--; (*argv)++;
+    (*nargs)++; argv++;
 
     /* Set default program options. */
     err = program_options_init(args);
-    if (err)
-        return err;
+    if (err) return err;
 
     /* Parse program options. */
-    int num_arguments_consumed = 0;
     int num_positional_arguments_consumed = 0;
-    while (*argc > 0) {
-        *argc -= num_arguments_consumed;
-        *argv += num_arguments_consumed;
-        num_arguments_consumed = 0;
-        if (*argc <= 0)
-            break;
-
-        if (strcmp((*argv)[0], "--precision") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            char * s = (*argv)[1];
-            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
-            char * s = (*argv)[0] + strlen("--precision=");
-            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed++;
-            continue;
+    while (*nargs < argc) {
+        if (strstr(argv[0], "--precision") == argv[0]) {
+            int n = strlen("--precision");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxprecision(&args->precision, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "--vector-type") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            char * s = (*argv)[1];
-            err = mtxvectortype_parse(
-                &args->vector_type, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--vector-type=") == (*argv)[0]) {
-            char * s = (*argv)[0] + strlen("--vector-type=");
-            err = mtxvectortype_parse(
-                &args->vector_type, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed++;
-            continue;
+        if (strstr(argv[0], "--vector-type") == argv[0]) {
+            int n = strlen("--vector-type");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxvectortype(&args->vector_type, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "-z") == 0 ||
-            strcmp((*argv)[0], "--gzip") == 0 ||
-            strcmp((*argv)[0], "--gunzip") == 0 ||
-            strcmp((*argv)[0], "--ungzip") == 0)
+        if (strstr(argv[0], "--partition") == argv[0]) {
+            int n = strlen("--partition");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxpartitioning(&args->partition, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strstr(argv[0], "--blksize") == argv[0]) {
+            int n = strlen("--blksize");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int64(&args->blksize, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strstr(argv[0], "--partition-path") == argv[0]) {
+            int n = strlen("--partition-path");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            if (args->partition_path) free(args->partition_path);
+            args->partition_path = strdup(s);
+            if (!args->partition_path) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strstr(argv[0], "--repeat") == argv[0]) {
+            int n = strlen("--repeat");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int(&args->repeat, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "-z") == 0 ||
+            strcmp(argv[0], "--gzip") == 0 ||
+            strcmp(argv[0], "--gunzip") == 0 ||
+            strcmp(argv[0], "--ungzip") == 0)
         {
             args->gzip = true;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "--format") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            args->format = strdup((*argv)[1]);
-            if (!args->format) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--format=") == (*argv)[0]) {
-            args->format = strdup((*argv)[0] + strlen("--format="));
-            if (!args->format) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
+        if (strcmp(argv[0], "--format") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            args->format = strdup(argv[0]);
+            if (!args->format) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--format=") == argv[0]) {
+            args->format = strdup(argv[0] + strlen("--format="));
+            if (!args->format) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "--partition") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            char * s = (*argv)[1];
-            err = mtxpartitioning_parse(
-                &args->partition, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--partition=") == (*argv)[0]) {
-            char * s = (*argv)[0] + strlen("--partition=");
-            err = mtxpartitioning_parse(
-                &args->partition, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--blksize") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            err = parse_int64_ex((*argv)[1], NULL, &args->blksize, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--blksize=") == (*argv)[0]) {
-            err = parse_int64_ex(
-                (*argv)[0] + strlen("--blksize="), NULL,
-                &args->blksize, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--repeat") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            err = parse_int32_ex((*argv)[1], NULL, &args->repeat, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--repeat=") == (*argv)[0]) {
-            err = parse_int32_ex(
-                (*argv)[0] + strlen("--repeat="), NULL,
-                &args->repeat, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "-q") == 0 || strcmp((*argv)[0], "--quiet") == 0) {
+        if (strcmp(argv[0], "-q") == 0 || strcmp(argv[0], "--quiet") == 0) {
             args->quiet = true;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "-v") == 0 || strcmp((*argv)[0], "--verbose") == 0) {
+        if (strcmp(argv[0], "-v") == 0 || strcmp(argv[0], "--verbose") == 0) {
             args->verbose++;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
         }
 
         /* If requested, print program help text. */
-        if (strcmp((*argv)[0], "-h") == 0 || strcmp((*argv)[0], "--help") == 0) {
+        if (strcmp(argv[0], "-h") == 0 || strcmp(argv[0], "--help") == 0) {
             program_options_free(args);
 #ifdef LIBMTX_HAVE_MPI
             int rank;
@@ -380,8 +307,7 @@ static int parse_program_options(
                         program_invocation_short_name, mpierrstr);
                 MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
             }
-            if (rank == 0)
-                program_options_print_help(stdout);
+            if (rank == 0) program_options_print_help(stdout);
             MPI_Finalize();
 #else
             program_options_print_help(stdout);
@@ -390,7 +316,7 @@ static int parse_program_options(
         }
 
         /* If requested, print program version information. */
-        if (strcmp((*argv)[0], "--version") == 0) {
+        if (strcmp(argv[0], "--version") == 0) {
             program_options_free(args);
 #ifdef LIBMTX_HAVE_MPI
             int rank;
@@ -403,8 +329,7 @@ static int parse_program_options(
                         program_invocation_short_name, mpierrstr);
                 MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
             }
-            if (rank == 0)
-                program_options_print_version(stdout);
+            if (rank == 0) program_options_print_version(stdout);
             MPI_Finalize();
 #else
             program_options_print_version(stdout);
@@ -413,41 +338,27 @@ static int parse_program_options(
         }
 
         /* Stop parsing options after '--'.  */
-        if (strcmp((*argv)[0], "--") == 0) {
-            (*argc)--; (*argv)++;
+        if (strcmp(argv[0], "--") == 0) {
+            (*nargs)++; argv++;
             break;
         }
 
         /* Unrecognised option. */
-        if (strlen((*argv)[0]) > 1 && (*argv)[0][0] == '-' &&
-            ((*argv)[0][1] < '0' || (*argv)[0][1] > '9'))
-        {
-            program_options_free(args);
-            return EINVAL;
-        }
-        
-        /*
-         * Parse positional arguments.
-         */
-        if (num_positional_arguments_consumed == 0) {
-            err = parse_double_ex((*argv)[0], NULL, &args->alpha, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-        } else if (num_positional_arguments_consumed == 1) {
-            args->x_path = strdup((*argv)[0]);
-            if (!args->x_path) {
-                program_options_free(args);
-                return errno;
-            }
-        } else {
+        if (strlen(argv[0]) > 1 && argv[0][0] == '-') {
             program_options_free(args);
             return EINVAL;
         }
 
+        /* parse positional arguments */
+        if (num_positional_arguments_consumed == 0) {
+            err = parse_double(&args->alpha, argv[0], NULL, NULL);
+            if (err) { program_options_free(args); return err; }
+        } else if (num_positional_arguments_consumed == 1) {
+            args->x_path = strdup(argv[0]);
+            if (!args->x_path) { program_options_free(args); return errno; }
+        } else { program_options_free(args); return EINVAL; }
         num_positional_arguments_consumed++;
-        num_arguments_consumed++;
+        (*nargs)++; argv++;
     }
 
     if (num_positional_arguments_consumed < 2) {
@@ -463,15 +374,13 @@ static int parse_program_options(
                     program_invocation_short_name, mpierrstr);
             MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
         }
-        if (rank == 0)
-            program_options_print_usage(stdout);
+        if (rank == 0) program_options_print_usage(stdout);
         MPI_Finalize();
 #else
         program_options_print_usage(stdout);
 #endif
         exit(EXIT_FAILURE);
     }
-
     return 0;
 }
 
@@ -689,13 +598,12 @@ int main(int argc, char *argv[])
 
     /* 2. Parse program options. */
     struct program_options args;
-    int argc_copy = argc;
-    char ** argv_copy = argv;
-    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    int nargs;
+    err = parse_program_options(argc, argv, &args, &nargs);
     if (err) {
         if (rank == root) {
             fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
-                    strerror(err), argv_copy[0]);
+                    strerror(err), argv[nargs]);
         }
         mtxdisterror_free(&disterr);
         MPI_Finalize();
@@ -983,12 +891,11 @@ int main(int argc, char *argv[])
 
     /* 1. Parse program options. */
     struct program_options args;
-    int argc_copy = argc;
-    char ** argv_copy = argv;
-    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    int nargs;
+    err = parse_program_options(argc, argv, &args, &nargs);
     if (err) {
-        fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
-                strerror(err), argv_copy[0]);
+        fprintf(stderr, "%s: %s ‘%s’\n", program_invocation_short_name,
+                strerror(err), argv[nargs]);
         return EXIT_FAILURE;
     }
 

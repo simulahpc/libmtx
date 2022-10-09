@@ -16,14 +16,14 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-24
+ * Last modified: 2022-10-08
  *
  * Transpose a matrix in Matrix Market format.
  */
 
 #include <libmtx/libmtx.h>
 
-#include "../libmtx/util/parse.h"
+#include "parse.h"
 
 #include <errno.h>
 
@@ -52,7 +52,7 @@ const char * program_invocation_short_name;
  */
 struct program_options
 {
-    char * mtx_path;
+    char * mtxpath;
     enum mtxprecision precision;
     bool gzip;
     char * format;
@@ -66,7 +66,7 @@ struct program_options
 static int program_options_init(
     struct program_options * args)
 {
-    args->mtx_path = NULL;
+    args->mtxpath = NULL;
     args->precision = mtx_double;
     args->gzip = false;
     args->format = NULL;
@@ -82,10 +82,17 @@ static int program_options_init(
 static void program_options_free(
     struct program_options * args)
 {
-    if (args->mtx_path)
-        free(args->mtx_path);
-    if (args->format)
-        free(args->format);
+    if (args->mtxpath) free(args->mtxpath);
+    if (args->format) free(args->format);
+}
+
+/**
+ * ‘program_options_print_usage()’ prints a usage text.
+ */
+static void program_options_print_usage(
+    FILE * f)
+{
+    fprintf(f, "Usage: %s [OPTION..] FILE\n", program_name);
 }
 
 /**
@@ -94,7 +101,7 @@ static void program_options_free(
 static void program_options_print_help(
     FILE * f)
 {
-    fprintf(f, "Usage: %s [OPTION..] FILE\n", program_name);
+    program_options_print_usage(f);
     fprintf(f, "\n");
     fprintf(f, " Transpose a matrix in Matrix Market format.\n");
     fprintf(f, "\n");
@@ -128,145 +135,116 @@ static void program_options_print_version(
 }
 
 /**
- * `parse_program_options()` parses program options.
+ * ‘parse_program_options()’ parses program options.
  */
 static int parse_program_options(
-    int * argc,
-    char *** argv,
-    struct program_options * args)
+    int argc,
+    char ** argv,
+    struct program_options * args,
+    int * nargs)
 {
     int err;
+    *nargs = 0;
 
     /* Set program invocation name. */
-    program_invocation_name = (*argv)[0];
+    program_invocation_name = argv[0];
     program_invocation_short_name = (
         strrchr(program_invocation_name, '/')
         ? strrchr(program_invocation_name, '/') + 1
         : program_invocation_name);
-    (*argc)--; (*argv)++;
+    (*nargs)++; argv++;
 
     /* Set default program options. */
     err = program_options_init(args);
-    if (err)
-        return err;
+    if (err) return err;
 
     /* Parse program options. */
-    int num_arguments_consumed = 0;
-    while (*argc > 0) {
-        *argc -= num_arguments_consumed;
-        *argv += num_arguments_consumed;
-        num_arguments_consumed = 0;
-        if (*argc <= 0)
-            break;
-
-        if (strcmp((*argv)[0], "--precision") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            char * s = (*argv)[1];
-            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
-            char * s = (*argv)[0] + strlen("--precision=");
-            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed++;
-            continue;
+    int num_positional_arguments_consumed = 0;
+    while (*nargs < argc) {
+        if (strstr(argv[0], "--precision") == argv[0]) {
+            int n = strlen("--precision");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxprecision(&args->precision, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "-z") == 0 ||
-            strcmp((*argv)[0], "--gzip") == 0 ||
-            strcmp((*argv)[0], "--gunzip") == 0 ||
-            strcmp((*argv)[0], "--ungzip") == 0)
+        if (strcmp(argv[0], "-z") == 0 ||
+            strcmp(argv[0], "--gzip") == 0 ||
+            strcmp(argv[0], "--gunzip") == 0 ||
+            strcmp(argv[0], "--ungzip") == 0)
         {
             args->gzip = true;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "--format") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            args->format = strdup((*argv)[1]);
-            if (!args->format) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--format=") == (*argv)[0]) {
-            args->format = strdup((*argv)[0] + strlen("--format="));
-            if (!args->format) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
+        if (strcmp(argv[0], "--format") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            args->format = strdup(argv[0]);
+            if (!args->format) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--format=") == argv[0]) {
+            args->format = strdup(argv[0] + strlen("--format="));
+            if (!args->format) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "-q") == 0 || strcmp((*argv)[0], "--quiet") == 0) {
+        if (strcmp(argv[0], "-q") == 0 || strcmp(argv[0], "--quiet") == 0) {
             args->quiet = true;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "-v") == 0 || strcmp((*argv)[0], "--verbose") == 0) {
+        if (strcmp(argv[0], "-v") == 0 || strcmp(argv[0], "--verbose") == 0) {
             args->verbose++;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
         }
 
         /* If requested, print program help text. */
-        if (strcmp((*argv)[0], "-h") == 0 || strcmp((*argv)[0], "--help") == 0) {
+        if (strcmp(argv[0], "-h") == 0 || strcmp(argv[0], "--help") == 0) {
             program_options_free(args);
             program_options_print_help(stdout);
             exit(EXIT_SUCCESS);
         }
 
         /* If requested, print program version information. */
-        if (strcmp((*argv)[0], "--version") == 0) {
+        if (strcmp(argv[0], "--version") == 0) {
             program_options_free(args);
             program_options_print_version(stdout);
             exit(EXIT_SUCCESS);
         }
 
         /* Stop parsing options after '--'.  */
-        if (strcmp((*argv)[0], "--") == 0) {
-            (*argc)--; (*argv)++;
+        if (strcmp(argv[0], "--") == 0) {
+            (*nargs)++; argv++;
             break;
         }
 
-        /* Parse Matrix Market input path ('-' is used for stdin). */
-        if ((strlen((*argv)[0]) > 0 && (*argv)[0][0] != '-') ||
-            (strlen((*argv)[0]) == 1 && (*argv)[0][0] == '-'))
+        /* Unrecognised option. */
+        if (strlen(argv[0]) > 1 && argv[0][0] == '-' &&
+            ((argv[0][1] < '0' || argv[0][1] > '9') && argv[0][1] != '.'))
         {
-            if (args->mtx_path)
-                free(args->mtx_path);
-            args->mtx_path = strdup((*argv)[0]);
-            if (!args->mtx_path) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
+            program_options_free(args);
+            return EINVAL;
         }
 
-        /* Unrecognised option. */
-        program_options_free(args);
-        return EINVAL;
+        /* parse positional arguments */
+        if (num_positional_arguments_consumed == 0) {
+            args->mtxpath = strdup(argv[0]);
+            if (!args->mtxpath) { program_options_free(args); return errno; }
+        } else { program_options_free(args); return EINVAL; }
+        num_positional_arguments_consumed++;
+        (*nargs)++; argv++;
     }
 
+    if (num_positional_arguments_consumed < 1) {
+        program_options_free(args);
+        program_options_print_usage(stdout);
+        exit(EXIT_FAILURE);
+    }
     return 0;
 }
 
@@ -294,18 +272,11 @@ int main(int argc, char *argv[])
 
     /* 1. Parse program options. */
     struct program_options args;
-    int argc_copy = argc;
-    char ** argv_copy = argv;
-    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    int nargs;
+    err = parse_program_options(argc, argv, &args, &nargs);
     if (err) {
-        fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
-                strerror(err), argv_copy[0]);
-        return EXIT_FAILURE;
-    }
-    if (!args.mtx_path) {
-        fprintf(stderr, "%s: Please specify a Matrix Market file\n",
-                program_invocation_short_name);
-        program_options_free(&args);
+        fprintf(stderr, "%s: %s ‘%s’\n", program_invocation_short_name,
+                strerror(err), argv[nargs]);
         return EXIT_FAILURE;
     }
 
@@ -320,14 +291,14 @@ int main(int argc, char *argv[])
     int64_t lines_read = 0;
     int64_t bytes_read;
     err = mtxfile_read(
-        &mtxfile, args.precision, args.mtx_path, args.gzip,
+        &mtxfile, args.precision, args.mtxpath, args.gzip,
         &lines_read, &bytes_read);
     if (err && lines_read >= 0) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s:%"PRId64": %s\n",
                 program_invocation_short_name,
-                args.mtx_path, lines_read+1,
+                args.mtxpath, lines_read+1,
                 mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -336,7 +307,7 @@ int main(int argc, char *argv[])
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
                 program_invocation_short_name,
-                args.mtx_path, mtxstrerror(err));
+                args.mtxpath, mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     }

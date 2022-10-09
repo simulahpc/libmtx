@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-09-07
+ * Last modified: 2022-10-08
  *
  * Reorder the nonzeros of a sparse matrix and any number of vectors
  * in Matrix Market format according to a specified reordering
@@ -193,16 +193,14 @@ static int parse_program_options(
     /* Parse program options. */
     int num_positional_arguments_consumed = 0;
     while (*nargs < argc) {
-        if (strcmp(argv[0], "--precision") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxprecision_parse(&args->precision, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--precision=") == argv[0]) {
-            char * s = argv[0] + strlen("--precision=");
-            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--precision") == argv[0]) {
+            int n = strlen("--precision");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxprecision(&args->precision, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
@@ -237,89 +235,73 @@ static int parse_program_options(
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--ordering") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxfileordering_parse(&args->ordering, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--ordering=") == argv[0]) {
-            char * s = argv[0] + strlen("--ordering=");
-            err = mtxfileordering_parse(&args->ordering, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--ordering") == argv[0]) {
+            int n = strlen("--ordering");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxfileordering(&args->ordering, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--rowperm-path") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->rowpermpath) free(args->rowpermpath);
-            args->rowpermpath = strdup(argv[0]);
-            if (!args->rowpermpath) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--rowperm-path=") == argv[0]) {
-            char * s = argv[0] + strlen("--rowperm-path=");
+        if (strstr(argv[0], "--rowperm-path") == argv[0]) {
+            int n = strlen("--rowperm-path");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
             if (args->rowpermpath) free(args->rowpermpath);
             args->rowpermpath = strdup(s);
             if (!args->rowpermpath) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--colperm-path") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->colpermpath) free(args->colpermpath);
-            args->colpermpath = strdup(argv[0]);
-            if (!args->colpermpath) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--colperm-path=") == argv[0]) {
-            char * s = argv[0] + strlen("--colperm-path=");
-            if (args->colpermpath) free(args->colpermpath);
-            args->colpermpath = strdup(s);
-            if (!args->colpermpath) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        }
-
-        if (strcmp(argv[0], "--rowperm-inv-path") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->rowperminvpath) free(args->rowperminvpath);
-            args->rowperminvpath = strdup(argv[0]);
-            if (!args->rowperminvpath) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--rowperm-inv-path=") == argv[0]) {
-            char * s = argv[0] + strlen("--rowperm-inv-path=");
+        if (strstr(argv[0], "--rowperm-inv-path") == argv[0]) {
+            int n = strlen("--rowperm-inv-path");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
             if (args->rowperminvpath) free(args->rowperminvpath);
             args->rowperminvpath = strdup(s);
             if (!args->rowperminvpath) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--colperm-inv-path") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->colperminvpath) free(args->colperminvpath);
-            args->colperminvpath = strdup(argv[0]);
-            if (!args->colperminvpath) { program_options_free(args); return errno; }
+        if (strstr(argv[0], "--colperm-path") == argv[0]) {
+            int n = strlen("--colperm-path");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            if (args->colpermpath) free(args->colpermpath);
+            args->colpermpath = strdup(s);
+            if (!args->colpermpath) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--colperm-inv-path=") == argv[0]) {
-            char * s = argv[0] + strlen("--colperm-inv-path=");
+        }
+
+        if (strstr(argv[0], "--colperm-inv-path") == argv[0]) {
+            int n = strlen("--colperm-inv-path");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
             if (args->colperminvpath) free(args->colperminvpath);
             args->colperminvpath = strdup(s);
             if (!args->colperminvpath) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--rcm-starting-vertex") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int64(&args->rcm_starting_vertex, argv[0], NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--rcm-starting-vertex=") == argv[0]) {
-            char * s = argv[0] + strlen("--rcm-starting-vertex=");
-            err = parse_int64(&args->rcm_starting_vertex, s, NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--rcm-starting-vertex") == argv[0]) {
+            int n = strlen("--rcm-starting-vertex");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int64(&args->rcm_starting_vertex, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
@@ -698,11 +680,11 @@ int main(int argc, char *argv[])
         if (args.ordering == mtxfile_rcm) {
             err = mtxfilecomments_printf(
                 &mtxfile.comments, "%% This file was generated by %s %s (%s, starting vertex %'d)\n",
-                program_name, program_version, mtxfileordering_str(args.ordering), rcm_starting_vertex);
+                program_name, program_version, mtxfileorderingstr(args.ordering), rcm_starting_vertex);
         } else {
             err = mtxfilecomments_printf(
                 &mtxfile.comments, "%% This file was generated by %s %s (%s)\n",
-                program_name, program_version, mtxfileordering_str(args.ordering));
+                program_name, program_version, mtxfileorderingstr(args.ordering));
         }
         if (err) {
             if (args.verbose > 0) fprintf(diagf, "\n");
@@ -761,11 +743,11 @@ int main(int argc, char *argv[])
         if (args.ordering == mtxfile_rcm) {
             err = mtxfilecomments_printf(
                 &rowperm_mtxfile.comments, "%% This file was generated by %s %s (%s, starting vertex %'d)\n",
-                program_name, program_version, mtxfileordering_str(args.ordering), rcm_starting_vertex);
+                program_name, program_version, mtxfileorderingstr(args.ordering), rcm_starting_vertex);
         } else {
             err = mtxfilecomments_printf(
                 &rowperm_mtxfile.comments, "%% This file was generated by %s %s (%s)\n",
-                program_name, program_version, mtxfileordering_str(args.ordering));
+                program_name, program_version, mtxfileorderingstr(args.ordering));
         }
         if (err) {
             if (args.verbose > 0) fprintf(diagf, "\n");
@@ -829,11 +811,11 @@ int main(int argc, char *argv[])
         if (args.ordering == mtxfile_rcm) {
             err = mtxfilecomments_printf(
                 &colperm_mtxfile.comments, "%% This file was generated by %s %s (%s, starting vertex %'d)\n",
-                program_name, program_version, mtxfileordering_str(args.ordering), rcm_starting_vertex);
+                program_name, program_version, mtxfileorderingstr(args.ordering), rcm_starting_vertex);
         } else {
             err = mtxfilecomments_printf(
                 &colperm_mtxfile.comments, "%% This file was generated by %s %s (%s)\n",
-                program_name, program_version, mtxfileordering_str(args.ordering));
+                program_name, program_version, mtxfileorderingstr(args.ordering));
         }
         if (err) {
             if (args.verbose > 0) fprintf(diagf, "\n");

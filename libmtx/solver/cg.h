@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-19
+ * Last modified: 2022-10-08
  *
  * Conjugate gradient (CG) algorithm.
  */
@@ -49,13 +49,13 @@ struct mtxcg
 /**
  * ‘mtxcg_free()’ frees storage allocated for a matrix.
  */
-void mtxcg_free(
+LIBMTX_API void mtxcg_free(
     struct mtxcg * cg);
 
 /**
  * ‘mtxcg_init()’ sets up a conjugate gradient solver.
  */
-int mtxcg_init(
+LIBMTX_API int mtxcg_init(
     struct mtxcg * cg,
     const struct mtxmatrix * A,
     enum mtxvectortype vectortype);
@@ -63,7 +63,7 @@ int mtxcg_init(
 /**
  * ‘mtxcg_solve()’ solves a linear system using CG.
  */
-int mtxcg_solve(
+LIBMTX_API int mtxcg_solve(
     struct mtxcg * cg,
     const struct mtxvector * b,
     struct mtxvector * x,

@@ -16,14 +16,14 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-23
+ * Last modified: 2022-10-08
  *
  * Partition a Matrix Market file.
  */
 
 #include <libmtx/libmtx.h>
 
-#include "../libmtx/util/parse.h"
+#include "parse.h"
 
 #include <errno.h>
 
@@ -207,170 +207,142 @@ static int parse_program_options(
     /* Parse program options. */
     int num_positional_arguments_consumed = 0;
     while (*nargs < argc) {
-        if (strcmp(argv[0], "--precision") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxprecision_parse(&args->precision, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--precision=") == argv[0]) {
-            char * s = argv[0] + strlen("--precision=");
-            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--precision") == argv[0]) {
+            int n = strlen("--precision");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxprecision(&args->precision, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--row-part-path") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->rowpartpath) free(args->rowpartpath);
-            args->rowpartpath = strdup(argv[0]);
-            if (!args->rowpartpath) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--row-part-path=") == argv[0]) {
-            char * s = argv[0] + strlen("--row-part-path=");
+        if (strstr(argv[0], "--row-part-path") == argv[0]) {
+            int n = strlen("--row-part-path");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
             if (args->rowpartpath) free(args->rowpartpath);
             args->rowpartpath = strdup(s);
             if (!args->rowpartpath) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--column-part-path") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            if (args->colpartpath) free(args->colpartpath);
-            args->colpartpath = strdup(argv[0]);
-            if (!args->colpartpath) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--column-part-path=") == argv[0]) {
-            char * s = argv[0] + strlen("--column-part-path=");
+        if (strstr(argv[0], "--column-part-path") == argv[0]) {
+            int n = strlen("--column-part-path");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
             if (args->colpartpath) free(args->colpartpath);
             args->colpartpath = strdup(s);
             if (!args->colpartpath) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--part-type") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxmatrixparttype_parse(&args->matrixparttype, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--part-type=") == argv[0]) {
-            char * s = argv[0] + strlen("--part-type=");
-            err = mtxmatrixparttype_parse(&args->matrixparttype, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--part-type") == argv[0]) {
+            int n = strlen("--part-type");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxmatrixparttype(&args->matrixparttype, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--nz-parts") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int(&args->num_nz_parts, argv[0], NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--nz-parts=") == argv[0]) {
-            char * s = argv[0] + strlen("--nz-parts=");
-            err = parse_int(&args->num_nz_parts, s, NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--nz-parts") == argv[0]) {
+            int n = strlen("--nz-parts");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int(&args->num_nz_parts, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--nz-part-type") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxpartitioning_parse(&args->nzparttype, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--nz-part-type=") == argv[0]) {
-            char * s = argv[0] + strlen("--nz-part-type=");
-            err = mtxpartitioning_parse(&args->nzparttype, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--nz-part-type") == argv[0]) {
+            int n = strlen("--nz-part-type");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxpartitioning(&args->nzparttype, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--nz-blksize") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int64(&args->nzblksize, argv[0], NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--nz-blksize=") == argv[0]) {
-            char * s = argv[0] + strlen("--nz-blksize=");
-            err = parse_int64(&args->nzblksize, s, NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--nz-blksize") == argv[0]) {
+            int n = strlen("--nz-blksize");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int64(&args->nzblksize, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--row-parts") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int(&args->num_row_parts, argv[0], NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--row-parts=") == argv[0]) {
-            char * s = argv[0] + strlen("--row-parts=");
-            err = parse_int(&args->num_row_parts, s, NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--row-parts") == argv[0]) {
+            int n = strlen("--row-parts");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int(&args->num_row_parts, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--row-part-type") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxpartitioning_parse(&args->rowparttype, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--row-part-type=") == argv[0]) {
-            char * s = argv[0] + strlen("--row-part-type=");
-            err = mtxpartitioning_parse(&args->rowparttype, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--row-part-type") == argv[0]) {
+            int n = strlen("--row-part-type");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxpartitioning(&args->rowparttype, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--row-blksize") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int64(&args->rowblksize, argv[0], NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--row-blksize=") == argv[0]) {
-            char * s = argv[0] + strlen("--row-blksize=");
-            err = parse_int64(&args->rowblksize, s, NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--row-blksize") == argv[0]) {
+            int n = strlen("--row-blksize");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int64(&args->rowblksize, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--column-parts") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int(&args->num_column_parts, argv[0], NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--column-parts=") == argv[0]) {
-            char * s = argv[0] + strlen("--column-parts=");
-            err = parse_int(&args->num_column_parts, s, NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--column-parts") == argv[0]) {
+            int n = strlen("--column-parts");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int(&args->num_column_parts, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--column-part-type") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = mtxpartitioning_parse(&args->colparttype, NULL, NULL, argv[0], "");
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--column-part-type=") == argv[0]) {
-            char * s = argv[0] + strlen("--column-part-type=");
-            err = mtxpartitioning_parse(&args->colparttype, NULL, NULL, s, "");
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--column-part-type") == argv[0]) {
+            int n = strlen("--column-part-type");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_mtxpartitioning(&args->colparttype, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
-        if (strcmp(argv[0], "--column-blksize") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int64(&args->colblksize, argv[0], NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--column-blksize=") == argv[0]) {
-            char * s = argv[0] + strlen("--column-blksize=");
-            err = parse_int64(&args->colblksize, s, NULL, NULL);
-            if (err) { program_options_free(args); return EINVAL; }
+        if (strstr(argv[0], "--column-blksize") == argv[0]) {
+            int n = strlen("--column-blksize");
+            char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int64(&args->colblksize, s, &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
@@ -681,7 +653,7 @@ int main(int argc, char *argv[])
             "%% This file was generated by %s %s "
             "(column parts, partitioning: %s, parts: %d)\n",
             program_name, program_version,
-            mtxmatrixparttype_str(args.matrixparttype), num_parts);
+            mtxmatrixparttypestr(args.matrixparttype), num_parts);
         if (err) {
             if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
@@ -754,7 +726,7 @@ int main(int argc, char *argv[])
             "%% This file was generated by %s %s "
             "(row parts, partitioning: %s, parts: %d)\n",
             program_name, program_version,
-            mtxmatrixparttype_str(args.matrixparttype), num_parts);
+            mtxmatrixparttypestr(args.matrixparttype), num_parts);
         if (err) {
             if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
@@ -824,7 +796,7 @@ int main(int argc, char *argv[])
             "%% This file was generated by %s %s "
             "(nonzero parts, partitioning: %s, parts: %d)\n",
             program_name, program_version,
-            mtxmatrixparttype_str(args.matrixparttype), num_parts);
+            mtxmatrixparttypestr(args.matrixparttype), num_parts);
         if (err) {
             if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",

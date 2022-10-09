@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-10-03
+ * Last modified: 2022-10-08
  *
  * Data structures for matrices.
  */
@@ -145,21 +145,21 @@ struct mtxmatrix
 /**
  * ‘mtxmatrix_field()’ gets the field of a matrix.
  */
-int mtxmatrix_field(
+LIBMTX_API int mtxmatrix_field(
     const struct mtxmatrix * A,
     enum mtxfield * field);
 
 /**
  * ‘mtxmatrix_precision()’ gets the precision of a matrix.
  */
-int mtxmatrix_precision(
+LIBMTX_API int mtxmatrix_precision(
     const struct mtxmatrix * A,
     enum mtxprecision * precision);
 
 /**
  * ‘mtxmatrix_symmetry()’ gets the symmetry of a matrix.
  */
-int mtxmatrix_symmetry(
+LIBMTX_API int mtxmatrix_symmetry(
     const struct mtxmatrix * A,
     enum mtxsymmetry * symmetry);
 
@@ -168,7 +168,7 @@ int mtxmatrix_symmetry(
  *  matrix entries, including those represented implicitly due to
  *  symmetry.
  */
-int mtxmatrix_num_nonzeros(
+LIBMTX_API int mtxmatrix_num_nonzeros(
     const struct mtxmatrix * A,
     int64_t * num_nonzeros);
 
@@ -176,7 +176,7 @@ int mtxmatrix_num_nonzeros(
  * ‘mtxmatrix_size()’ gets the number of explicitly stored nonzeros of
  * a matrix.
  */
-int mtxmatrix_size(
+LIBMTX_API int mtxmatrix_size(
     const struct mtxmatrix * A,
     int64_t * size);
 
@@ -200,14 +200,14 @@ int mtxmatrix_rowcolidx(
 /**
  * ‘mtxmatrix_free()’ frees storage allocated for a matrix.
  */
-void mtxmatrix_free(
+LIBMTX_API void mtxmatrix_free(
     struct mtxmatrix * A);
 
 /**
  * ‘mtxmatrix_alloc_copy()’ allocates a copy of a matrix without
  * initialising the values.
  */
-int mtxmatrix_alloc_copy(
+LIBMTX_API int mtxmatrix_alloc_copy(
     struct mtxmatrix * dst,
     const struct mtxmatrix * src);
 
@@ -215,7 +215,7 @@ int mtxmatrix_alloc_copy(
  * ‘mtxmatrix_init_copy()’ allocates a copy of a matrix and also
  * copies the values.
  */
-int mtxmatrix_init_copy(
+LIBMTX_API int mtxmatrix_init_copy(
     struct mtxmatrix * dst,
     const struct mtxmatrix * src);
 
@@ -227,7 +227,7 @@ int mtxmatrix_init_copy(
  * ‘mtxmatrix_alloc_entries()’ allocates storage for a matrix based on
  * entrywise data in coordinate format.
  */
-int mtxmatrix_alloc_entries(
+LIBMTX_API int mtxmatrix_alloc_entries(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxfield field,
@@ -246,7 +246,7 @@ int mtxmatrix_alloc_entries(
  * a matrix from data in coordinate format with real, single precision
  * coefficients.
  */
-int mtxmatrix_init_entries_real_single(
+LIBMTX_API int mtxmatrix_init_entries_real_single(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -262,7 +262,7 @@ int mtxmatrix_init_entries_real_single(
  * a matrix from data in coordinate format with real, double precision
  * coefficients.
  */
-int mtxmatrix_init_entries_real_double(
+LIBMTX_API int mtxmatrix_init_entries_real_double(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -278,7 +278,7 @@ int mtxmatrix_init_entries_real_double(
  * initialises a matrix from data in coordinate format with complex,
  * single precision coefficients.
  */
-int mtxmatrix_init_entries_complex_single(
+LIBMTX_API int mtxmatrix_init_entries_complex_single(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -294,7 +294,7 @@ int mtxmatrix_init_entries_complex_single(
  * initialises a matrix from data in coordinate format with complex,
  * double precision coefficients.
  */
-int mtxmatrix_init_entries_complex_double(
+LIBMTX_API int mtxmatrix_init_entries_complex_double(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -310,7 +310,7 @@ int mtxmatrix_init_entries_complex_double(
  * initialises a matrix from data in coordinate format with integer,
  * single precision coefficients.
  */
-int mtxmatrix_init_entries_integer_single(
+LIBMTX_API int mtxmatrix_init_entries_integer_single(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -326,7 +326,7 @@ int mtxmatrix_init_entries_integer_single(
  * initialises a matrix from data in coordinate format with integer,
  * double precision coefficients.
  */
-int mtxmatrix_init_entries_integer_double(
+LIBMTX_API int mtxmatrix_init_entries_integer_double(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -342,7 +342,7 @@ int mtxmatrix_init_entries_integer_double(
  * matrix from data in coordinate format with integer, double
  * precision coefficients.
  */
-int mtxmatrix_init_entries_pattern(
+LIBMTX_API int mtxmatrix_init_entries_pattern(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -361,7 +361,7 @@ int mtxmatrix_init_entries_pattern(
  * a matrix from data in coordinate format with real, single precision
  * coefficients.
  */
-int mtxmatrix_init_entries_strided_real_single(
+LIBMTX_API int mtxmatrix_init_entries_strided_real_single(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -380,7 +380,7 @@ int mtxmatrix_init_entries_strided_real_single(
  * a matrix from data in coordinate format with real, double precision
  * coefficients.
  */
-int mtxmatrix_init_entries_strided_real_double(
+LIBMTX_API int mtxmatrix_init_entries_strided_real_double(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -399,7 +399,7 @@ int mtxmatrix_init_entries_strided_real_double(
  * initialises a matrix from data in coordinate format with complex,
  * single precision coefficients.
  */
-int mtxmatrix_init_entries_strided_complex_single(
+LIBMTX_API int mtxmatrix_init_entries_strided_complex_single(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -418,7 +418,7 @@ int mtxmatrix_init_entries_strided_complex_single(
  * initialises a matrix from data in coordinate format with complex,
  * double precision coefficients.
  */
-int mtxmatrix_init_entries_strided_complex_double(
+LIBMTX_API int mtxmatrix_init_entries_strided_complex_double(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -437,7 +437,7 @@ int mtxmatrix_init_entries_strided_complex_double(
  * initialises a matrix from data in coordinate format with integer,
  * single precision coefficients.
  */
-int mtxmatrix_init_entries_strided_integer_single(
+LIBMTX_API int mtxmatrix_init_entries_strided_integer_single(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -456,7 +456,7 @@ int mtxmatrix_init_entries_strided_integer_single(
  * initialises a matrix from data in coordinate format with integer,
  * double precision coefficients.
  */
-int mtxmatrix_init_entries_strided_integer_double(
+LIBMTX_API int mtxmatrix_init_entries_strided_integer_double(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -475,7 +475,7 @@ int mtxmatrix_init_entries_strided_integer_double(
  * matrix from data in coordinate format with integer, double
  * precision coefficients.
  */
-int mtxmatrix_init_entries_strided_pattern(
+LIBMTX_API int mtxmatrix_init_entries_strided_pattern(
     struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
@@ -494,14 +494,14 @@ int mtxmatrix_init_entries_strided_pattern(
 /**
  * ‘mtxmatrix_setzero()’ sets every value of a matrix to zero.
  */
-int mtxmatrix_setzero(
+LIBMTX_API int mtxmatrix_setzero(
     struct mtxmatrix * A);
 
 /**
  * ‘mtxmatrix_set_real_single()’ sets values of a matrix based on an
  * array of single precision floating point numbers.
  */
-int mtxmatrix_set_real_single(
+LIBMTX_API int mtxmatrix_set_real_single(
     struct mtxmatrix * A,
     int64_t size,
     int stride,
@@ -511,7 +511,7 @@ int mtxmatrix_set_real_single(
  * ‘mtxmatrix_set_real_double()’ sets values of a matrix based on an
  * array of double precision floating point numbers.
  */
-int mtxmatrix_set_real_double(
+LIBMTX_API int mtxmatrix_set_real_double(
     struct mtxmatrix * A,
     int64_t size,
     int stride,
@@ -521,7 +521,7 @@ int mtxmatrix_set_real_double(
  * ‘mtxmatrix_set_complex_single()’ sets values of a matrix based on
  * an array of single precision floating point complex numbers.
  */
-int mtxmatrix_set_complex_single(
+LIBMTX_API int mtxmatrix_set_complex_single(
     struct mtxmatrix * A,
     int64_t size,
     int stride,
@@ -531,7 +531,7 @@ int mtxmatrix_set_complex_single(
  * ‘mtxmatrix_set_complex_double()’ sets values of a matrix based on
  * an array of double precision floating point complex numbers.
  */
-int mtxmatrix_set_complex_double(
+LIBMTX_API int mtxmatrix_set_complex_double(
     struct mtxmatrix * A,
     int64_t size,
     int stride,
@@ -541,7 +541,7 @@ int mtxmatrix_set_complex_double(
  * ‘mtxmatrix_set_integer_single()’ sets values of a matrix based on
  * an array of integers.
  */
-int mtxmatrix_set_integer_single(
+LIBMTX_API int mtxmatrix_set_integer_single(
     struct mtxmatrix * A,
     int64_t size,
     int stride,
@@ -551,7 +551,7 @@ int mtxmatrix_set_integer_single(
  * ‘mtxmatrix_set_integer_double()’ sets values of a matrix based on
  * an array of integers.
  */
-int mtxmatrix_set_integer_double(
+LIBMTX_API int mtxmatrix_set_integer_double(
     struct mtxmatrix * A,
     int64_t size,
     int stride,
@@ -566,7 +566,7 @@ int mtxmatrix_set_integer_double(
  * matrix, where a row vector is a vector whose length equal to a
  * single row of the matrix.
  */
-int mtxmatrix_alloc_row_vector(
+LIBMTX_API int mtxmatrix_alloc_row_vector(
     const struct mtxmatrix * A,
     struct mtxvector * vector,
     enum mtxvectortype vector_type);
@@ -576,7 +576,7 @@ int mtxmatrix_alloc_row_vector(
  * given matrix, where a column vector is a vector whose length equal
  * to a single column of the matrix.
  */
-int mtxmatrix_alloc_column_vector(
+LIBMTX_API int mtxmatrix_alloc_column_vector(
     const struct mtxmatrix * A,
     struct mtxvector * vector,
     enum mtxvectortype vector_type);
@@ -589,7 +589,7 @@ int mtxmatrix_alloc_column_vector(
  * ‘mtxmatrix_from_mtxfile()’ converts a matrix from Matrix Market
  * format.
  */
-int mtxmatrix_from_mtxfile(
+LIBMTX_API int mtxmatrix_from_mtxfile(
     struct mtxmatrix * dst,
     enum mtxmatrixtype type,
     const struct mtxfile * src);
@@ -597,7 +597,7 @@ int mtxmatrix_from_mtxfile(
 /**
  * ‘mtxmatrix_to_mtxfile()’ converts a matrix to Matrix Market format.
  */
-int mtxmatrix_to_mtxfile(
+LIBMTX_API int mtxmatrix_to_mtxfile(
     struct mtxfile * dst,
     const struct mtxmatrix * src,
     int64_t num_rows,
@@ -629,7 +629,7 @@ int mtxmatrix_to_mtxfile(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the matrix.
  */
-int mtxmatrix_read(
+LIBMTX_API int mtxmatrix_read(
     struct mtxmatrix * A,
     enum mtxprecision precision,
     enum mtxmatrixtype type,
@@ -652,7 +652,7 @@ int mtxmatrix_read(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the matrix.
  */
-int mtxmatrix_fread(
+LIBMTX_API int mtxmatrix_fread(
     struct mtxmatrix * A,
     enum mtxprecision precision,
     enum mtxmatrixtype type,
@@ -676,7 +676,7 @@ int mtxmatrix_fread(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the matrix.
  */
-int mtxmatrix_gzread(
+LIBMTX_API int mtxmatrix_gzread(
     struct mtxmatrix * A,
     enum mtxprecision precision,
     enum mtxmatrixtype type,
@@ -707,7 +707,7 @@ int mtxmatrix_gzread(
  * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
  * allowed.
  */
-int mtxmatrix_write(
+LIBMTX_API int mtxmatrix_write(
     const struct mtxmatrix * A,
     int64_t num_rows,
     const int64_t * rowidx,
@@ -739,7 +739,7 @@ int mtxmatrix_write(
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
  */
-int mtxmatrix_fwrite(
+LIBMTX_API int mtxmatrix_fwrite(
     const struct mtxmatrix * A,
     int64_t num_rows,
     const int64_t * rowidx,
@@ -771,7 +771,7 @@ int mtxmatrix_fwrite(
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
  */
-int mtxmatrix_gzwrite(
+LIBMTX_API int mtxmatrix_gzwrite(
     const struct mtxmatrix * A,
     int64_t num_rows,
     const int64_t * rowidx,
@@ -935,14 +935,14 @@ int mtxmatrix_split(
  * ‘mtxmatrix_swap()’ swaps values of two matrices, simultaneously
  * performing ‘Y <- X’ and ‘X <- Y’.
  */
-int mtxmatrix_swap(
+LIBMTX_API int mtxmatrix_swap(
     struct mtxmatrix * X,
     struct mtxmatrix * Y);
 
 /**
  * ‘mtxmatrix_copy()’ copies values of a matrix, ‘Y = X’.
  */
-int mtxmatrix_copy(
+LIBMTX_API int mtxmatrix_copy(
     struct mtxmatrix * Y,
     const struct mtxmatrix * X);
 
@@ -950,7 +950,7 @@ int mtxmatrix_copy(
  * ‘mtxmatrix_sscal()’ scales a matrix by a single precision floating
  * point scalar, ‘X = a*X’.
  */
-int mtxmatrix_sscal(
+LIBMTX_API int mtxmatrix_sscal(
     float a,
     struct mtxmatrix * X,
     int64_t * num_flops);
@@ -959,7 +959,7 @@ int mtxmatrix_sscal(
  * ‘mtxmatrix_dscal()’ scales a matrix by a double precision floating
  * point scalar, ‘X = a*X’.
  */
-int mtxmatrix_dscal(
+LIBMTX_API int mtxmatrix_dscal(
     double a,
     struct mtxmatrix * X,
     int64_t * num_flops);
@@ -968,7 +968,7 @@ int mtxmatrix_dscal(
  * ‘mtxmatrix_cscal()’ scales a matrix by a complex, single precision
  * floating point scalar, ‘X = (a+b*i)*X’.
  */
-int mtxmatrix_cscal(
+LIBMTX_API int mtxmatrix_cscal(
     float a[2],
     struct mtxmatrix * X,
     int64_t * num_flops);
@@ -977,7 +977,7 @@ int mtxmatrix_cscal(
  * ‘mtxmatrix_zscal()’ scales a matrix by a complex, double precision
  * floating point scalar, ‘X = (a+b*i)*X’.
  */
-int mtxmatrix_zscal(
+LIBMTX_API int mtxmatrix_zscal(
     double a[2],
     struct mtxmatrix * X,
     int64_t * num_flops);
@@ -986,7 +986,7 @@ int mtxmatrix_zscal(
  * ‘mtxmatrix_saxpy()’ adds a matrix to another matrix multiplied by a
  * single precision floating point value, ‘Y = a*X + Y’.
  */
-int mtxmatrix_saxpy(
+LIBMTX_API int mtxmatrix_saxpy(
     float a,
     const struct mtxmatrix * X,
     struct mtxmatrix * Y,
@@ -996,7 +996,7 @@ int mtxmatrix_saxpy(
  * ‘mtxmatrix_daxpy()’ adds a matrix to another matrix multiplied by a
  * double precision floating point value, ‘Y = a*X + Y’.
  */
-int mtxmatrix_daxpy(
+LIBMTX_API int mtxmatrix_daxpy(
     double a,
     const struct mtxmatrix * X,
     struct mtxmatrix * Y,
@@ -1006,7 +1006,7 @@ int mtxmatrix_daxpy(
  * ‘mtxmatrix_saypx()’ multiplies a matrix by a single precision
  * floating point scalar and adds another matrix, ‘Y = a*Y + X’.
  */
-int mtxmatrix_saypx(
+LIBMTX_API int mtxmatrix_saypx(
     float a,
     struct mtxmatrix * Y,
     const struct mtxmatrix * X,
@@ -1016,7 +1016,7 @@ int mtxmatrix_saypx(
  * ‘mtxmatrix_daypx()’ multiplies a matrix by a double precision
  * floating point scalar and adds another matrix, ‘Y = a*Y + X’.
  */
-int mtxmatrix_daypx(
+LIBMTX_API int mtxmatrix_daypx(
     double a,
     struct mtxmatrix * Y,
     const struct mtxmatrix * X,
@@ -1026,7 +1026,7 @@ int mtxmatrix_daypx(
  * ‘mtxmatrix_sdot()’ computes the Frobenius dot product of two
  * matrices in single precision floating point.
  */
-int mtxmatrix_sdot(
+LIBMTX_API int mtxmatrix_sdot(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     float * dot,
@@ -1036,7 +1036,7 @@ int mtxmatrix_sdot(
  * ‘mtxmatrix_ddot()’ computes the Frobenius dot product of two
  * matrices in double precision floating point.
  */
-int mtxmatrix_ddot(
+LIBMTX_API int mtxmatrix_ddot(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     double * dot,
@@ -1048,7 +1048,7 @@ int mtxmatrix_ddot(
  * complex matrix in single precision floating point, ‘dot :=
  * vec(X)^T*vec(Y)’, where ‘vec(X)’ is the vectorisation of ‘X’.
  */
-int mtxmatrix_cdotu(
+LIBMTX_API int mtxmatrix_cdotu(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     float (* dot)[2],
@@ -1060,7 +1060,7 @@ int mtxmatrix_cdotu(
  * complex matrix in double precision floating point, ‘dot :=
  * vec(X)^T*vec(Y)’, where ‘vec(X)’ is the vectorisation of ‘X’.
  */
-int mtxmatrix_zdotu(
+LIBMTX_API int mtxmatrix_zdotu(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     double (* dot)[2],
@@ -1071,7 +1071,7 @@ int mtxmatrix_zdotu(
  * complex matrices in single precision floating point, ‘dot :=
  * vec(X)^H*vec(Y)’, where ‘vec(X)’ is the vectorisation of ‘X’.
  */
-int mtxmatrix_cdotc(
+LIBMTX_API int mtxmatrix_cdotc(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     float (* dot)[2],
@@ -1082,7 +1082,7 @@ int mtxmatrix_cdotc(
  * complex matrices in double precision floating point, ‘dot :=
  * vec(X)^H*vec(Y)’, where ‘vec(X)’ is the vectorisation of ‘X’.
  */
-int mtxmatrix_zdotc(
+LIBMTX_API int mtxmatrix_zdotc(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     double (* dot)[2],
@@ -1092,7 +1092,7 @@ int mtxmatrix_zdotc(
  * ‘mtxmatrix_snrm2()’ computes the Frobenius norm of a matrix in
  * single precision floating point.
  */
-int mtxmatrix_snrm2(
+LIBMTX_API int mtxmatrix_snrm2(
     const struct mtxmatrix * X,
     float * nrm2,
     int64_t * num_flops);
@@ -1101,7 +1101,7 @@ int mtxmatrix_snrm2(
  * ‘mtxmatrix_dnrm2()’ computes the Frobenius norm of a matrix in
  * double precision floating point.
  */
-int mtxmatrix_dnrm2(
+LIBMTX_API int mtxmatrix_dnrm2(
     const struct mtxmatrix * X,
     double * nrm2,
     int64_t * num_flops);
@@ -1112,7 +1112,7 @@ int mtxmatrix_dnrm2(
  * complex-valued, then the sum of the absolute values of the real and
  * imaginary parts is computed.
  */
-int mtxmatrix_sasum(
+LIBMTX_API int mtxmatrix_sasum(
     const struct mtxmatrix * X,
     float * asum,
     int64_t * num_flops);
@@ -1123,7 +1123,7 @@ int mtxmatrix_sasum(
  * complex-valued, then the sum of the absolute values of the real and
  * imaginary parts is computed.
  */
-int mtxmatrix_dasum(
+LIBMTX_API int mtxmatrix_dasum(
     const struct mtxmatrix * X,
     double * asum,
     int64_t * num_flops);
@@ -1134,7 +1134,7 @@ int mtxmatrix_dasum(
  * index points to the first element having the maximum sum of the
  * absolute values of the real and imaginary parts.
  */
-int mtxmatrix_iamax(
+LIBMTX_API int mtxmatrix_iamax(
     const struct mtxmatrix * X,
     int * iamax);
 
@@ -1151,7 +1151,7 @@ int mtxmatrix_iamax(
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
  */
-int mtxmatrix_sgemv(
+LIBMTX_API int mtxmatrix_sgemv(
     enum mtxtransposition trans,
     float alpha,
     const struct mtxmatrix * A,
@@ -1169,7 +1169,7 @@ int mtxmatrix_sgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
  */
-int mtxmatrix_dgemv(
+LIBMTX_API int mtxmatrix_dgemv(
     enum mtxtransposition trans,
     double alpha,
     const struct mtxmatrix * A,
@@ -1188,7 +1188,7 @@ int mtxmatrix_dgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
  */
-int mtxmatrix_cgemv(
+LIBMTX_API int mtxmatrix_cgemv(
     enum mtxtransposition trans,
     float alpha[2],
     const struct mtxmatrix * A,
@@ -1207,7 +1207,7 @@ int mtxmatrix_cgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
  */
-int mtxmatrix_zgemv(
+LIBMTX_API int mtxmatrix_zgemv(
     enum mtxtransposition trans,
     double alpha[2],
     const struct mtxmatrix * A,
@@ -1231,7 +1231,7 @@ int mtxmatrix_zgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
  */
-int mtxmatrix_sgemm(
+LIBMTX_API int mtxmatrix_sgemm(
     enum mtxtransposition Atrans,
     enum mtxtransposition Btrans,
     float alpha,
@@ -1252,7 +1252,7 @@ int mtxmatrix_sgemm(
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
  */
-int mtxmatrix_dgemm(
+LIBMTX_API int mtxmatrix_dgemm(
     enum mtxtransposition Atrans,
     enum mtxtransposition Btrans,
     double alpha,
