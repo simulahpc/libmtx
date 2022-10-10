@@ -16,12 +16,10 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-10-10
  *
  * Unit tests for partitioning functions.
  */
-
-#include <libmtx/error.h>
 
 #include "libmtx/util/partition.h"
 #include "test.h"
@@ -49,7 +47,7 @@ int test_partition_block(void)
         int64_t dstpartsizes[1] = {};
         err = partition_block_int64(
             size, num_parts, partsizes, idxsize, sizeof(*idx), idx, dstpart, dstpartsizes);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(0, dstpart[0]);
         TEST_ASSERT_EQ(0, dstpart[1]);
         TEST_ASSERT_EQ(0, dstpart[2]);
@@ -67,7 +65,7 @@ int test_partition_block(void)
         int64_t dstpartsizes[2] = {};
         err = partition_block_int64(
             size, num_parts, partsizes, idxsize, sizeof(*idx), idx, dstpart, dstpartsizes);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(0, dstpart[0]);
         TEST_ASSERT_EQ(0, dstpart[1]);
         TEST_ASSERT_EQ(0, dstpart[2]);
@@ -86,7 +84,7 @@ int test_partition_block(void)
         int64_t dstpartsizes[2] = {};
         err = partition_block_int64(
             size, num_parts, partsizes, idxsize, sizeof(*idx), idx, dstpart, dstpartsizes);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(0, dstpart[0]);
         TEST_ASSERT_EQ(0, dstpart[1]);
         TEST_ASSERT_EQ(0, dstpart[2]);
@@ -105,7 +103,7 @@ int test_partition_block(void)
         int64_t dstpartsizes[2] = {};
         err = partition_block_int64(
             size, num_parts, partsizes, idxsize, sizeof(*idx), idx, dstpart, dstpartsizes);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(0, dstpart[0]);
         TEST_ASSERT_EQ(1, dstpart[1]);
         TEST_ASSERT_EQ(0, dstpart[2]);
@@ -124,7 +122,7 @@ int test_partition_block(void)
         int64_t dstpartsizes[3] = {};
         err = partition_block_int64(
             size, num_parts, partsizes, idxsize, sizeof(*idx), idx, dstpart, dstpartsizes);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(0, dstpart[0]);
         TEST_ASSERT_EQ(1, dstpart[1]);
         TEST_ASSERT_EQ(1, dstpart[2]);
@@ -153,7 +151,7 @@ int test_partition_block_cyclic(void)
         int64_t dstpartsizes[1] = {};
         err = partition_block_cyclic_int64(
             size, num_parts, blksize, idxsize, sizeof(*idx), idx, dstpart, dstpartsizes);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(0, dstpart[0]);
         TEST_ASSERT_EQ(0, dstpart[1]);
         TEST_ASSERT_EQ(0, dstpart[2]);
@@ -171,7 +169,7 @@ int test_partition_block_cyclic(void)
         int64_t dstpartsizes[1] = {};
         err = partition_block_cyclic_int64(
             size, num_parts, blksize, idxsize, sizeof(*idx), idx, dstpart, dstpartsizes);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(0, dstpart[0]);
         TEST_ASSERT_EQ(0, dstpart[1]);
         TEST_ASSERT_EQ(1, dstpart[2]);
@@ -190,7 +188,7 @@ int test_partition_block_cyclic(void)
         int64_t dstpartsizes[2] = {};
         err = partition_block_cyclic_int64(
             size, num_parts, blksize, idxsize, sizeof(*idx), idx, dstpart, dstpartsizes);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(0, dstpart[0]);
         TEST_ASSERT_EQ(1, dstpart[1]);
         TEST_ASSERT_EQ(0, dstpart[2]);
@@ -209,7 +207,7 @@ int test_partition_block_cyclic(void)
         int64_t dstpartsizes[3] = {};
         err = partition_block_cyclic_int64(
             size, num_parts, blksize, idxsize, sizeof(*idx), idx, dstpart, dstpartsizes);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(0, dstpart[0]);
         TEST_ASSERT_EQ(2, dstpart[1]);
         TEST_ASSERT_EQ(1, dstpart[2]);
@@ -229,7 +227,7 @@ int test_partition_block_cyclic(void)
         int64_t dstpartsizes[3] = {};
         err = partition_block_cyclic_int64(
             size, num_parts, blksize, idxsize, sizeof(*idx), idx, dstpart, dstpartsizes);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(0, dstpart[0]);
         TEST_ASSERT_EQ(1, dstpart[1]);
         TEST_ASSERT_EQ(0, dstpart[2]);
@@ -258,7 +256,7 @@ int test_partition_custom(void)
         int64_t dstpartsizes[2] = {};
         err = partition_custom_int64(
             size, num_parts, parts, idxsize, sizeof(*idx), idx, dstpart, dstpartsizes);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(1, dstpart[0]);
         TEST_ASSERT_EQ(1, dstpart[1]);
         TEST_ASSERT_EQ(0, dstpart[2]);

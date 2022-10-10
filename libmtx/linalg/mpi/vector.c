@@ -31,6 +31,7 @@
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/mtxdistfile.h>
+#include <libmtx/util/mpipartition.h>
 #include <libmtx/util/sort.h>
 #include <libmtx/linalg/mpi/vector.h>
 #include <libmtx/linalg/local/vector.h>

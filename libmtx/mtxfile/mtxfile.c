@@ -1652,7 +1652,7 @@ int mtxfile_partition_nonzeros(
     int err = partition_int64(
         parttype, mtxfile->datasize, num_parts, partsizes, blksize, parts,
         mtxfile->datasize, sizeof(int64_t), idx, dstpart, dstpartsizes);
-    if (err) { free(idx); return err; }
+    if (err) { free(idx); errno = err; return MTX_ERR_ERRNO; }
     free(idx);
     return MTX_SUCCESS;
 }

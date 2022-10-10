@@ -5844,7 +5844,7 @@ int mtxfiledata_partition_rowwise(
     err = partition_int64(
         type, num_rows, num_parts, partsizes, blksize, parts,
         size, sizeof(int64_t), rowidx, dstpart, dstpartsizes);
-    if (err) { free(rowidx); return err; }
+    if (err) { free(rowidx); errno = err; return MTX_ERR_ERRNO; }
     free(rowidx);
     return MTX_SUCCESS;
 }
@@ -5897,7 +5897,7 @@ int mtxfiledata_partition_columnwise(
     err = partition_int64(
         type, num_columns, num_parts, partsizes, blksize, parts,
         size, sizeof(int64_t), colidx, dstpart, dstpartsizes);
-    if (err) { free(colidx); return err; }
+    if (err) { free(colidx); err = errno; return MTX_ERR_ERRNO; }
     free(colidx);
     return MTX_SUCCESS;
 }
@@ -5964,11 +5964,11 @@ int mtxfiledata_partition_2d(
     err = partition_int64(
         rowparttype, num_rows, num_row_parts, rowpartsizes, rowblksize, rowparts,
         size, sizeof(int64_t), rowidx, dstrowpart, NULL);
-    if (err) { free(dstrowpart); free(rowidx); free(colidx); return err; }
+    if (err) { free(dstrowpart); free(rowidx); free(colidx); err = errno; return MTX_ERR_ERRNO; }
     err = partition_int64(
         colparttype, num_columns, num_column_parts, colpartsizes, colblksize, colparts,
         size, sizeof(int64_t), colidx, dstpart, NULL);
-    if (err) { free(dstrowpart); free(rowidx); free(colidx); return err; }
+    if (err) { free(dstrowpart); free(rowidx); free(colidx); err = errno; return MTX_ERR_ERRNO; }
     for (int64_t k = 0; k < size; k++)
         dstpart[k] = dstrowpart[k]*num_column_parts + dstpart[k];
     if (dstpartsizes) {

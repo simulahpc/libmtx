@@ -1428,11 +1428,13 @@ int mtxbasecoo_partition_rowwise(
             parttype, A->num_rows, num_parts, partsizes, blksize, parts,
             A->num_rows, sizeof(*dstrowpart), dstrowpart,
             dstrowpart, dstrowpartsizes);
-        if (err) return err;
+        if (err) { errno = err; return MTX_ERR_ERRNO; }
     }
-    return partition_int(
+    int err = partition_int(
         parttype, A->num_rows, num_parts, partsizes, blksize, parts,
         A->size, sizeof(*A->rowidx), A->rowidx, dstnzpart, dstnzpartsizes);
+    if (err) { errno = err; return MTX_ERR_ERRNO; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -1476,11 +1478,13 @@ int mtxbasecoo_partition_columnwise(
             parttype, A->num_columns, num_parts, partsizes, blksize, parts,
             A->num_columns, sizeof(*dstcolpart), dstcolpart,
             dstcolpart, dstcolpartsizes);
-        if (err) return err;
+        if (err) { errno = err; return MTX_ERR_ERRNO; }
     }
-    return partition_int(
+    int err = partition_int(
         parttype, A->num_columns, num_parts, partsizes, blksize, parts,
         A->size, sizeof(*A->colidx), A->colidx, dstnzpart, dstnzpartsizes);
+    if (err) { errno = err; return MTX_ERR_ERRNO; }
+    return MTX_SUCCESS;
 }
 
 /**

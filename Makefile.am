@@ -94,9 +94,12 @@ libmtx_la_SOURCES = \
 	libmtx/util/metis.h \
 	libmtx/util/morton.c \
 	libmtx/util/morton.h \
+	libmtx/util/mpipartition.c \
+	libmtx/util/mpipartition.h \
 	libmtx/util/mpisort.c \
 	libmtx/util/mpisort.h \
 	libmtx/util/partition.c \
+	libmtx/util/partition.h \
 	libmtx/util/permute.c \
 	libmtx/util/permute.h \
 	libmtx/util/sort.c \
@@ -134,7 +137,6 @@ nobase_include_HEADERS = \
 	libmtx/mtxfile/mtxfile.h \
 	libmtx/mtxfile/size.h \
 	libmtx/solver/cg.h \
-	libmtx/util/partition.h \
 	libmtx/version.h
 
 # Header files that will not be distributed
