@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-07-12
+ * Last modified: 2022-10-09
  *
  * Data structures and routines for distributed matrices.
  */
@@ -38,6 +38,8 @@
 #include <libmtx/linalg/mpi/vector.h>
 
 #include <mpi.h>
+
+#include <errno.h>
 
 #include <limits.h>
 #include <math.h>
@@ -163,8 +165,9 @@ static int mtxmpimatrix_init_rowmap_global(
     for (int64_t k = 0; k < num_nonzeros; k++)
         globalrowidx[k] = *(const int64_t *)((const char *) rowidx+k*idxstride) - idxbase;
     int64_t rowmapsize;
-    err = compact_unsorted_int64(
+    errno = compact_unsorted_int64(
         &rowmapsize, NULL, num_nonzeros, globalrowidx, rowperm, rowdstidx);
+    err = errno ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(rowdstidx); free(rowperm); free(globalrowidx);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -176,8 +179,9 @@ static int mtxmpimatrix_init_rowmap_global(
         free(rowdstidx); free(rowperm); free(globalrowidx);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = compact_sorted_int64(
+    errno = compact_sorted_int64(
         &rowmapsize, A->rowmap, num_nonzeros, globalrowidx, NULL);
+    err = errno ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(A->rowmap); free(rowdstidx); free(rowperm); free(globalrowidx);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -217,8 +221,9 @@ static int mtxmpimatrix_init_colmap_global(
     for (int64_t k = 0; k < num_nonzeros; k++)
         globalcolidx[k] = *(const int64_t *)((const char *) colidx+k*idxstride) - idxbase;
     int64_t colmapsize;
-    err = compact_unsorted_int64(
+    errno = compact_unsorted_int64(
         &colmapsize, NULL, num_nonzeros, globalcolidx, colperm, coldstidx);
+    err = errno ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(coldstidx); free(colperm); free(globalcolidx);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -230,8 +235,9 @@ static int mtxmpimatrix_init_colmap_global(
         free(coldstidx); free(colperm); free(globalcolidx);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = compact_sorted_int64(
+    errno = compact_sorted_int64(
         &colmapsize, A->colmap, num_nonzeros, globalcolidx, NULL);
+    err = errno ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(A->colmap); free(coldstidx); free(colperm); free(globalcolidx);
         return MTX_ERR_MPI_COLLECTIVE;

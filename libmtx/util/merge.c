@@ -16,17 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-06-01
+ * Last modified: 2022-10-09
  *
  * Merge operations on arrays.
  */
 
-#include "merge.h"
-#include "sort.h"
-
-#include <libmtx/libmtx-config.h>
-
-#include <libmtx/error.h>
+#include "libmtx/util/merge.h"
+#include "libmtx/util/sort.h"
 
 #include <errno.h>
 
@@ -61,6 +57,9 @@
  * ‘asize’. For a given item in the input array ‘a’ the corresponding
  * value in ‘dstidx’ indicates the offset to the same item in the
  * output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_sorted_int32(
     int64_t * bsize,
@@ -72,13 +71,13 @@ int compact_sorted_int32(
     int64_t i = 0, k = 0;
     if (b && dstidx) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *bsize) return EINVAL;
             dstidx[i] = k; b[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) { dstidx[i] = k-1; }
         }
     } else if (b) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *bsize) return EINVAL;
             b[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
@@ -94,7 +93,7 @@ int compact_sorted_int32(
         }
     }
     *bsize = k;
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -121,6 +120,9 @@ int compact_sorted_int32(
  * ‘asize’. For a given item in the input array ‘a’ the corresponding
  * value in ‘dstidx’ indicates the offset to the same item in the
  * output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_sorted_int64(
     int64_t * bsize,
@@ -132,13 +134,13 @@ int compact_sorted_int64(
     int64_t i = 0, k = 0;
     if (b && dstidx) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *bsize) return EINVAL;
             dstidx[i] = k; b[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) { dstidx[i] = k-1; }
         }
     } else if (b) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *bsize) return EINVAL;
             b[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
@@ -154,7 +156,7 @@ int compact_sorted_int64(
         }
     }
     *bsize = k;
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -181,6 +183,9 @@ int compact_sorted_int64(
  * ‘asize’. For a given item in the input array ‘a’ the corresponding
  * value in ‘dstidx’ indicates the offset to the same item in the
  * output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_sorted_int(
     int64_t * bsize,
@@ -192,13 +197,13 @@ int compact_sorted_int(
     int64_t i = 0, k = 0;
     if (b && dstidx) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *bsize) return EINVAL;
             dstidx[i] = k; b[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) { dstidx[i] = k-1; }
         }
     } else if (b) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *bsize) return EINVAL;
             b[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
@@ -214,7 +219,7 @@ int compact_sorted_int(
         }
     }
     *bsize = k;
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -241,6 +246,9 @@ int compact_sorted_int(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_sorted_int32_pair(
     int64_t * bsize,
@@ -252,13 +260,13 @@ int compact_sorted_int32_pair(
     int64_t i = 0, k = 0;
     if (b && dstidx) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *bsize) return EINVAL;
             dstidx[i] = k; b[k][0] = a[i][0]; b[k][1] = a[i][1]; k++;
             for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) { dstidx[i] = k-1; }
         }
     } else if (b) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *bsize) return EINVAL;
             b[k][0] = a[i][0]; b[k][1] = a[i][1]; k++;
             for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) {}
         }
@@ -274,7 +282,7 @@ int compact_sorted_int32_pair(
         }
     }
     *bsize = k;
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -301,6 +309,9 @@ int compact_sorted_int32_pair(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_sorted_int64_pair(
     int64_t * bsize,
@@ -312,13 +323,13 @@ int compact_sorted_int64_pair(
     int64_t i = 0, k = 0;
     if (b && dstidx) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *bsize) return EINVAL;
             dstidx[i] = k; b[k][0] = a[i][0]; b[k][1] = a[i][1]; k++;
             for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) { dstidx[i] = k-1; }
         }
     } else if (b) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *bsize) return EINVAL;
             b[k][0] = a[i][0]; b[k][1] = a[i][1]; k++;
             for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) {}
         }
@@ -334,7 +345,7 @@ int compact_sorted_int64_pair(
         }
     }
     *bsize = k;
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -361,6 +372,9 @@ int compact_sorted_int64_pair(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_sorted_int_pair(
     int64_t * bsize,
@@ -372,13 +386,13 @@ int compact_sorted_int_pair(
     int64_t i = 0, k = 0;
     if (b && dstidx) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *bsize) return EINVAL;
             dstidx[i] = k; b[k][0] = a[i][0]; b[k][1] = a[i][1]; k++;
             for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) { dstidx[i] = k-1; }
         }
     } else if (b) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *bsize) return EINVAL;
             b[k][0] = a[i][0]; b[k][1] = a[i][1]; k++;
             for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) {}
         }
@@ -394,7 +408,7 @@ int compact_sorted_int_pair(
         }
     }
     *bsize = k;
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -423,6 +437,9 @@ int compact_sorted_int_pair(
  * ‘asize’. For a given item in the input array ‘a’ the corresponding
  * value in ‘dstidx’ indicates the offset to the same item in the
  * output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int32(
     int64_t * bsize,
@@ -432,8 +449,8 @@ int compact_unsorted_int32(
     int64_t * perm,
     int64_t * dstidx)
 {
-    errno = radix_sort_int32(asize, a, perm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int32(asize, a, perm);
+    if (err) return err;
     return compact_sorted_int32(bsize, b, asize, a, dstidx);
 }
 
@@ -463,6 +480,9 @@ int compact_unsorted_int32(
  * ‘asize’. For a given item in the input array ‘a’ the corresponding
  * value in ‘dstidx’ indicates the offset to the same item in the
  * output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int64(
     int64_t * bsize,
@@ -472,8 +492,8 @@ int compact_unsorted_int64(
     int64_t * perm,
     int64_t * dstidx)
 {
-    errno = radix_sort_int64(asize, sizeof(*a), a, perm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int64(asize, sizeof(*a), a, perm);
+    if (err) return err;
     return compact_sorted_int64(bsize, b, asize, a, dstidx);
 }
 
@@ -503,6 +523,9 @@ int compact_unsorted_int64(
  * ‘asize’. For a given item in the input array ‘a’ the corresponding
  * value in ‘dstidx’ indicates the offset to the same item in the
  * output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int(
     int64_t * bsize,
@@ -512,8 +535,8 @@ int compact_unsorted_int(
     int64_t * perm,
     int64_t * dstidx)
 {
-    errno = radix_sort_int(asize, a, perm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int(asize, a, perm);
+    if (err) return err;
     return compact_sorted_int(bsize, b, asize, a, dstidx);
 }
 
@@ -543,6 +566,9 @@ int compact_unsorted_int(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int32_pair(
     int64_t * bsize,
@@ -552,9 +578,9 @@ int compact_unsorted_int32_pair(
     int64_t * perm,
     int64_t * dstidx)
 {
-    errno = radix_sort_int32_pair(
+    int err = radix_sort_int32_pair(
         asize, sizeof(*a), &a[0][0], sizeof(*a), &a[0][1], perm);
-    if (errno) return MTX_ERR_ERRNO;
+    if (err) return err;
     return compact_sorted_int32_pair(bsize, b, asize, a, dstidx);
 }
 
@@ -584,6 +610,9 @@ int compact_unsorted_int32_pair(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int64_pair(
     int64_t * bsize,
@@ -593,9 +622,9 @@ int compact_unsorted_int64_pair(
     int64_t * perm,
     int64_t * dstidx)
 {
-    errno = radix_sort_int64_pair(
+    int err = radix_sort_int64_pair(
         asize, sizeof(*a), &a[0][0], sizeof(*a), &a[0][1], perm);
-    if (errno) return MTX_ERR_ERRNO;
+    if (err) return err;
     return compact_sorted_int64_pair(bsize, b, asize, a, dstidx);
 }
 
@@ -625,6 +654,9 @@ int compact_unsorted_int64_pair(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int_pair(
     int64_t * bsize,
@@ -634,9 +666,9 @@ int compact_unsorted_int_pair(
     int64_t * perm,
     int64_t * dstidx)
 {
-    errno = radix_sort_int_pair(
+    int err = radix_sort_int_pair(
         asize, sizeof(*a), &a[0][0], sizeof(*a), &a[0][1], perm);
-    if (errno) return MTX_ERR_ERRNO;
+    if (err) return err;
     return compact_sorted_int_pair(bsize, b, asize, a, dstidx);
 }
 
@@ -655,6 +687,9 @@ int compact_unsorted_int_pair(
  *
  * The output array ‘c’ must have enough storage to hold the merged
  * results, which consists of the items in the input arrays.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int merge_sorted_int32(
     int64_t csize,
@@ -666,7 +701,7 @@ int merge_sorted_int32(
     const int32_t * b,
     int64_t * bdstidx)
 {
-    if (csize < asize + bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (csize < asize + bsize) return EINVAL;
     if (adstidx && bdstidx) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
@@ -686,7 +721,7 @@ int merge_sorted_int32(
         while (i < asize) c[k++] = a[i++];
         while (j < bsize) c[k++] = b[j++];
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -700,6 +735,9 @@ int merge_sorted_int32(
  *
  * The output array ‘c’ must have enough storage to hold the merged
  * results, which consists of the items in the input arrays.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int merge_sorted_int64(
     int64_t csize,
@@ -711,7 +749,7 @@ int merge_sorted_int64(
     const int64_t * b,
     int64_t * bdstidx)
 {
-    if (csize < asize + bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (csize < asize + bsize) return EINVAL;
     if (adstidx && bdstidx) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
@@ -731,7 +769,7 @@ int merge_sorted_int64(
         while (i < asize) c[k++] = a[i++];
         while (j < bsize) c[k++] = b[j++];
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -745,6 +783,9 @@ int merge_sorted_int64(
  *
  * The output array ‘c’ must have enough storage to hold the merged
  * results, which consists of the items in the input arrays.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int merge_sorted_int(
     int64_t csize,
@@ -756,7 +797,7 @@ int merge_sorted_int(
     const int * b,
     int64_t * bdstidx)
 {
-    if (csize < asize + bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (csize < asize + bsize) return EINVAL;
     if (adstidx && bdstidx) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
@@ -776,7 +817,7 @@ int merge_sorted_int(
         while (i < asize) c[k++] = a[i++];
         while (j < bsize) c[k++] = b[j++];
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /*
@@ -801,6 +842,9 @@ int merge_sorted_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_sorted_unique_int32(
     int64_t * csize,
@@ -815,38 +859,38 @@ int setunion_sorted_unique_int32(
     if (c && adstidx && bdstidx) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             if (a[i] < b[j]) { adstidx[i] = k; c[k++] = a[i++]; }
             else if (a[i] > b[j]) { bdstidx[j] = k; c[k++] = b[j++]; }
             else { adstidx[i] = k; bdstidx[j] = k; c[k++] = a[i++]; j++; }
         }
-        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (asize - i >= *csize) return EINVAL;
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             adstidx[i] = k; c[k++] = a[i++];
         }
-        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (bsize - j >= *csize) return EINVAL;
         while (j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             bdstidx[i] = k; c[k++] = b[j++];
         }
         *csize = k;
     } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             if (a[i] < b[j]) { c[k++] = a[i++]; }
             else if (a[i] > b[j]) { c[k++] = b[j++]; }
             else { c[k++] = a[i++]; j++; }
         }
-        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (asize - i >= *csize) return EINVAL;
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = a[i++];
         }
-        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (bsize - j >= *csize) return EINVAL;
         while (j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = b[j++];
         }
         *csize = k;
@@ -861,7 +905,7 @@ int setunion_sorted_unique_int32(
         while (j < bsize) { k++; j++; }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -881,6 +925,9 @@ int setunion_sorted_unique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_sorted_unique_int64(
     int64_t * csize,
@@ -895,38 +942,38 @@ int setunion_sorted_unique_int64(
     if (c && adstidx && bdstidx) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             if (a[i] < b[j]) { adstidx[i] = k; c[k++] = a[i++]; }
             else if (a[i] > b[j]) { bdstidx[j] = k; c[k++] = b[j++]; }
             else { adstidx[i] = k; bdstidx[j] = k; c[k++] = a[i++]; j++; }
         }
-        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (asize - i >= *csize) return EINVAL;
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             adstidx[i] = k; c[k++] = a[i++];
         }
-        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (bsize - j >= *csize) return EINVAL;
         while (j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             bdstidx[i] = k; c[k++] = b[j++];
         }
         *csize = k;
     } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             if (a[i] < b[j]) { c[k++] = a[i++]; }
             else if (a[i] > b[j]) { c[k++] = b[j++]; }
             else { c[k++] = a[i++]; j++; }
         }
-        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (asize - i >= *csize) return EINVAL;
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = a[i++];
         }
-        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (bsize - j >= *csize) return EINVAL;
         while (j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = b[j++];
         }
         *csize = k;
@@ -941,7 +988,7 @@ int setunion_sorted_unique_int64(
         while (j < bsize) { k++; j++; }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -961,6 +1008,9 @@ int setunion_sorted_unique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_sorted_unique_int(
     int64_t * csize,
@@ -975,38 +1025,38 @@ int setunion_sorted_unique_int(
     if (c && adstidx && bdstidx) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             if (a[i] < b[j]) { adstidx[i] = k; c[k++] = a[i++]; }
             else if (a[i] > b[j]) { bdstidx[j] = k; c[k++] = b[j++]; }
             else { adstidx[i] = k; bdstidx[j] = k; c[k++] = a[i++]; j++; }
         }
-        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (asize - i >= *csize) return EINVAL;
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             adstidx[i] = k; c[k++] = a[i++];
         }
-        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (bsize - j >= *csize) return EINVAL;
         while (j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             bdstidx[i] = k; c[k++] = b[j++];
         }
         *csize = k;
     } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             if (a[i] < b[j]) { c[k++] = a[i++]; }
             else if (a[i] > b[j]) { c[k++] = b[j++]; }
             else { c[k++] = a[i++]; j++; }
         }
-        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (asize - i >= *csize) return EINVAL;
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = a[i++];
         }
-        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (bsize - j >= *csize) return EINVAL;
         while (j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = b[j++];
         }
         *csize = k;
@@ -1021,7 +1071,7 @@ int setunion_sorted_unique_int(
         while (j < bsize) { k++; j++; }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /*
@@ -1046,6 +1096,9 @@ int setunion_sorted_unique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_sorted_nonunique_int32(
     int64_t * csize,
@@ -1060,7 +1113,7 @@ int setunion_sorted_nonunique_int32(
     if (c && adstidx && bdstidx) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             if (a[i] < b[j]) {
                 adstidx[i] = k; c[k++] = a[i];
                 for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
@@ -1073,15 +1126,15 @@ int setunion_sorted_nonunique_int32(
                 for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
             }
         }
-        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (asize - i >= *csize) return EINVAL;
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             adstidx[i] = k; c[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
         }
-        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (bsize - j >= *csize) return EINVAL;
         while (j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             bdstidx[j] = k; c[k++] = b[j];
             for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
         }
@@ -1089,7 +1142,7 @@ int setunion_sorted_nonunique_int32(
     } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             if (a[i] < b[j]) {
                 c[k++] = a[i];
                 for (i++; i < asize && a[i] == a[i-1]; i++) {}
@@ -1102,15 +1155,15 @@ int setunion_sorted_nonunique_int32(
                 for (j++; j < bsize && b[j] == b[j-1]; j++) {}
             }
         }
-        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (asize - i >= *csize) return EINVAL;
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
-        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (bsize - j >= *csize) return EINVAL;
         while (j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = b[j];
             for (j++; j < bsize && b[j] == b[j-1]; j++) {}
         }
@@ -1134,7 +1187,7 @@ int setunion_sorted_nonunique_int32(
         while (j < bsize) { k++; for (j++; j < bsize && b[j] == b[j-1]; j++) {} }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -1154,6 +1207,9 @@ int setunion_sorted_nonunique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_sorted_nonunique_int64(
     int64_t * csize,
@@ -1168,7 +1224,7 @@ int setunion_sorted_nonunique_int64(
     if (c && adstidx && bdstidx) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             if (a[i] < b[j]) {
                 adstidx[i] = k; c[k++] = a[i];
                 for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
@@ -1181,15 +1237,15 @@ int setunion_sorted_nonunique_int64(
                 for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
             }
         }
-        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (asize - i >= *csize) return EINVAL;
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             adstidx[i] = k; c[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
         }
-        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (bsize - j >= *csize) return EINVAL;
         while (j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             bdstidx[j] = k; c[k++] = b[j];
             for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
         }
@@ -1197,7 +1253,7 @@ int setunion_sorted_nonunique_int64(
     } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             if (a[i] < b[j]) {
                 c[k++] = a[i];
                 for (i++; i < asize && a[i] == a[i-1]; i++) {}
@@ -1210,15 +1266,15 @@ int setunion_sorted_nonunique_int64(
                 for (j++; j < bsize && b[j] == b[j-1]; j++) {}
             }
         }
-        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (asize - i >= *csize) return EINVAL;
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
-        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (bsize - j >= *csize) return EINVAL;
         while (j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = b[j];
             for (j++; j < bsize && b[j] == b[j-1]; j++) {}
         }
@@ -1242,7 +1298,7 @@ int setunion_sorted_nonunique_int64(
         while (j < bsize) { k++; for (j++; j < bsize && b[j] == b[j-1]; j++) {} }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -1262,6 +1318,9 @@ int setunion_sorted_nonunique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_sorted_nonunique_int(
     int64_t * csize,
@@ -1276,7 +1335,7 @@ int setunion_sorted_nonunique_int(
     if (c && adstidx && bdstidx) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             if (a[i] < b[j]) {
                 adstidx[i] = k; c[k++] = a[i];
                 for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
@@ -1289,15 +1348,15 @@ int setunion_sorted_nonunique_int(
                 for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
             }
         }
-        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (asize - i >= *csize) return EINVAL;
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             adstidx[i] = k; c[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
         }
-        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (bsize - j >= *csize) return EINVAL;
         while (j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             bdstidx[j] = k; c[k++] = b[j];
             for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
         }
@@ -1305,7 +1364,7 @@ int setunion_sorted_nonunique_int(
     } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             if (a[i] < b[j]) {
                 c[k++] = a[i];
                 for (i++; i < asize && a[i] == a[i-1]; i++) {}
@@ -1318,15 +1377,15 @@ int setunion_sorted_nonunique_int(
                 for (j++; j < bsize && b[j] == b[j-1]; j++) {}
             }
         }
-        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (asize - i >= *csize) return EINVAL;
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
-        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (bsize - j >= *csize) return EINVAL;
         while (j < bsize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = b[j];
             for (j++; j < bsize && b[j] == b[j-1]; j++) {}
         }
@@ -1350,7 +1409,7 @@ int setunion_sorted_nonunique_int(
         while (j < bsize) { k++; for (j++; j < bsize && b[j] == b[j-1]; j++) {} }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /*
@@ -1376,6 +1435,9 @@ int setunion_sorted_nonunique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_unsorted_unique_int32(
     int64_t * csize,
@@ -1389,10 +1451,10 @@ int setunion_unsorted_unique_int32(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    errno = radix_sort_int32(asize, a, aperm);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int32(bsize, b, bperm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int32(asize, a, aperm);
+    if (err) return err;
+    err = radix_sort_int32(bsize, b, bperm);
+    if (err) return err;
     return setunion_sorted_unique_int32(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -1415,6 +1477,9 @@ int setunion_unsorted_unique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_unsorted_unique_int64(
     int64_t * csize,
@@ -1428,10 +1493,10 @@ int setunion_unsorted_unique_int64(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    errno = radix_sort_int64(asize, sizeof(*a), a, aperm);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int64(bsize, sizeof(*b), b, bperm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int64(asize, sizeof(*a), a, aperm);
+    if (err) return err;
+    err = radix_sort_int64(bsize, sizeof(*b), b, bperm);
+    if (err) return err;
     return setunion_sorted_unique_int64(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -1454,6 +1519,9 @@ int setunion_unsorted_unique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_unsorted_unique_int(
     int64_t * csize,
@@ -1467,10 +1535,10 @@ int setunion_unsorted_unique_int(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    errno = radix_sort_int(asize, a, aperm);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int(bsize, b, bperm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int(asize, a, aperm);
+    if (err) return err;
+    err = radix_sort_int(bsize, b, bperm);
+    if (err) return err;
     return setunion_sorted_unique_int(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -1498,6 +1566,9 @@ int setunion_unsorted_unique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_unsorted_nonunique_int32(
     int64_t * csize,
@@ -1511,10 +1582,10 @@ int setunion_unsorted_nonunique_int32(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    errno = radix_sort_int32(asize, a, aperm);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int32(bsize, b, bperm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int32(asize, a, aperm);
+    if (err) return err;
+    err = radix_sort_int32(bsize, b, bperm);
+    if (err) return err;
     return setunion_sorted_nonunique_int32(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -1537,6 +1608,9 @@ int setunion_unsorted_nonunique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_unsorted_nonunique_int64(
     int64_t * csize,
@@ -1550,10 +1624,10 @@ int setunion_unsorted_nonunique_int64(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    errno = radix_sort_int64(asize, sizeof(*a), a, aperm);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int64(bsize, sizeof(*b), b, bperm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int64(asize, sizeof(*a), a, aperm);
+    if (err) return err;
+    err = radix_sort_int64(bsize, sizeof(*b), b, bperm);
+    if (err) return err;
     return setunion_sorted_nonunique_int64(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -1576,6 +1650,9 @@ int setunion_unsorted_nonunique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_unsorted_nonunique_int(
     int64_t * csize,
@@ -1589,10 +1666,10 @@ int setunion_unsorted_nonunique_int(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    errno = radix_sort_int(asize, a, aperm);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int(bsize, b, bperm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int(asize, a, aperm);
+    if (err) return err;
+    err = radix_sort_int(bsize, b, bperm);
+    if (err) return err;
     return setunion_sorted_nonunique_int(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -1619,6 +1696,9 @@ int setunion_unsorted_nonunique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_sorted_unique_int32(
     int64_t * csize,
@@ -1636,7 +1716,7 @@ int setintersection_sorted_unique_int32(
             if (a[i] < b[j]) { adstidx[i] = -1; i++; }
             else if (a[i] > b[j]) { bdstidx[j] = -1; j++; }
             else if (k < *csize) { adstidx[i] = bdstidx[j] = k; c[k++] = a[i]; i++; j++; }
-            else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            else { return EINVAL; }
         }
         *csize = k;
         while (i < asize) { adstidx[i++] = -1; }
@@ -1647,7 +1727,7 @@ int setintersection_sorted_unique_int32(
             if (a[i] < b[j]) { i++; }
             else if (a[i] > b[j]) { j++; }
             else if (k < *csize) { c[k++] = a[i]; i++; j++; }
-            else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            else { return EINVAL; }
         }
         *csize = k;
     } else {
@@ -1659,7 +1739,7 @@ int setintersection_sorted_unique_int32(
         }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -1679,6 +1759,9 @@ int setintersection_sorted_unique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_sorted_unique_int64(
     int64_t * csize,
@@ -1696,7 +1779,7 @@ int setintersection_sorted_unique_int64(
             if (a[i] < b[j]) { adstidx[i] = -1; i++; }
             else if (a[i] > b[j]) { bdstidx[j] = -1; j++; }
             else if (k < *csize) { adstidx[i] = bdstidx[j] = k; c[k++] = a[i]; i++; j++; }
-            else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            else { return EINVAL; }
         }
         *csize = k;
         while (i < asize) { adstidx[i++] = -1; }
@@ -1707,7 +1790,7 @@ int setintersection_sorted_unique_int64(
             if (a[i] < b[j]) { i++; }
             else if (a[i] > b[j]) { j++; }
             else if (k < *csize) { c[k++] = a[i]; i++; j++; }
-            else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            else { return EINVAL; }
         }
         *csize = k;
     } else {
@@ -1719,7 +1802,7 @@ int setintersection_sorted_unique_int64(
         }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -1739,6 +1822,9 @@ int setintersection_sorted_unique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_sorted_unique_int(
     int64_t * csize,
@@ -1756,7 +1842,7 @@ int setintersection_sorted_unique_int(
             if (a[i] < b[j]) { adstidx[i] = -1; i++; }
             else if (a[i] > b[j]) { bdstidx[j] = -1; j++; }
             else if (k < *csize) { adstidx[i] = bdstidx[j] = k; c[k++] = a[i]; i++; j++; }
-            else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            else { return EINVAL; }
         }
         *csize = k;
         while (i < asize) { adstidx[i++] = -1; }
@@ -1767,7 +1853,7 @@ int setintersection_sorted_unique_int(
             if (a[i] < b[j]) { i++; }
             else if (a[i] > b[j]) { j++; }
             else if (k < *csize) { c[k++] = a[i]; i++; j++; }
-            else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            else { return EINVAL; }
         }
         *csize = k;
     } else {
@@ -1779,7 +1865,7 @@ int setintersection_sorted_unique_int(
         }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /*
@@ -1804,6 +1890,9 @@ int setintersection_sorted_unique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_sorted_nonunique_int32(
     int64_t * csize,
@@ -1830,7 +1919,7 @@ int setintersection_sorted_nonunique_int32(
                 for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = k; }
                 for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = k; }
                 k++;
-            } else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            } else { return EINVAL; }
         }
         *csize = k;
         while (i < asize) { adstidx[i++] = -1; }
@@ -1846,7 +1935,7 @@ int setintersection_sorted_nonunique_int32(
                 c[k++] = a[i];
                 for (i++; i < asize && a[i] == a[i-1]; i++) {}
                 for (j++; j < bsize && b[j] == b[j-1]; j++) {}
-            } else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            } else { return EINVAL; }
         }
         *csize = k;
     } else {
@@ -1864,7 +1953,7 @@ int setintersection_sorted_nonunique_int32(
         }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -1884,6 +1973,9 @@ int setintersection_sorted_nonunique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_sorted_nonunique_int64(
     int64_t * csize,
@@ -1910,7 +2002,7 @@ int setintersection_sorted_nonunique_int64(
                 for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = k; }
                 for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = k; }
                 k++;
-            } else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            } else { return EINVAL; }
         }
         *csize = k;
         while (i < asize) { adstidx[i++] = -1; }
@@ -1926,7 +2018,7 @@ int setintersection_sorted_nonunique_int64(
                 c[k++] = a[i];
                 for (i++; i < asize && a[i] == a[i-1]; i++) {}
                 for (j++; j < bsize && b[j] == b[j-1]; j++) {}
-            } else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            } else { return EINVAL; }
         }
         *csize = k;
     } else {
@@ -1944,7 +2036,7 @@ int setintersection_sorted_nonunique_int64(
         }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -1964,6 +2056,9 @@ int setintersection_sorted_nonunique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_sorted_nonunique_int(
     int64_t * csize,
@@ -1990,7 +2085,7 @@ int setintersection_sorted_nonunique_int(
                 for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = k; }
                 for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = k; }
                 k++;
-            } else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            } else { return EINVAL; }
         }
         *csize = k;
         while (i < asize) { adstidx[i++] = -1; }
@@ -2006,7 +2101,7 @@ int setintersection_sorted_nonunique_int(
                 c[k++] = a[i];
                 for (i++; i < asize && a[i] == a[i-1]; i++) {}
                 for (j++; j < bsize && b[j] == b[j-1]; j++) {}
-            } else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            } else { return EINVAL; }
         }
         *csize = k;
     } else {
@@ -2024,7 +2119,7 @@ int setintersection_sorted_nonunique_int(
         }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /*
@@ -2050,6 +2145,9 @@ int setintersection_sorted_nonunique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_unsorted_unique_int32(
     int64_t * csize,
@@ -2063,10 +2161,10 @@ int setintersection_unsorted_unique_int32(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    errno = radix_sort_int32(asize, a, aperm);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int32(bsize, b, bperm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int32(asize, a, aperm);
+    if (err) return err;
+    err = radix_sort_int32(bsize, b, bperm);
+    if (err) return err;
     return setintersection_sorted_unique_int32(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2089,6 +2187,9 @@ int setintersection_unsorted_unique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_unsorted_unique_int64(
     int64_t * csize,
@@ -2102,10 +2203,10 @@ int setintersection_unsorted_unique_int64(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    errno = radix_sort_int64(asize, sizeof(*a), a, aperm);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int64(bsize, sizeof(*b), b, bperm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int64(asize, sizeof(*a), a, aperm);
+    if (err) return err;
+    err = radix_sort_int64(bsize, sizeof(*b), b, bperm);
+    if (err) return err;
     return setintersection_sorted_unique_int64(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2128,6 +2229,9 @@ int setintersection_unsorted_unique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_unsorted_unique_int(
     int64_t * csize,
@@ -2141,10 +2245,10 @@ int setintersection_unsorted_unique_int(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    errno = radix_sort_int(asize, a, aperm);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int(bsize, b, bperm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int(asize, a, aperm);
+    if (err) return err;
+    err = radix_sort_int(bsize, b, bperm);
+    if (err) return err;
     return setintersection_sorted_unique_int(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2172,6 +2276,9 @@ int setintersection_unsorted_unique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_unsorted_nonunique_int32(
     int64_t * csize,
@@ -2185,10 +2292,10 @@ int setintersection_unsorted_nonunique_int32(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    errno = radix_sort_int32(asize, a, aperm);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int32(bsize, b, bperm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int32(asize, a, aperm);
+    if (err) return err;
+    err = radix_sort_int32(bsize, b, bperm);
+    if (err) return err;
     return setintersection_sorted_nonunique_int32(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2211,6 +2318,9 @@ int setintersection_unsorted_nonunique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_unsorted_nonunique_int64(
     int64_t * csize,
@@ -2224,10 +2334,10 @@ int setintersection_unsorted_nonunique_int64(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    errno = radix_sort_int64(asize, sizeof(*a), a, aperm);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int64(bsize, sizeof(*b), b, bperm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int64(asize, sizeof(*a), a, aperm);
+    if (err) return err;
+    err = radix_sort_int64(bsize, sizeof(*b), b, bperm);
+    if (err) return err;
     return setintersection_sorted_nonunique_int64(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2250,6 +2360,9 @@ int setintersection_unsorted_nonunique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_unsorted_nonunique_int(
     int64_t * csize,
@@ -2263,10 +2376,10 @@ int setintersection_unsorted_nonunique_int(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    errno = radix_sort_int(asize, a, aperm);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int(bsize, b, bperm);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int(asize, a, aperm);
+    if (err) return err;
+    err = radix_sort_int(bsize, b, bperm);
+    if (err) return err;
     return setintersection_sorted_nonunique_int(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2293,6 +2406,9 @@ int setintersection_unsorted_nonunique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_sorted_unique_int32(
     int64_t * csize,
@@ -2308,9 +2424,9 @@ int setdifference_sorted_unique_int32(
             if (a[i] > b[j]) { j++; }
             else if (a[i] == b[j]) { i++; j++; }
             else if (a[i] < b[j] && k < *csize) { c[k++] = a[i++]; }
-            else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            else { return EINVAL; }
         }
-        if (k + (asize - i) > *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (k + (asize - i) > *csize) return EINVAL;
         while (i < asize) { c[k++] = a[i++]; }
         *csize = k;
     } else {
@@ -2323,7 +2439,7 @@ int setdifference_sorted_unique_int32(
         while (i < asize) { k++; i++; }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -2343,6 +2459,9 @@ int setdifference_sorted_unique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_sorted_unique_int64(
     int64_t * csize,
@@ -2358,9 +2477,9 @@ int setdifference_sorted_unique_int64(
             if (a[i] > b[j]) { j++; }
             else if (a[i] == b[j]) { i++; j++; }
             else if (a[i] < b[j] && k < *csize) { c[k++] = a[i++]; }
-            else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            else { return EINVAL; }
         }
-        if (k + (asize - i) > *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (k + (asize - i) > *csize) return EINVAL;
         while (i < asize) { c[k++] = a[i++]; }
         *csize = k;
     } else {
@@ -2373,7 +2492,7 @@ int setdifference_sorted_unique_int64(
         while (i < asize) { k++; i++; }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -2393,6 +2512,9 @@ int setdifference_sorted_unique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_sorted_unique_int(
     int64_t * csize,
@@ -2408,9 +2530,9 @@ int setdifference_sorted_unique_int(
             if (a[i] > b[j]) { j++; }
             else if (a[i] == b[j]) { i++; j++; }
             else if (a[i] < b[j] && k < *csize) { c[k++] = a[i++]; }
-            else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            else { return EINVAL; }
         }
-        if (k + (asize - i) > *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (k + (asize - i) > *csize) return EINVAL;
         while (i < asize) { c[k++] = a[i++]; }
         *csize = k;
     } else {
@@ -2423,7 +2545,7 @@ int setdifference_sorted_unique_int(
         while (i < asize) { k++; i++; }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /*
@@ -2448,6 +2570,9 @@ int setdifference_sorted_unique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_sorted_nonunique_int32(
     int64_t * csize,
@@ -2468,10 +2593,10 @@ int setdifference_sorted_nonunique_int32(
             } else if (a[i] < b[j] && k < *csize) {
                 c[k++] = a[i];
                 for (i++; i < asize && a[i] == a[i-1]; i++) {}
-            } else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            } else { return EINVAL; }
         }
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
@@ -2495,7 +2620,7 @@ int setdifference_sorted_nonunique_int32(
         }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -2515,6 +2640,9 @@ int setdifference_sorted_nonunique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_sorted_nonunique_int64(
     int64_t * csize,
@@ -2535,10 +2663,10 @@ int setdifference_sorted_nonunique_int64(
             } else if (a[i] < b[j] && k < *csize) {
                 c[k++] = a[i];
                 for (i++; i < asize && a[i] == a[i-1]; i++) {}
-            } else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            } else { return EINVAL; }
         }
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
@@ -2562,7 +2690,7 @@ int setdifference_sorted_nonunique_int64(
         }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -2582,6 +2710,9 @@ int setdifference_sorted_nonunique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_sorted_nonunique_int(
     int64_t * csize,
@@ -2602,10 +2733,10 @@ int setdifference_sorted_nonunique_int(
             } else if (a[i] < b[j] && k < *csize) {
                 c[k++] = a[i];
                 for (i++; i < asize && a[i] == a[i-1]; i++) {}
-            } else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+            } else { return EINVAL; }
         }
         while (i < asize) {
-            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (k >= *csize) return EINVAL;
             c[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
@@ -2629,7 +2760,7 @@ int setdifference_sorted_nonunique_int(
         }
         *csize = k;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /*
@@ -2655,6 +2786,9 @@ int setdifference_sorted_nonunique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_unsorted_unique_int32(
     int64_t * csize,
@@ -2664,10 +2798,10 @@ int setdifference_unsorted_unique_int32(
     int64_t bsize,
     int32_t * b)
 {
-    errno = radix_sort_int32(asize, a, NULL);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int32(bsize, b, NULL);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int32(asize, a, NULL);
+    if (err) return err;
+    err = radix_sort_int32(bsize, b, NULL);
+    if (err) return err;
     return setdifference_sorted_unique_int32(csize, c, asize, a, bsize, b);
 }
 
@@ -2689,6 +2823,9 @@ int setdifference_unsorted_unique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_unsorted_unique_int64(
     int64_t * csize,
@@ -2698,10 +2835,10 @@ int setdifference_unsorted_unique_int64(
     int64_t bsize,
     int64_t * b)
 {
-    errno = radix_sort_int64(asize, sizeof(*a), a, NULL);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int64(bsize, sizeof(*b), b, NULL);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
+    if (err) return err;
+    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
+    if (err) return err;
     return setdifference_sorted_unique_int64(csize, c, asize, a, bsize, b);
 }
 
@@ -2723,6 +2860,9 @@ int setdifference_unsorted_unique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_unsorted_unique_int(
     int64_t * csize,
@@ -2732,10 +2872,10 @@ int setdifference_unsorted_unique_int(
     int64_t bsize,
     int * b)
 {
-    errno = radix_sort_int(asize, a, NULL);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int(bsize, b, NULL);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int(asize, a, NULL);
+    if (err) return err;
+    err = radix_sort_int(bsize, b, NULL);
+    if (err) return err;
     return setdifference_sorted_unique_int(csize, c, asize, a, bsize, b);
 }
 
@@ -2762,6 +2902,9 @@ int setdifference_unsorted_unique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_unsorted_nonunique_int32(
     int64_t * csize,
@@ -2771,10 +2914,10 @@ int setdifference_unsorted_nonunique_int32(
     int64_t bsize,
     int32_t * b)
 {
-    errno = radix_sort_int32(asize, a, NULL);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int32(bsize, b, NULL);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int32(asize, a, NULL);
+    if (err) return err;
+    err = radix_sort_int32(bsize, b, NULL);
+    if (err) return err;
     return setdifference_sorted_nonunique_int32(csize, c, asize, a, bsize, b);
 }
 
@@ -2796,6 +2939,9 @@ int setdifference_unsorted_nonunique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_unsorted_nonunique_int64(
     int64_t * csize,
@@ -2805,10 +2951,10 @@ int setdifference_unsorted_nonunique_int64(
     int64_t bsize,
     int64_t * b)
 {
-    errno = radix_sort_int64(asize, sizeof(*a), a, NULL);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int64(bsize, sizeof(*b), b, NULL);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
+    if (err) return err;
+    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
+    if (err) return err;
     return setdifference_sorted_nonunique_int64(csize, c, asize, a, bsize, b);
 }
 
@@ -2830,6 +2976,9 @@ int setdifference_unsorted_nonunique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_unsorted_nonunique_int(
     int64_t * csize,
@@ -2839,9 +2988,9 @@ int setdifference_unsorted_nonunique_int(
     int64_t bsize,
     int * b)
 {
-    errno = radix_sort_int(asize, a, NULL);
-    if (errno) return MTX_ERR_ERRNO;
-    errno = radix_sort_int(bsize, b, NULL);
-    if (errno) return MTX_ERR_ERRNO;
+    int err = radix_sort_int(asize, a, NULL);
+    if (err) return err;
+    err = radix_sort_int(bsize, b, NULL);
+    if (err) return err;
     return setdifference_sorted_nonunique_int(csize, c, asize, a, bsize, b);
 }

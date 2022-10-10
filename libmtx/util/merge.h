@@ -16,15 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-06-01
+ * Last modified: 2022-10-09
  *
  * Merge operations on arrays.
  */
 
 #ifndef LIBMTX_UTIL_MERGE_H
 #define LIBMTX_UTIL_MERGE_H
-
-#include <libmtx/libmtx-config.h>
 
 #include <stdint.h>
 
@@ -56,6 +54,9 @@
  * ‘asize’. For a given item in the input array ‘a’ the corresponding
  * value in ‘dstidx’ indicates the offset to the same item in the
  * output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_sorted_int32(
     int64_t * bsize,
@@ -88,6 +89,9 @@ int compact_sorted_int32(
  * ‘asize’. For a given item in the input array ‘a’ the corresponding
  * value in ‘dstidx’ indicates the offset to the same item in the
  * output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_sorted_int64(
     int64_t * bsize,
@@ -120,6 +124,9 @@ int compact_sorted_int64(
  * ‘asize’. For a given item in the input array ‘a’ the corresponding
  * value in ‘dstidx’ indicates the offset to the same item in the
  * output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_sorted_int(
     int64_t * bsize,
@@ -152,6 +159,9 @@ int compact_sorted_int(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_sorted_int32_pair(
     int64_t * bsize,
@@ -184,6 +194,9 @@ int compact_sorted_int32_pair(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_sorted_int64_pair(
     int64_t * bsize,
@@ -217,6 +230,9 @@ int compact_sorted_int64_pair(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_sorted_int_pair(
     int64_t * bsize,
@@ -251,6 +267,9 @@ int compact_sorted_int_pair(
  * ‘asize’. For a given item in the input array ‘a’ the corresponding
  * value in ‘dstidx’ indicates the offset to the same item in the
  * output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int32(
     int64_t * bsize,
@@ -286,6 +305,9 @@ int compact_unsorted_int32(
  * ‘asize’. For a given item in the input array ‘a’ the corresponding
  * value in ‘dstidx’ indicates the offset to the same item in the
  * output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int64(
     int64_t * bsize,
@@ -321,6 +343,9 @@ int compact_unsorted_int64(
  * ‘asize’. For a given item in the input array ‘a’ the corresponding
  * value in ‘dstidx’ indicates the offset to the same item in the
  * output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int(
     int64_t * bsize,
@@ -356,6 +381,9 @@ int compact_unsorted_int(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int32_pair(
     int64_t * bsize,
@@ -391,6 +419,9 @@ int compact_unsorted_int32_pair(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int32_pair(
     int64_t * bsize,
@@ -426,6 +457,9 @@ int compact_unsorted_int32_pair(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int64_pair(
     int64_t * bsize,
@@ -461,6 +495,9 @@ int compact_unsorted_int64_pair(
  * ‘asize’. For a given item (pair) in the input array ‘a’ the
  * corresponding value in ‘dstidx’ indicates the offset to the same
  * item (pair) in the output array ‘b’.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int compact_unsorted_int_pair(
     int64_t * bsize,
@@ -485,6 +522,9 @@ int compact_unsorted_int_pair(
  *
  * The output array ‘c’ must have enough storage to hold the merged
  * results, which consists of the items in the input arrays.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int merge_sorted_int32(
     int64_t csize,
@@ -562,6 +602,9 @@ int merge_sorted_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_sorted_unique_int32(
     int64_t * csize,
@@ -590,6 +633,9 @@ int setunion_sorted_unique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_sorted_unique_int64(
     int64_t * csize,
@@ -618,6 +664,9 @@ int setunion_sorted_unique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_sorted_unique_int(
     int64_t * csize,
@@ -651,6 +700,9 @@ int setunion_sorted_unique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_sorted_nonunique_int32(
     int64_t * csize,
@@ -679,6 +731,9 @@ int setunion_sorted_nonunique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_sorted_nonunique_int64(
     int64_t * csize,
@@ -707,6 +762,9 @@ int setunion_sorted_nonunique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_sorted_nonunique_int(
     int64_t * csize,
@@ -741,6 +799,9 @@ int setunion_sorted_nonunique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_unsorted_unique_int32(
     int64_t * csize,
@@ -772,6 +833,9 @@ int setunion_unsorted_unique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_unsorted_unique_int64(
     int64_t * csize,
@@ -803,6 +867,9 @@ int setunion_unsorted_unique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_unsorted_unique_int(
     int64_t * csize,
@@ -839,6 +906,9 @@ int setunion_unsorted_unique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_unsorted_nonunique_int32(
     int64_t * csize,
@@ -870,6 +940,9 @@ int setunion_unsorted_nonunique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_unsorted_nonunique_int64(
     int64_t * csize,
@@ -901,6 +974,9 @@ int setunion_unsorted_nonunique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setunion_unsorted_nonunique_int(
     int64_t * csize,
@@ -936,6 +1012,9 @@ int setunion_unsorted_nonunique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_sorted_unique_int32(
     int64_t * csize,
@@ -964,6 +1043,9 @@ int setintersection_sorted_unique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_sorted_unique_int64(
     int64_t * csize,
@@ -992,6 +1074,9 @@ int setintersection_sorted_unique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_sorted_unique_int(
     int64_t * csize,
@@ -1025,6 +1110,9 @@ int setintersection_sorted_unique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_sorted_nonunique_int32(
     int64_t * csize,
@@ -1053,6 +1141,9 @@ int setintersection_sorted_nonunique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_sorted_nonunique_int64(
     int64_t * csize,
@@ -1081,6 +1172,9 @@ int setintersection_sorted_nonunique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_sorted_nonunique_int(
     int64_t * csize,
@@ -1115,6 +1209,9 @@ int setintersection_sorted_nonunique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_unsorted_unique_int32(
     int64_t * csize,
@@ -1146,6 +1243,9 @@ int setintersection_unsorted_unique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_unsorted_unique_int64(
     int64_t * csize,
@@ -1177,6 +1277,9 @@ int setintersection_unsorted_unique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_unsorted_unique_int(
     int64_t * csize,
@@ -1213,6 +1316,9 @@ int setintersection_unsorted_unique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_unsorted_nonunique_int32(
     int64_t * csize,
@@ -1244,6 +1350,9 @@ int setintersection_unsorted_nonunique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_unsorted_nonunique_int64(
     int64_t * csize,
@@ -1275,6 +1384,9 @@ int setintersection_unsorted_nonunique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setintersection_unsorted_nonunique_int(
     int64_t * csize,
@@ -1310,6 +1422,9 @@ int setintersection_unsorted_nonunique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_sorted_unique_int32(
     int64_t * csize,
@@ -1336,6 +1451,9 @@ int setdifference_sorted_unique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_sorted_unique_int64(
     int64_t * csize,
@@ -1362,6 +1480,9 @@ int setdifference_sorted_unique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_sorted_unique_int(
     int64_t * csize,
@@ -1393,6 +1514,9 @@ int setdifference_sorted_unique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_sorted_nonunique_int32(
     int64_t * csize,
@@ -1419,6 +1543,9 @@ int setdifference_sorted_nonunique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_sorted_nonunique_int64(
     int64_t * csize,
@@ -1445,6 +1572,9 @@ int setdifference_sorted_nonunique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_sorted_nonunique_int(
     int64_t * csize,
@@ -1477,6 +1607,9 @@ int setdifference_sorted_nonunique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_unsorted_unique_int32(
     int64_t * csize,
@@ -1504,6 +1637,9 @@ int setdifference_unsorted_unique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_unsorted_unique_int64(
     int64_t * csize,
@@ -1531,6 +1667,9 @@ int setdifference_unsorted_unique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_unsorted_unique_int(
     int64_t * csize,
@@ -1563,6 +1702,9 @@ int setdifference_unsorted_unique_int(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_unsorted_nonunique_int32(
     int64_t * csize,
@@ -1590,6 +1732,9 @@ int setdifference_unsorted_nonunique_int32(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_unsorted_nonunique_int64(
     int64_t * csize,
@@ -1617,6 +1762,9 @@ int setdifference_unsorted_nonunique_int64(
  * the allocated size of the output array with the value pointed to by
  * ‘csize’. On success, the value returned in ‘csize’ indicates the
  * number of items that were written to the output array.
+ *
+ * Returns ‘0’ if successful, or ‘EINVAL’ if the output array is not
+ * large enough.
  */
 int setdifference_unsorted_nonunique_int(
     int64_t * csize,
