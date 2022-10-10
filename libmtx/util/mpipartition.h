@@ -22,8 +22,8 @@
  * processes with MPI.
  */
 
-#ifndef LIBMTX_UTIL_PARTITION_H
-#define LIBMTX_UTIL_PARTITION_H
+#ifndef LIBMTX_UTIL_MPIPARTITION_H
+#define LIBMTX_UTIL_MPIPARTITION_H
 
 #include <libmtx/libmtx-config.h>
 
