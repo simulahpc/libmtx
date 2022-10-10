@@ -26,7 +26,7 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/util/partition.h>
+#include <libmtx/util/mpipartition.h>
 
 #include <mpi.h>
 

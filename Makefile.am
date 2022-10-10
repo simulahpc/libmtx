@@ -16,7 +16,7 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-10-05
+# Last modified: 2022-10-10
 #
 # Makefile for the top-level directory of Libmtx.
 #
@@ -247,13 +247,15 @@ endif
 #
 # Unit tests
 #
+check_PROGRAMS =
+TESTS =
 
 # mtxfile
-check_PROGRAMS = tests/test_mtxfile
+check_PROGRAMS += tests/test_mtxfile
 tests_test_mtxfile_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
 tests_test_mtxfile_SOURCES = tests/test_mtxfile.c tests/test.h
-TESTS = tests/test_mtxfile
+TESTS += tests/test_mtxfile
 if HAVE_MPI
 tests_test_mtxfile_mpi_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxfile_mpi_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
@@ -354,13 +356,13 @@ tests_test_fmtspec_SOURCES = tests/test_fmtspec.c tests/test.h libmtx/util/fmtsp
 check_PROGRAMS += tests/test_fmtspec
 TESTS += tests/test_fmtspec
 tests_test_merge_CPPFLAGS =
-tests_test_merge_LDADD = $(top_builddir)/libmtx.la
-tests_test_merge_SOURCES = tests/test_merge.c tests/test.h
+tests_test_merge_LDADD =
+tests_test_merge_SOURCES = tests/test_merge.c tests/test.h libmtx/util/merge.c libmtx/util/sort.c
 check_PROGRAMS += tests/test_merge
 TESTS += tests/test_merge
-tests_test_morton_CPPFLAGS =
-tests_test_morton_LDADD = $(top_builddir)/libmtx.la
-tests_test_morton_SOURCES = tests/test_morton.c tests/test.h
+tests_test_morton_CPPFLAGS = @BMI2_CFLAGS@
+tests_test_morton_LDADD =
+tests_test_morton_SOURCES = tests/test_morton.c tests/test.h libmtx/util/morton.c
 check_PROGRAMS += tests/test_morton
 TESTS += tests/test_morton
 tests_test_parse_CPPFLAGS =
@@ -368,9 +370,9 @@ tests_test_parse_LDADD =
 tests_test_parse_SOURCES = tests/test_parse.c tests/test.h src/parse.c
 check_PROGRAMS += tests/test_parse
 TESTS += tests/test_parse
-tests_test_partition_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_partition_LDADD = $(top_builddir)/libmtx.la
-tests_test_partition_SOURCES = tests/test_partition.c tests/test.h
+tests_test_partition_CPPFLAGS =
+tests_test_partition_LDADD =
+tests_test_partition_SOURCES = tests/test_partition.c tests/test.h libmtx/util/partition.c
 check_PROGRAMS += tests/test_partition
 TESTS += tests/test_partition
 tests_test_permute_CPPFLAGS =
@@ -378,21 +380,21 @@ tests_test_permute_LDADD =
 tests_test_permute_SOURCES = tests/test_permute.c tests/test.h libmtx/util/permute.c
 check_PROGRAMS += tests/test_permute
 TESTS += tests/test_permute
-tests_test_sort_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_sort_LDADD = $(top_builddir)/libmtx.la
-tests_test_sort_SOURCES = tests/test_sort.c tests/test.h
+tests_test_sort_CPPFLAGS =
+tests_test_sort_LDADD =
+tests_test_sort_SOURCES = tests/test_sort.c tests/test.h libmtx/util/sort.c
 check_PROGRAMS += tests/test_sort
 TESTS += tests/test_sort
 if HAVE_MPI
 tests_test_assumedpartition_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_assumedpartition_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-tests_test_assumedpartition_SOURCES = tests/test_assumedpartition.c tests/test.h
+tests_test_assumedpartition_SOURCES = tests/test_assumedpartition.c tests/test.h libmtx/util/mpipartition.c libmtx/util/partition.c libmtx/util/sort.c
 check_PROGRAMS += tests/test_assumedpartition
 TESTS += tests/test_assumedpartition_parallel
 tests/test_assumedpartition_parallel: tests/test_assumedpartition
 tests_test_distsort_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_distsort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-tests_test_distsort_SOURCES = tests/test_distsort.c tests/test.h
+tests_test_distsort_SOURCES = tests/test_distsort.c tests/test.h libmtx/util/mpisort.c libmtx/util/sort.c
 check_PROGRAMS += tests/test_distsort
 TESTS += tests/test_distsort_parallel
 tests/test_distsort_parallel: tests/test_distsort
