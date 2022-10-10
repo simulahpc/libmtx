@@ -95,6 +95,8 @@ libmtx_la_SOURCES = \
 	libmtx/util/metis.h \
 	libmtx/util/morton.c \
 	libmtx/util/morton.h \
+	libmtx/util/mpisort.c \
+	libmtx/util/mpisort.h \
 	libmtx/util/parse.c \
 	libmtx/util/parse.h \
 	libmtx/util/partition.c \

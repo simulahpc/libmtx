@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-24
+ * Last modified: 2022-10-09
  *
  * Sorting.
  */
@@ -26,13 +26,7 @@
 
 #include <libmtx/libmtx-config.h>
 
-#ifdef LIBMTX_HAVE_MPI
-#include <mpi.h>
-#endif
-
 #include <stdint.h>
-
-struct mtxdisterror;
 
 /*
  * counting sort
@@ -372,59 +366,5 @@ int radix_sort_int_pair(
     int bstride,
     int * b,
     int64_t * perm);
-
-/*
- * distributed-memory radix sort
- */
-
-#ifdef LIBMTX_HAVE_MPI
-/**
- * ‘distradix_sort_uint32()’ sorts a distributed array of 32-bit
- * unsigned integers in ascending order using a distributed radix sort
- * algorithm.
- *
- * The number of keys on the current process that need to be sorted is
- * given by ‘size’, and the unsorted, integer keys on the current
- * process are given in the array ‘keys’. On success, the same array
- * will contain ‘size’ keys in a globally sorted order.
- *
- * If ‘perm’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’ on each MPI process. On success, this array will contain
- * the sorting permutation, mapping the locations of the original,
- * unsorted keys to their new locations in the sorted array.
- */
-int distradix_sort_uint32(
-    int64_t size,
-    uint32_t * keys,
-    int64_t * perm,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘distradix_sort_uint64()’ sorts a distributed array of 64-bit
- * unsigned integers in ascending order using a distributed radix sort
- * algorithm.
- *
- * The number of keys on the current process that need to be sorted is
- * given by ‘size’, and the unsorted, integer keys on the current
- * process are given in the array ‘keys’. On success, the same array
- * will contain ‘size’ keys in a globally sorted order.
- *
- * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
- * permutation is not computed. Otherwise, it must point to an array
- * that holds enough storage for ‘size’ values of type ‘int64_t’ on
- * each MPI process. On success, this array will contain the sorting
- * permutation, mapping the locations of the original, unsorted keys
- * to their new locations in the sorted array.
- */
-int distradix_sort_uint64(
-    int64_t size,
-    uint64_t * keys,
-    int64_t * perm,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
-#endif
 
 #endif
