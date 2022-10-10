@@ -195,11 +195,11 @@ static int parse_program_options(
     while (*nargs < argc) {
         if (strstr(argv[0], "--precision") == argv[0]) {
             int n = strlen("--precision");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxprecision(&args->precision, s, &s, NULL);
+            err = parse_mtxprecision(&args->precision, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
@@ -237,18 +237,18 @@ static int parse_program_options(
 
         if (strstr(argv[0], "--ordering") == argv[0]) {
             int n = strlen("--ordering");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxfileordering(&args->ordering, s, &s, NULL);
+            err = parse_mtxfileordering(&args->ordering, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--rowperm-path") == argv[0]) {
             int n = strlen("--rowperm-path");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
@@ -260,7 +260,7 @@ static int parse_program_options(
 
         if (strstr(argv[0], "--rowperm-inv-path") == argv[0]) {
             int n = strlen("--rowperm-inv-path");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
@@ -272,7 +272,7 @@ static int parse_program_options(
 
         if (strstr(argv[0], "--colperm-path") == argv[0]) {
             int n = strlen("--colperm-path");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
@@ -284,7 +284,7 @@ static int parse_program_options(
 
         if (strstr(argv[0], "--colperm-inv-path") == argv[0]) {
             int n = strlen("--colperm-inv-path");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
@@ -296,11 +296,11 @@ static int parse_program_options(
 
         if (strstr(argv[0], "--rcm-starting-vertex") == argv[0]) {
             int n = strlen("--rcm-starting-vertex");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int64(&args->rcm_starting_vertex, s, &s, NULL);
+            err = parse_int64(&args->rcm_starting_vertex, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }

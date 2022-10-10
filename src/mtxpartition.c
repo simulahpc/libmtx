@@ -209,18 +209,18 @@ static int parse_program_options(
     while (*nargs < argc) {
         if (strstr(argv[0], "--precision") == argv[0]) {
             int n = strlen("--precision");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxprecision(&args->precision, s, &s, NULL);
+            err = parse_mtxprecision(&args->precision, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--row-part-path") == argv[0]) {
             int n = strlen("--row-part-path");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
@@ -232,7 +232,7 @@ static int parse_program_options(
 
         if (strstr(argv[0], "--column-part-path") == argv[0]) {
             int n = strlen("--column-part-path");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
@@ -244,104 +244,104 @@ static int parse_program_options(
 
         if (strstr(argv[0], "--part-type") == argv[0]) {
             int n = strlen("--part-type");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxmatrixparttype(&args->matrixparttype, s, &s, NULL);
+            err = parse_mtxmatrixparttype(&args->matrixparttype, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--nz-parts") == argv[0]) {
             int n = strlen("--nz-parts");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int(&args->num_nz_parts, s, &s, NULL);
+            err = parse_int(&args->num_nz_parts, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
         if (strstr(argv[0], "--nz-part-type") == argv[0]) {
             int n = strlen("--nz-part-type");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxpartitioning(&args->nzparttype, s, &s, NULL);
+            err = parse_mtxpartitioning(&args->nzparttype, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
         if (strstr(argv[0], "--nz-blksize") == argv[0]) {
             int n = strlen("--nz-blksize");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int64(&args->nzblksize, s, &s, NULL);
+            err = parse_int64(&args->nzblksize, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--row-parts") == argv[0]) {
             int n = strlen("--row-parts");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int(&args->num_row_parts, s, &s, NULL);
+            err = parse_int(&args->num_row_parts, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
         if (strstr(argv[0], "--row-part-type") == argv[0]) {
             int n = strlen("--row-part-type");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxpartitioning(&args->rowparttype, s, &s, NULL);
+            err = parse_mtxpartitioning(&args->rowparttype, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
         if (strstr(argv[0], "--row-blksize") == argv[0]) {
             int n = strlen("--row-blksize");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int64(&args->rowblksize, s, &s, NULL);
+            err = parse_int64(&args->rowblksize, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--column-parts") == argv[0]) {
             int n = strlen("--column-parts");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int(&args->num_column_parts, s, &s, NULL);
+            err = parse_int(&args->num_column_parts, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
         if (strstr(argv[0], "--column-part-type") == argv[0]) {
             int n = strlen("--column-part-type");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxpartitioning(&args->colparttype, s, &s, NULL);
+            err = parse_mtxpartitioning(&args->colparttype, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
         if (strstr(argv[0], "--column-blksize") == argv[0]) {
             int n = strlen("--column-blksize");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int64(&args->colblksize, s, &s, NULL);
+            err = parse_int64(&args->colblksize, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }

@@ -193,88 +193,88 @@ static int parse_program_options(
     while (*nargs < argc) {
         if (strstr(argv[0], "--object") == argv[0]) {
             int n = strlen("--object");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxfileobject(&args->object, s, &s, NULL);
+            err = parse_mtxfileobject(&args->object, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--format") == argv[0]) {
             int n = strlen("--format");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxfileformat(&args->format, s, &s, NULL);
+            err = parse_mtxfileformat(&args->format, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--field") == argv[0]) {
             int n = strlen("--field");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxfilefield(&args->field, s, &s, NULL);
+            err = parse_mtxfilefield(&args->field, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--symmetry") == argv[0]) {
             int n = strlen("--symmetry");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxfilesymmetry(&args->symmetry, s, &s, NULL);
+            err = parse_mtxfilesymmetry(&args->symmetry, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--precision") == argv[0]) {
             int n = strlen("--precision");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxprecision(&args->precision, s, &s, NULL);
+            err = parse_mtxprecision(&args->precision, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--min") == argv[0]) {
             int n = strlen("--min");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int64(&args->min, s, &s, NULL);
+            err = parse_int64(&args->min, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--max") == argv[0]) {
             int n = strlen("--max");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int64(&args->max, s, &s, NULL);
+            err = parse_int64(&args->max, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--seed") == argv[0]) {
             int n = strlen("--seed");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int(&args->seed, s, &s, NULL);
+            err = parse_int(&args->seed, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }

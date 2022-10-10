@@ -205,18 +205,18 @@ static int parse_program_options(
     while (*nargs < argc) {
         if (strstr(argv[0], "--precision") == argv[0]) {
             int n = strlen("--precision");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxprecision(&args->precision, s, &s, NULL);
+            err = parse_mtxprecision(&args->precision, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--output-path") == argv[0]) {
             int n = strlen("--output-path");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
@@ -247,57 +247,57 @@ static int parse_program_options(
 
         if (strstr(argv[0], "--max-height") == argv[0]) {
             int n = strlen("--max-height");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int(&args->max_height, s, &s, NULL);
+            err = parse_int(&args->max_height, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
         if (strstr(argv[0], "--max-width") == argv[0]) {
             int n = strlen("--max-width");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int(&args->max_width, s, &s, NULL);
+            err = parse_int(&args->max_width, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
         if (strstr(argv[0], "--fgcolor") == argv[0]) {
             int n = strlen("--fgcolor");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int32_hex(&args->fgcolor, s, &s, NULL);
+            err = parse_int32_hex(&args->fgcolor, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
         if (strstr(argv[0], "--bgcolor") == argv[0]) {
             int n = strlen("--bgcolor");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_int32_hex(&args->bgcolor, s, &s, NULL);
+            err = parse_int32_hex(&args->bgcolor, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
         if (strstr(argv[0], "--gamma") == argv[0]) {
             int n = strlen("--gamma");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_double(&args->gamma, s, &s, NULL);
+            err = parse_double(&args->gamma, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
         if (strstr(argv[0], "--title") == argv[0]) {
             int n = strlen("--title");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
@@ -308,7 +308,7 @@ static int parse_program_options(
         }
         if (strstr(argv[0], "--author") == argv[0]) {
             int n = strlen("--author");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
@@ -319,7 +319,7 @@ static int parse_program_options(
         }
         if (strstr(argv[0], "--description") == argv[0]) {
             int n = strlen("--description");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
@@ -330,7 +330,7 @@ static int parse_program_options(
         }
         if (strstr(argv[0], "--copyright") == argv[0]) {
             int n = strlen("--copyright");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
@@ -341,7 +341,7 @@ static int parse_program_options(
         }
         if (strstr(argv[0], "--email") == argv[0]) {
             int n = strlen("--email");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
@@ -352,7 +352,7 @@ static int parse_program_options(
         }
         if (strstr(argv[0], "--url") == argv[0]) {
             int n = strlen("--url");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }

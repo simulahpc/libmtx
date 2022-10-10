@@ -178,18 +178,18 @@ static int parse_program_options(
     while (*nargs < argc) {
         if (strstr(argv[0], "--precision") == argv[0]) {
             int n = strlen("--precision");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }
-            err = parse_mtxprecision(&args->precision, s, &s, NULL);
+            err = parse_mtxprecision(&args->precision, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
 
         if (strstr(argv[0], "--output-path") == argv[0]) {
             int n = strlen("--output-path");
-            char * s = &argv[0][n];
+            const char * s = &argv[0][n];
             if (*s == '=') { s++; }
             else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
             else { program_options_free(args); return EINVAL; }

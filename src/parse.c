@@ -291,7 +291,7 @@ int parse_mtxfileobject(
         t += strlen("vector"); *fileobject = mtxfile_vector;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
 
@@ -322,7 +322,7 @@ int parse_mtxfileformat(
         t += strlen("coordinate"); *fileformat = mtxfile_coordinate;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
 
@@ -357,7 +357,7 @@ int parse_mtxfilefield(
         t += strlen("pattern"); *filefield = mtxfile_pattern;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
 
@@ -393,7 +393,7 @@ int parse_mtxfilesymmetry(
         t += strlen("hermitian"); *filesymmetry = mtxfile_hermitian;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
 
@@ -431,7 +431,7 @@ int parse_mtxfilesorting(
         t += strlen("morton"); *filesorting = mtxfile_morton;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
 
@@ -466,7 +466,7 @@ int parse_mtxfileordering(
         t += strlen("nd"); *fileordering = mtxfile_nd;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
 
@@ -497,7 +497,7 @@ int parse_mtxprecision(
         t += strlen("double"); *precision = mtx_double;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
 
@@ -532,7 +532,7 @@ int parse_mtxpartitioning(
         t += strlen("custom"); *partitioning = mtx_custom_partition;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
 
@@ -565,7 +565,7 @@ int parse_mtxtransposition(
         t += strlen("conjtrans"); *transposition = mtx_conjtrans;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
 
@@ -600,7 +600,7 @@ int parse_mtxvectortype(
         t += strlen("omp"); *vectortype = mtxompvector;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
 
@@ -640,7 +640,7 @@ int parse_mtxmatrixtype(
         t += strlen("ompcsr"); *matrixtype = mtxompcsr;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
 
@@ -671,7 +671,7 @@ int parse_mtxgemvoverlap(
         t += strlen("irecv"); *gemvoverlap = mtxgemvoverlap_irecv;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
 
@@ -708,6 +708,6 @@ int parse_mtxmatrixparttype(
         t += strlen("metis"); *matrixparttype = mtx_matrixparttype_metis;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    if (endptr) *endptr = (char *) t;
     return 0;
 }
