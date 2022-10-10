@@ -826,7 +826,7 @@ int LIBMTX_API mtxfile_sort(
  * line was moved to or merged with. Note that the indexing is
  * 1-based.
  */
-int mtxfile_compact(
+int LIBMTX_API mtxfile_compact(
     struct mtxfile * mtxfile,
     int64_t size,
     int64_t * perm);
@@ -852,7 +852,7 @@ int mtxfile_compact(
  * ‘i’th data line was moved to or merged with. Note that the indexing
  * is 1-based.
  */
-int mtxfile_assemble(
+int LIBMTX_API mtxfile_assemble(
     struct mtxfile * mtxfile,
     enum mtxfilesorting sorting,
     int64_t size,
