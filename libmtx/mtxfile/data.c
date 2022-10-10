@@ -110,38 +110,6 @@ static int parse_long_long_int(
 }
 
 /**
- * ‘parse_int()’ parses a string to produce a number that may be
- * represented as an integer.
- *
- * The number is parsed using ‘strtoll()’, following the conventions
- * documented in the man page for that function. In addition, some
- * further error checking is performed to ensure that the number is
- * parsed correctly. The parsed number is stored in ‘x’.
- *
- * If ‘endptr’ is not ‘NULL’, the address stored in ‘endptr’ points to
- * the first character beyond the characters that were consumed during
- * parsing.
- *
- * On success, ‘0’ is returned. Otherwise, if the input contained
- * invalid characters, ‘EINVAL’ is returned, or if the resulting
- * number cannot be represented as a signed integer, ‘ERANGE’ is
- * returned.
- */
-static int parse_int(
-    int * x,
-    const char * s,
-    char ** endptr,
-    int64_t * bytes_read)
-{
-    long long int y;
-    int err = parse_long_long_int(&y, 10, s, endptr, bytes_read);
-    if (err) return err;
-    if (y < INT_MIN || y > INT_MAX) return ERANGE;
-    *x = y;
-    return 0;
-}
-
-/**
  * ‘parse_int32()’ parses a string to produce a number that may be
  * represented as a 32-bit integer.
  *
