@@ -28,7 +28,7 @@
 
 #include <libmtx/libmtx.h>
 
-#include "../libmtx/util/parse.h"
+#include "parse.h"
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>

@@ -28,7 +28,7 @@
 
 #include <libmtx/libmtx.h>
 
-#include "../libmtx/util/parse.h"
+#include "parse.h"
 
 #include <errno.h>
 

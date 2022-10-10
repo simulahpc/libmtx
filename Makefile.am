@@ -96,8 +96,6 @@ libmtx_la_SOURCES = \
 	libmtx/util/morton.h \
 	libmtx/util/mpisort.c \
 	libmtx/util/mpisort.h \
-	libmtx/util/parse.c \
-	libmtx/util/parse.h \
 	libmtx/util/partition.c \
 	libmtx/util/permute.c \
 	libmtx/util/permute.h \
@@ -364,8 +362,8 @@ tests_test_morton_SOURCES = tests/test_morton.c tests/test.h
 check_PROGRAMS += tests/test_morton
 TESTS += tests/test_morton
 tests_test_parse_CPPFLAGS =
-tests_test_parse_LDADD = $(top_builddir)/libmtx.la
-tests_test_parse_SOURCES = tests/test_parse.c tests/test.h
+tests_test_parse_LDADD =
+tests_test_parse_SOURCES = tests/test_parse.c tests/test.h src/parse.c
 check_PROGRAMS += tests/test_parse
 TESTS += tests/test_parse
 tests_test_partition_CPPFLAGS = $(MPICPPFLAGS)
