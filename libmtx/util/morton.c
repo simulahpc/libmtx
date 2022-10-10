@@ -16,14 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-24
+ * Last modified: 2022-10-10
  *
  * Morton Z-ordering.
  */
 
 #include <libmtx/libmtx-config.h>
 
-#include <libmtx/error.h>
 #include <libmtx/util/morton.h>
 
 #include <stdint.h>
@@ -74,7 +73,7 @@ static inline uint64_t _pext_u64(uint64_t val, uint64_t mask)
  * arrays ‘x’ and ‘y’ specify the Cartesian coordinates of each point,
  * whereas ‘z’ is used to output the corresponding Morton code.
  */
-int morton2d_from_cartesian_uint32(
+void morton2d_from_cartesian_uint32(
     int64_t size,
     int xstride,
     const uint32_t * x,
@@ -90,7 +89,6 @@ int morton2d_from_cartesian_uint32(
         *zi = _pdep_u64(xi, 0xaaaaaaaaaaaaaaaaULL) |
             _pdep_u64(yi, 0x5555555555555555ULL);
     }
-    return MTX_SUCCESS;
 }
 
 /**
@@ -102,7 +100,7 @@ int morton2d_from_cartesian_uint32(
  * whereas ‘z0’ and ‘z1’ are used to output the corresponding Morton
  * code.
  */
-int morton2d_from_cartesian_uint64(
+void morton2d_from_cartesian_uint64(
     int64_t size,
     int xstride,
     const uint64_t * x,
@@ -123,7 +121,6 @@ int morton2d_from_cartesian_uint64(
         *z0i = _pdep_u64(xi >> 32, 0xaaaaaaaaaaaaaaaaULL) |
             _pdep_u64(yi >> 32, 0x5555555555555555ULL);
     }
-    return MTX_SUCCESS;
 }
 
 /**
@@ -134,7 +131,7 @@ int morton2d_from_cartesian_uint64(
  * is used to specify the Morton code of each point, whereas ‘x’ and
  * ‘y’ are used to output the cooresponding Cartesian coordinates.
  */
-int morton2d_to_cartesian_uint32(
+void morton2d_to_cartesian_uint32(
     int64_t size,
     int zstride,
     const uint64_t * z,
@@ -150,7 +147,6 @@ int morton2d_to_cartesian_uint32(
         *xi = _pext_u64(zi, 0xaaaaaaaaaaaaaaaaULL);
         *yi = _pext_u64(zi, 0x5555555555555555ULL);
     }
-    return MTX_SUCCESS;
 }
 
 /**
@@ -162,7 +158,7 @@ int morton2d_to_cartesian_uint32(
  * point, whereas ‘x’ and ‘y’ are used to output the cooresponding
  * Cartesian coordinates.
  */
-int morton2d_to_cartesian_uint64(
+void morton2d_to_cartesian_uint64(
     int64_t size,
     int z0stride,
     const uint64_t * z0,
@@ -183,5 +179,4 @@ int morton2d_to_cartesian_uint64(
         *yi = (_pext_u64(z0i, 0x5555555555555555ULL) << 32)
             | _pext_u64(z1i, 0x5555555555555555ULL);
     }
-    return MTX_SUCCESS;
 }

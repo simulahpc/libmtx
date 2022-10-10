@@ -67,16 +67,16 @@ dnl Check for x86 features
 AC_CHECK_HEADERS([immintrin.h])
 AC_ARG_ENABLE(bmi2,
   AS_HELP_STRING([--disable-bmi2], [disable use of x86 BMI2 instructions]))
+BMI2_CFLAGS=
 AS_IF([test "x$enable_bmi2" != "xno"], [
   AX_GCC_X86_CPU_SUPPORTS(bmi2,
     [AC_DEFINE(LIBMTX_USE_BMI2, 1, [Define to use x86 BMI2 instructions.])
-     X86_FEATURE_CFLAGS="$X86_FEATURE_CFLAGS -mbmi2"],
+     BMI2_CFLAGS="$BMI2_CFLAGS -mbmi2 -DLIBMTX_USE_BMI2"],
     [if test x"$enable_bmi2" = xyes; then
       AC_MSG_FAILURE([BMI2 not supported.])
      fi])
   ])
-AC_SUBST([X86_FEATURE_CFLAGS])
-libmtx_CPPFLAGS="$libmtx_CPPFLAGS $X86_FEATURE_CFLAGS"
+AC_SUBST([BMI2_CFLAGS])
 
 dnl Check for C math library
 AC_SEARCH_LIBS([floor], [m])

@@ -16,15 +16,14 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-24
+ * Last modified: 2022-10-10
  *
  * Unit tests for Morton Z-order codes.
  */
 
-#include <libmtx/error.h>
+#include "test.h"
 
 #include "libmtx/util/morton.h"
-#include "test.h"
 
 #include <errno.h>
 
@@ -52,9 +51,8 @@ int test_morton2d_from_cartesian(void)
         uint32_t x[16] = {0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3};
         uint32_t y[16] = {0,1,2,3,0,1,2,3,0,1,2,3,0,1,2,3};
         uint64_t z[16] = {};
-        int err = morton2d_from_cartesian_uint32(
+        morton2d_from_cartesian_uint32(
             size, sizeof(*x), x, sizeof(*y), y, sizeof(*z), z);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 0, z[ 0]);
         TEST_ASSERT_EQ( 1, z[ 1]);
         TEST_ASSERT_EQ( 4, z[ 2]);
@@ -80,9 +78,8 @@ int test_morton2d_from_cartesian(void)
         uint64_t y[16] = {0,1,2,3,0,1,2,3,0,1,2,3,0,1,2,3};
         uint64_t z0[16] = {};
         uint64_t z1[16] = {};
-        int err = morton2d_from_cartesian_uint64(
+        morton2d_from_cartesian_uint64(
             size, sizeof(*x), x, sizeof(*y), y, sizeof(*z0), z0, sizeof(*z1), z1);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 0, z0[ 0]); TEST_ASSERT_EQ( 0, z1[ 0]);
         TEST_ASSERT_EQ( 0, z0[ 1]); TEST_ASSERT_EQ( 1, z1[ 1]);
         TEST_ASSERT_EQ( 0, z0[ 2]); TEST_ASSERT_EQ( 4, z1[ 2]);
@@ -115,9 +112,8 @@ int test_morton2d_to_cartesian(void)
         uint32_t x[16] = {};
         uint32_t y[16] = {};
         uint64_t z[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-        int err = morton2d_to_cartesian_uint32(
+        morton2d_to_cartesian_uint32(
             size, sizeof(*z), z, sizeof(*x), x, sizeof(*y), y);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(0, x[ 0]); TEST_ASSERT_EQ(0, y[ 0]);
         TEST_ASSERT_EQ(0, x[ 1]); TEST_ASSERT_EQ(1, y[ 1]);
         TEST_ASSERT_EQ(1, x[ 2]); TEST_ASSERT_EQ(0, y[ 2]);
@@ -144,10 +140,9 @@ int test_morton2d_to_cartesian(void)
         uint64_t z[16][2] = {
             {0,0},{0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},
             {0,9},{0,10},{0,11},{0,12},{0,13},{0,14},{0,15}};
-        int err = morton2d_to_cartesian_uint64(
+        morton2d_to_cartesian_uint64(
             size, sizeof(*z), &z[0][0], sizeof(*z), &z[0][1],
             sizeof(*x), x, sizeof(*y), y);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(0, x[ 0]); TEST_ASSERT_EQ(0, y[ 0]);
         TEST_ASSERT_EQ(0, x[ 1]); TEST_ASSERT_EQ(1, y[ 1]);
         TEST_ASSERT_EQ(1, x[ 2]); TEST_ASSERT_EQ(0, y[ 2]);
@@ -177,14 +172,12 @@ int test_morton2d_to_cartesian(void)
             xin[i] = rand_uint64();
             yin[i] = rand_uint64();
         }
-        int err = morton2d_from_cartesian_uint64(
+        morton2d_from_cartesian_uint64(
             size, sizeof(*xin), xin, sizeof(*yin), yin,
             sizeof(*z), &z[0][0], sizeof(*z), &z[0][1]);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = morton2d_to_cartesian_uint64(
+        morton2d_to_cartesian_uint64(
             size, sizeof(*z), &z[0][0], sizeof(*z), &z[0][1],
             sizeof(*xout), xout, sizeof(*yout), yout);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         for (int i = 0; i < size; i++) {
             TEST_ASSERT_MSG(
                 xin[i] == xout[i] && yin[i] == yout[i],
