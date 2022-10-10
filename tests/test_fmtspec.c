@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-16
+ * Last modified: 2022-10-10
  *
  * Unit tests for string printing functions.
  */
@@ -33,10 +33,10 @@
 #include <stdlib.h>
 
 /**
- * `test_fmtspec_str()` tests converting format specifiers to
+ * `test_fmtspecstr()` tests converting format specifiers to
  * strings.
  */
-int test_fmtspec_str(void)
+int test_fmtspecstr(void)
 {
     {
         struct fmtspec format = {
@@ -45,7 +45,7 @@ int test_fmtspec_str(void)
             .precision = fmtspec_precision_none,
             .length = fmtspec_length_none,
             .specifier = fmtspec_d };
-        char * format_str = fmtspec_str(format);
+        char * format_str = fmtspecstr(format);
         TEST_ASSERT_STREQ("%d", format_str);
         free(format_str);
     }
@@ -57,7 +57,7 @@ int test_fmtspec_str(void)
             .precision = fmtspec_precision_none,
             .length = fmtspec_length_none,
             .specifier = fmtspec_f };
-        char * format_str = fmtspec_str(format);
+        char * format_str = fmtspecstr(format);
         TEST_ASSERT_STREQ("%f", format_str);
         free(format_str);
     }
@@ -69,7 +69,7 @@ int test_fmtspec_str(void)
             .precision = fmtspec_precision_none,
             .length = fmtspec_length_L,
             .specifier = fmtspec_g };
-        char * format_str = fmtspec_str(format);
+        char * format_str = fmtspecstr(format);
         TEST_ASSERT_STREQ("%Lg", format_str);
         free(format_str);
     }
@@ -81,7 +81,7 @@ int test_fmtspec_str(void)
             .precision = 2,
             .length = fmtspec_length_none,
             .specifier = fmtspec_f };
-        char * format_str = fmtspec_str(format);
+        char * format_str = fmtspecstr(format);
         TEST_ASSERT_STREQ("%.2f", format_str);
         free(format_str);
     }
@@ -93,7 +93,7 @@ int test_fmtspec_str(void)
             .precision = fmtspec_precision_none,
             .length = fmtspec_length_none,
             .specifier = fmtspec_f };
-        char * format_str = fmtspec_str(format);
+        char * format_str = fmtspecstr(format);
         TEST_ASSERT_STREQ("%3f", format_str);
         free(format_str);
     }
@@ -105,7 +105,7 @@ int test_fmtspec_str(void)
             .precision = fmtspec_precision_none,
             .length = fmtspec_length_none,
             .specifier = fmtspec_f };
-        char * format_str = fmtspec_str(format);
+        char * format_str = fmtspecstr(format);
         TEST_ASSERT_STREQ("%-3f", format_str);
         free(format_str);
     }
@@ -117,7 +117,7 @@ int test_fmtspec_str(void)
             .precision = fmtspec_precision_none,
             .length = fmtspec_length_none,
             .specifier = fmtspec_f };
-        char * format_str = fmtspec_str(format);
+        char * format_str = fmtspecstr(format);
         TEST_ASSERT_STREQ("%- 4f", format_str);
         free(format_str);
     }
@@ -129,7 +129,7 @@ int test_fmtspec_str(void)
             .precision = 1,
             .length = fmtspec_length_none,
             .specifier = fmtspec_f };
-        char * format_str = fmtspec_str(format);
+        char * format_str = fmtspecstr(format);
         TEST_ASSERT_STREQ("%4.1f", format_str);
         free(format_str);
     }
@@ -252,7 +252,7 @@ int test_parse_fmtspec(void)
 int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN("Running tests for string formatting\n");
-    TEST_RUN(test_fmtspec_str);
+    TEST_RUN(test_fmtspecstr);
     TEST_RUN(test_parse_fmtspec);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?

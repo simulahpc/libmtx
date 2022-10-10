@@ -22,10 +22,10 @@
  */
 
 #include "fmtspec.h"
-#include "parse.h"
 
 #include <errno.h>
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -93,10 +93,10 @@ static const char * specifier_str(
 }
 
 /**
- * `fmtspec_str()` is a string representing the given format
+ * `fmtspecstr()` is a string representing the given format
  * specifier.
  */
-char * fmtspec_str(
+char * fmtspecstr(
     struct fmtspec format)
 {
     if ((format.width == fmtspec_width_none ||
@@ -257,6 +257,62 @@ static int parse_fmtspec_flags(
     return 0;
 }
 
+/**
+ * ‘parse_long_long_int()’ parses a string to produce a number that
+ * may be represented with the type ‘long long int’.
+ */
+static int parse_long_long_int(
+    long long int * outnumber,
+    int base,
+    const char * s,
+    const char ** outendptr,
+    int64_t * bytes_read)
+{
+    errno = 0;
+    char * endptr;
+    long long int number = strtoll(s, &endptr, base);
+    if ((errno == ERANGE && (number == LLONG_MAX || number == LLONG_MIN)) ||
+        (errno != 0 && number == 0))
+        return errno;
+    if (s == endptr) return EINVAL;
+    if (outendptr) *outendptr = endptr;
+    if (bytes_read) *bytes_read += endptr - s;
+    *outnumber = number;
+    return 0;
+}
+
+/**
+ * ‘parse_int()’ parses a string to produce a number that may be
+ * represented as an integer.
+ *
+ * The number is parsed using ‘strtoll()’, following the conventions
+ * documented in the man page for that function. In addition, some
+ * further error checking is performed to ensure that the number is
+ * parsed correctly. The parsed number is stored in ‘x’.
+ *
+ * If ‘endptr’ is not ‘NULL’, the address stored in ‘endptr’ points to
+ * the first character beyond the characters that were consumed during
+ * parsing.
+ *
+ * On success, ‘0’ is returned. Otherwise, if the input contained
+ * invalid characters, ‘EINVAL’ is returned, or if the resulting
+ * number cannot be represented as a signed integer, ‘ERANGE’ is
+ * returned.
+ */
+static int parse_int(
+    int * x,
+    const char * s,
+    const char ** endptr,
+    int64_t * bytes_read)
+{
+    long long int y;
+    int err = parse_long_long_int(&y, 10, s, endptr, bytes_read);
+    if (err) return err;
+    if (y < INT_MIN || y > INT_MAX) return ERANGE;
+    *x = y;
+    return 0;
+}
+
 static int parse_fmtspec_width(
     const char ** s,
     enum fmtspec_width * width)
@@ -267,15 +323,14 @@ static int parse_fmtspec_width(
         return 0;
     }
 
-    int32_t n;
+    int n;
     const char * t;
-    int err = parse_int32_ex(*s, NULL, &n, &t);
+    int err = parse_int(&n, *s, &t, NULL);
     if (err) {
         *width = fmtspec_width_none;
         return 0;
     }
-    if (n < 0)
-        return EINVAL;
+    if (n < 0) return EINVAL;
     *width = n;
     *s = t;
     return 0;
@@ -297,15 +352,14 @@ static int parse_fmtspec_precision(
         return 0;
     }
 
-    int32_t n;
+    int n;
     const char * t;
-    int err = parse_int32_ex(*s, NULL, &n, &t);
+    int err = parse_int(&n, *s, &t, NULL);
     if (err) {
         *precision = fmtspec_precision_none;
         return 0;
     }
-    if (n < 0)
-        return EINVAL;
+    if (n < 0) return EINVAL;
     *precision = n;
     *s = t;
     return 0;

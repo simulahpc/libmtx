@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-20
+ * Last modified: 2022-10-10
  *
  * Printing formatted output.
  */
@@ -27,7 +27,7 @@
 #include <stdio.h>
 
 /**
- * `fmtspec_flags' enumerates the flags that may be used to
+ * ‘fmtspec_flags’ enumerates the flags that may be used to
  * modify format specifiers.
  */
 enum fmtspec_flags
@@ -61,11 +61,11 @@ enum fmtspec_flags
 };
 
 /**
- * `fmtspec_width' enumerates the types of field widths that
+ * ‘fmtspec_width’ enumerates the types of field widths that
  *  may be used to modify format specifiers.
  *
- * The special enum values `fmtspec_width_none' and
- * `fmtspec_width_star' are assigned negative integer values,
+ * The special enum values ‘fmtspec_width_none’ and
+ * ‘fmtspec_width_star’ are assigned negative integer values,
  * whereas a non-negative field width is interpreted as described
  * below.
  *
@@ -86,11 +86,11 @@ enum fmtspec_width
 };
 
 /**
- * `fmtspec_precision' enumerates the precision that may be
+ * ‘fmtspec_precision’ enumerates the precision that may be
  *  used to modify format specifiers.
  *
- * The special enum values `fmtspec_precision_none' and
- * `fmtspec_precision_star' are assigned negative integer
+ * The special enum values ‘fmtspec_precision_none’ and
+ * ‘fmtspec_precision_star’ are assigned negative integer
  * values, whereas a non-negative precision is interpreted as
  * described below.
  *
@@ -125,7 +125,7 @@ enum fmtspec_precision
 };
 
 /**
- * `fmtspec_length' enumerates lengths that may be used to
+ * ‘fmtspec_length’ enumerates lengths that may be used to
  *  modify format specifiers. The combination of length and specifier
  *  determine which data type is used when interpreting the values to
  *  be printed.
@@ -144,7 +144,7 @@ enum fmtspec_length
 };
 
 /**
- * `fmtspec_type' enumerates the format specifiers that may
+ * ‘fmtspec_type’ enumerates the format specifiers that may
  *  be used to print formatted output with printf.
  */
 enum fmtspec_type
@@ -171,7 +171,7 @@ enum fmtspec_type
 };
 
 /**
- * `fmtspec' represents a format specifier that may be used
+ * ‘fmtspec’ represents a format specifier that may be used
  * to print formatted output with printf.
  */
 struct fmtspec
@@ -184,7 +184,7 @@ struct fmtspec
 };
 
 /**
- * `fmtspec_init()' creates a format specifier.
+ * ‘fmtspec_init()’ creates a format specifier.
  */
 struct fmtspec fmtspec_init(
     enum fmtspec_flags flags,
@@ -194,26 +194,25 @@ struct fmtspec fmtspec_init(
     enum fmtspec_type specifier);
 
 /**
- * `fmtspec_str()` is a string representing the given format
- * specifier.
+ * ‘fmtspecstr()’ is a string representing the given format specifier.
  *
  * Storage for the returned string is allocated with
- * `malloc()'. Therefore, the caller is responsible for calling
- * `free()' to deallocate the underlying storage.
+ * ‘malloc()’. Therefore, the caller is responsible for calling
+ * ‘free()’ to deallocate the underlying storage.
  */
-char * fmtspec_str(
+char * fmtspecstr(
     struct fmtspec format);
 
 /**
- * `parse_fmtspec()' parses a string containing a format
+ * ‘parse_fmtspec()’ parses a string containing a format
  * specifier.
  *
- * If `endptr` is not `NULL`, the address stored in `endptr` points to
+ * If ‘endptr’ is not ‘NULL’, the address stored in ‘endptr’ points to
  * the first character beyond the characters that were consumed during
  * parsing.
  *
- * On success, `parse_fmtspec()' returns `0'.  Otherwise, if
- * the input contained invalid characters, `EINVAL' is returned.
+ * On success, ‘parse_fmtspec()’ returns ‘0’.  Otherwise, if
+ * the input contained invalid characters, ‘EINVAL’ is returned.
  */
 int parse_fmtspec(
     const char * s,

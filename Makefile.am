@@ -349,8 +349,8 @@ TESTS += tests/test_mtxcg
 
 # util
 tests_test_fmtspec_CPPFLAGS =
-tests_test_fmtspec_LDADD = $(top_builddir)/libmtx.la
-tests_test_fmtspec_SOURCES = tests/test_fmtspec.c tests/test.h
+tests_test_fmtspec_LDADD =
+tests_test_fmtspec_SOURCES = tests/test_fmtspec.c tests/test.h libmtx/util/fmtspec.c
 check_PROGRAMS += tests/test_fmtspec
 TESTS += tests/test_fmtspec
 tests_test_merge_CPPFLAGS =
