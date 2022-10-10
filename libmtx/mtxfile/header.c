@@ -429,7 +429,7 @@ static int mtxfile_parse_identifier(
  * header.  Otherwise, an appropriate error code is returned if the
  * input is not a valid Matrix Market header.
  */
-int mtxfileheader_parse(
+static int mtxfileheader_parse(
     struct mtxfileheader * header,
     int64_t * bytes_read,
     char ** outendptr,

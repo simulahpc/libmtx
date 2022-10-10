@@ -305,26 +305,6 @@ struct mtxfileheader
 };
 
 /**
- * ‘mtxfileheader_parse()’ parses a string containing the header line
- * for a file in Matrix Market format.
- *
- * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
- * points to the first character beyond the characters that were
- * consumed during parsing.
- *
- * On success, ‘mtxfileheader_parse()’ returns ‘MTX_SUCCESS’ and the
- * ‘object’, ‘format’, ‘field’ and ‘symmetry’ fields of the header
- * will be set according to the contents of the parsed Matrix Market
- * header.  Otherwise, an appropriate error code is returned if the
- * input is not a valid Matrix Market header.
- */
-int mtxfileheader_parse(
-    struct mtxfileheader * header,
-    int64_t * bytes_read,
-    char ** endptr,
-    const char * s);
-
-/**
  * ‘mtxfileheader_copy()’ copies a Matrix Market header.
  */
 int mtxfileheader_copy(
