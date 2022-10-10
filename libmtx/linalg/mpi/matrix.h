@@ -898,7 +898,7 @@ int LIBMTX_API mtxmpimatrix_fwrite(
  * The caller is responsible for calling ‘mtxmpimatrix_free()’ to
  * free storage allocated for each matrix in the ‘dsts’ array.
  */
-int mtxmpimatrix_split(
+int LIBMTX_API mtxmpimatrix_split(
     int num_parts,
     struct mtxmpimatrix ** dsts,
     const struct mtxmpimatrix * src,
@@ -920,7 +920,7 @@ int mtxmpimatrix_split(
  * given process, both matrices must also have the same number of
  * nonzero elements on that process.
  */
-int mtxmpimatrix_swap(
+int LIBMTX_API mtxmpimatrix_swap(
     struct mtxmpimatrix * x,
     struct mtxmpimatrix * y,
     struct mtxdisterror * disterr);
@@ -933,7 +933,7 @@ int mtxmpimatrix_swap(
  * given process, both matrices must also have the same number of
  * nonzero elements on that process.
  */
-int mtxmpimatrix_copy(
+int LIBMTX_API mtxmpimatrix_copy(
     struct mtxmpimatrix * y,
     const struct mtxmpimatrix * x,
     struct mtxdisterror * disterr);
@@ -942,7 +942,7 @@ int mtxmpimatrix_copy(
  * ‘mtxmpimatrix_sscal()’ scales a matrix by a single precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxmpimatrix_sscal(
+int LIBMTX_API mtxmpimatrix_sscal(
     float a,
     struct mtxmpimatrix * x,
     int64_t * num_flops,
@@ -952,7 +952,7 @@ int mtxmpimatrix_sscal(
  * ‘mtxmpimatrix_dscal()’ scales a matrix by a double precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxmpimatrix_dscal(
+int LIBMTX_API mtxmpimatrix_dscal(
     double a,
     struct mtxmpimatrix * x,
     int64_t * num_flops,
@@ -962,7 +962,7 @@ int mtxmpimatrix_dscal(
  * ‘mtxmpimatrix_cscal()’ scales a matrix by a complex, single
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxmpimatrix_cscal(
+int LIBMTX_API mtxmpimatrix_cscal(
     float a[2],
     struct mtxmpimatrix * x,
     int64_t * num_flops,
@@ -972,7 +972,7 @@ int mtxmpimatrix_cscal(
  * ‘mtxmpimatrix_zscal()’ scales a matrix by a complex, double
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxmpimatrix_zscal(
+int LIBMTX_API mtxmpimatrix_zscal(
     double a[2],
     struct mtxmpimatrix * x,
     int64_t * num_flops,
@@ -990,7 +990,7 @@ int mtxmpimatrix_zscal(
  * undefined. However, repeated indices in the dist matrices are
  * allowed.
  */
-int mtxmpimatrix_saxpy(
+int LIBMTX_API mtxmpimatrix_saxpy(
     float a,
     const struct mtxmpimatrix * x,
     struct mtxmpimatrix * y,
@@ -1009,7 +1009,7 @@ int mtxmpimatrix_saxpy(
  * undefined. However, repeated indices in the dist matrices are
  * allowed.
  */
-int mtxmpimatrix_daxpy(
+int LIBMTX_API mtxmpimatrix_daxpy(
     double a,
     const struct mtxmpimatrix * x,
     struct mtxmpimatrix * y,
@@ -1028,7 +1028,7 @@ int mtxmpimatrix_daxpy(
  * undefined. However, repeated indices in the dist matrices are
  * allowed.
  */
-int mtxmpimatrix_saypx(
+int LIBMTX_API mtxmpimatrix_saypx(
     float a,
     struct mtxmpimatrix * y,
     const struct mtxmpimatrix * x,
@@ -1047,7 +1047,7 @@ int mtxmpimatrix_saypx(
  * undefined. However, repeated indices in the dist matrices are
  * allowed.
  */
-int mtxmpimatrix_daypx(
+int LIBMTX_API mtxmpimatrix_daypx(
     double a,
     struct mtxmpimatrix * y,
     const struct mtxmpimatrix * x,
@@ -1066,7 +1066,7 @@ int mtxmpimatrix_daypx(
  * undefined. Moreover, repeated indices in the dist matrix are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmpimatrix_sdot(
+int LIBMTX_API mtxmpimatrix_sdot(
     const struct mtxmpimatrix * x,
     const struct mtxmpimatrix * y,
     float * dot,
@@ -1085,7 +1085,7 @@ int mtxmpimatrix_sdot(
  * undefined. Moreover, repeated indices in the dist matrix are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmpimatrix_ddot(
+int LIBMTX_API mtxmpimatrix_ddot(
     const struct mtxmpimatrix * x,
     const struct mtxmpimatrix * y,
     double * dot,
@@ -1105,7 +1105,7 @@ int mtxmpimatrix_ddot(
  * undefined. Moreover, repeated indices in the dist matrix are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmpimatrix_cdotu(
+int LIBMTX_API mtxmpimatrix_cdotu(
     const struct mtxmpimatrix * x,
     const struct mtxmpimatrix * y,
     float (* dot)[2],
@@ -1125,7 +1125,7 @@ int mtxmpimatrix_cdotu(
  * undefined. Moreover, repeated indices in the dist matrix are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmpimatrix_zdotu(
+int LIBMTX_API mtxmpimatrix_zdotu(
     const struct mtxmpimatrix * x,
     const struct mtxmpimatrix * y,
     double (* dot)[2],
@@ -1145,7 +1145,7 @@ int mtxmpimatrix_zdotu(
  * undefined. Moreover, repeated indices in the dist matrix are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmpimatrix_cdotc(
+int LIBMTX_API mtxmpimatrix_cdotc(
     const struct mtxmpimatrix * x,
     const struct mtxmpimatrix * y,
     float (* dot)[2],
@@ -1165,7 +1165,7 @@ int mtxmpimatrix_cdotc(
  * undefined. Moreover, repeated indices in the dist matrix are not
  * allowed, otherwise the result is undefined.
  */
-int mtxmpimatrix_zdotc(
+int LIBMTX_API mtxmpimatrix_zdotc(
     const struct mtxmpimatrix * x,
     const struct mtxmpimatrix * y,
     double (* dot)[2],
@@ -1177,7 +1177,7 @@ int mtxmpimatrix_zdotc(
  * single precision floating point. Repeated indices in the dist
  * matrix are not allowed, otherwise the result is undefined.
  */
-int mtxmpimatrix_snrm2(
+int LIBMTX_API mtxmpimatrix_snrm2(
     const struct mtxmpimatrix * x,
     float * nrm2,
     int64_t * num_flops,
@@ -1188,7 +1188,7 @@ int mtxmpimatrix_snrm2(
  * double precision floating point. Repeated indices in the dist
  * matrix are not allowed, otherwise the result is undefined.
  */
-int mtxmpimatrix_dnrm2(
+int LIBMTX_API mtxmpimatrix_dnrm2(
     const struct mtxmpimatrix * x,
     double * nrm2,
     int64_t * num_flops,
@@ -1201,7 +1201,7 @@ int mtxmpimatrix_dnrm2(
  * the real and imaginary parts is computed. Repeated indices in the
  * dist matrix are not allowed, otherwise the result is undefined.
  */
-int mtxmpimatrix_sasum(
+int LIBMTX_API mtxmpimatrix_sasum(
     const struct mtxmpimatrix * x,
     float * asum,
     int64_t * num_flops,
@@ -1214,7 +1214,7 @@ int mtxmpimatrix_sasum(
  * the real and imaginary parts is computed. Repeated indices in the
  * dist matrix are not allowed, otherwise the result is undefined.
  */
-int mtxmpimatrix_dasum(
+int LIBMTX_API mtxmpimatrix_dasum(
     const struct mtxmpimatrix * x,
     double * asum,
     int64_t * num_flops,
@@ -1228,7 +1228,7 @@ int mtxmpimatrix_dasum(
  * parts. Repeated indices in the dist matrix are not allowed,
  * otherwise the result is undefined.
  */
-int mtxmpimatrix_iamax(
+int LIBMTX_API mtxmpimatrix_iamax(
     const struct mtxmpimatrix * x,
     int * iamax,
     struct mtxdisterror * disterr);
@@ -1246,7 +1246,7 @@ int mtxmpimatrix_iamax(
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
  */
-int mtxmpimatrix_sgemv(
+int LIBMTX_API mtxmpimatrix_sgemv(
     enum mtxtransposition trans,
     float alpha,
     const struct mtxmpimatrix * A,
@@ -1265,7 +1265,7 @@ int mtxmpimatrix_sgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
  */
-int mtxmpimatrix_dgemv(
+int LIBMTX_API mtxmpimatrix_dgemv(
     enum mtxtransposition trans,
     double alpha,
     const struct mtxmpimatrix * A,
@@ -1286,7 +1286,7 @@ int mtxmpimatrix_dgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
  */
-int mtxmpimatrix_cgemv(
+int LIBMTX_API mtxmpimatrix_cgemv(
     enum mtxtransposition trans,
     float alpha[2],
     const struct mtxmpimatrix * A,
@@ -1307,7 +1307,7 @@ int mtxmpimatrix_cgemv(
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
  */
-int mtxmpimatrix_zgemv(
+int LIBMTX_API mtxmpimatrix_zgemv(
     enum mtxtransposition trans,
     double alpha[2],
     const struct mtxmpimatrix * A,

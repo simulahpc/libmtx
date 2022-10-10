@@ -810,7 +810,7 @@ LIBMTX_API int mtxmatrix_gzwrite(
  * ‘NULL’, then it must be an array of length ‘num_parts’, and it is
  * used to store the number of rows assigned to each part
  */
-int mtxmatrix_partition_rowwise(
+LIBMTX_API int mtxmatrix_partition_rowwise(
     const struct mtxmatrix * A,
     enum mtxpartitioning parttype,
     int num_parts,
@@ -845,7 +845,7 @@ int mtxmatrix_partition_rowwise(
  * ‘NULL’, then it must be an array of length ‘num_parts’, and it is
  * used to store the number of columns assigned to each part
  */
-int mtxmatrix_partition_columnwise(
+LIBMTX_API int mtxmatrix_partition_columnwise(
     const struct mtxmatrix * A,
     enum mtxpartitioning parttype,
     int num_parts,
@@ -881,7 +881,7 @@ int mtxmatrix_partition_columnwise(
  * respectively, which are used to store the number of rows and
  * columns assigned to each part.
  */
-int mtxmatrix_partition_2d(
+LIBMTX_API int mtxmatrix_partition_2d(
     const struct mtxmatrix * A,
     enum mtxpartitioning rowparttype,
     int num_row_parts,
@@ -920,7 +920,7 @@ int mtxmatrix_partition_2d(
  * The caller is responsible for calling ‘mtxmatrix_free()’ to free
  * storage allocated for each matrix in the ‘dsts’ array.
  */
-int mtxmatrix_split(
+LIBMTX_API int mtxmatrix_split(
     int num_parts,
     struct mtxmatrix ** dsts,
     const struct mtxmatrix * src,

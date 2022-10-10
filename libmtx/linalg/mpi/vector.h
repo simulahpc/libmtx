@@ -903,7 +903,7 @@ LIBMTX_API int mtxmpivector_iamax(
  * result is undefined. They are, however, allowed in the packed
  * vector ‘z’.
  */
-int mtxmpivector_usscga(
+LIBMTX_API int mtxmpivector_usscga(
     struct mtxmpivector * z,
     const struct mtxmpivector * x,
     struct mtxdisterror * disterr);
@@ -935,7 +935,7 @@ struct mtxmpivector_usscga
  * is performed repeatedly, since the setup phase only needs to be
  * carried out once.
  */
-int mtxmpivector_usscga_init(
+LIBMTX_API int mtxmpivector_usscga_init(
     struct mtxmpivector_usscga * usscga,
     struct mtxmpivector * z,
     const struct mtxmpivector * x,
@@ -945,7 +945,7 @@ int mtxmpivector_usscga_init(
  * ‘mtxmpivector_usscga_free()’ frees resources associated with a
  * persistent, combined scatter-gather operation.
  */
-void mtxmpivector_usscga_free(
+LIBMTX_API void mtxmpivector_usscga_free(
     struct mtxmpivector_usscga * usscga);
 
 /**
@@ -959,7 +959,7 @@ void mtxmpivector_usscga_free(
  * The operation may not complete before
  * ‘mtxmpivector_usscga_wait()’ is called.
  */
-int mtxmpivector_usscga_start(
+LIBMTX_API int mtxmpivector_usscga_start(
     struct mtxmpivector_usscga * usscga,
     struct mtxdisterror * disterr);
 
@@ -967,7 +967,7 @@ int mtxmpivector_usscga_start(
  * ‘mtxmpivector_usscga_wait()’ waits for a persistent, combined
  * scatter-gather operation to finish.
  */
-int mtxmpivector_usscga_wait(
+LIBMTX_API int mtxmpivector_usscga_wait(
     struct mtxmpivector_usscga * usscga,
     struct mtxdisterror * disterr);
 #endif

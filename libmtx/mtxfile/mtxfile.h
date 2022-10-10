@@ -1304,7 +1304,7 @@ int LIBMTX_API mtxfile_reorder(
  * This is analogous to ‘MPI_Send()’ and requires the receiving
  * process to perform a matching call to ‘mtxfile_recv()’.
  */
-int mtxfile_send(
+int LIBMTX_API mtxfile_send(
     const struct mtxfile * mtxfile,
     int dest,
     int tag,
@@ -1318,7 +1318,7 @@ int mtxfile_send(
  * This is analogous to ‘MPI_Recv()’ and requires the sending process
  * to perform a matching call to ‘mtxfile_send()’.
  */
-int mtxfile_recv(
+int LIBMTX_API mtxfile_recv(
     struct mtxfile * mtxfile,
     int source,
     int tag,
@@ -1332,7 +1332,7 @@ int mtxfile_recv(
  * This is analogous to ‘MPI_Bcast()’ and requires every process in
  * the communicator to perform matching calls to ‘mtxfile_bcast()’.
  */
-int mtxfile_bcast(
+int LIBMTX_API mtxfile_bcast(
     struct mtxfile * mtxfile,
     int root,
     MPI_Comm comm,
@@ -1345,7 +1345,7 @@ int mtxfile_bcast(
  * This is analogous to ‘MPI_Gather()’ and requires every process in
  * the communicator to perform matching calls to ‘mtxfile_gather()’.
  */
-int mtxfile_gather(
+int LIBMTX_API mtxfile_gather(
     const struct mtxfile * sendmtxfile,
     struct mtxfile * recvmtxfiles,
     int root,
@@ -1360,7 +1360,7 @@ int mtxfile_gather(
  * in the communicator to perform matching calls to
  * ‘mtxfile_allgather()’.
  */
-int mtxfile_allgather(
+int LIBMTX_API mtxfile_allgather(
     const struct mtxfile * sendmtxfile,
     struct mtxfile * recvmtxfiles,
     MPI_Comm comm,
@@ -1373,7 +1373,7 @@ int mtxfile_allgather(
  * This is analogous to ‘MPI_Scatter()’ and requires every process in
  * the communicator to perform matching calls to ‘mtxfile_scatter()’.
  */
-int mtxfile_scatter(
+int LIBMTX_API mtxfile_scatter(
     const struct mtxfile * sendmtxfiles,
     struct mtxfile * recvmtxfile,
     int root,
@@ -1387,7 +1387,7 @@ int mtxfile_scatter(
  * This is analogous to ‘MPI_Alltoall()’ and requires every process in
  * the communicator to perform matching calls to ‘mtxfile_alltoall()’.
  */
-int mtxfile_alltoall(
+int LIBMTX_API mtxfile_alltoall(
     const struct mtxfile * sendmtxfiles,
     struct mtxfile * recvmtxfiles,
     MPI_Comm comm,
@@ -1404,7 +1404,7 @@ int mtxfile_alltoall(
  * means that the send and receive counts must be multiples of the
  * number of matrix columns.
  */
-int mtxfile_scatterv(
+int LIBMTX_API mtxfile_scatterv(
     const struct mtxfile * sendmtxfile,
     const int * sendcounts,
     const int * displs,
