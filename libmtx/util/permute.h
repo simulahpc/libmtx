@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-25
+ * Last modified: 2022-10-10
  *
  * Permutations of finite sets.
  */
@@ -25,8 +25,6 @@
 #define LIBMTX_UTIL_PERMUTE_H
 
 #include <stdint.h>
-
-struct mtxdisterror;
 
 /**
  * ‘mtxpermutation’ is a data structure representing a permutation of
@@ -70,6 +68,9 @@ void mtxpermutation_free(
 /**
  * ‘mtxpermutation_init_default()’ creates a default, identity
  * permutation that maps every element to itself.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise.
  */
 int mtxpermutation_init_default(
     struct mtxpermutation * permutation,
@@ -84,6 +85,10 @@ int mtxpermutation_init_default(
  * Applying the permutation to an array ‘x’ of length ‘size’ moves the
  * element located at position ‘i’ to the position ‘perm[i]’.  In
  * other words, ‘x[perm[i]] <- x[i]’, for ‘i=0,1,...,size-1’.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise. If any value in the ‘perm’ array is not in the range
+ * ‘[0,size)’, then ‘EINVAL’ is returned.
  */
 int mtxpermutation_init(
     struct mtxpermutation * permutation,
@@ -92,6 +97,9 @@ int mtxpermutation_init(
 
 /**
  * ‘mtxpermutation_invert()’ inverts a permutation.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise.
  */
 int mtxpermutation_invert(
     struct mtxpermutation * permutation);
@@ -101,6 +109,10 @@ int mtxpermutation_invert(
  * product or combined permutation. If ‘a’ and ‘b’ are permutations of
  * the 0, 1, ..., N-1, then their product or composition ‘c’ is
  * defined as ‘c[i] = b[a[i]]’, for ‘i=0,1,...,N-1’.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise. If ‘a’ and ‘b’ are of different size ‘EINVAL’ is
+ * returned.
  */
 int mtxpermutation_compose(
     struct mtxpermutation * c,
@@ -114,6 +126,9 @@ int mtxpermutation_compose(
  * ‘permutation->size’. Applying the permutation to ‘x’ moves the
  * element at position ‘i’ to the position ‘permutation->perm[i]’, or,
  * ‘x[permutation->perm[i]] <- x[i]’, for ‘i=0,1,...,size-1’.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise.
  */
 int mtxpermutation_permute_int(
     struct mtxpermutation * permutation,
@@ -128,6 +143,9 @@ int mtxpermutation_permute_int(
  * ‘permutation->size’. Applying the permutation to ‘x’ moves the
  * element at position ‘i’ to the position ‘permutation->perm[i]’, or,
  * ‘x[permutation->perm[i]] <- x[i]’, for ‘i=0,1,...,size-1’.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise.
  */
 int mtxpermutation_permute_int64(
     struct mtxpermutation * permutation,
@@ -155,10 +173,14 @@ int mtxpermutation_permute_int64(
  * instead recommended to use ‘struct mtxpermutation’ to avoid
  * overhead associated with error checking and allocating storage
  * every time.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise. If any value in the ‘perm’ array is not in the range
+ * ‘[0,size)’, then ‘EINVAL’ is returned.
  */
 int permute_int(
     int64_t size,
-    int64_t * perm,
+    const int64_t * perm,
     int * x);
 
 #endif

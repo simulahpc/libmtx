@@ -16,14 +16,14 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-25
+ * Last modified: 2022-10-10
  *
  * Permutations of finite sets.
  */
 
 #include "libmtx/util/permute.h"
 
-#include <libmtx/error.h>
+#include <errno.h>
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -42,6 +42,9 @@ void mtxpermutation_free(
 /**
  * ‘mtxpermutation_init_default()’ creates a default, identity
  * permutation that maps every element to itself.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise.
  */
 int mtxpermutation_init_default(
     struct mtxpermutation * permutation,
@@ -49,12 +52,11 @@ int mtxpermutation_init_default(
 {
     permutation->size = size;
     permutation->perm = malloc(size * sizeof(int64_t));
-    if (!permutation->perm) return MTX_ERR_ERRNO;
-    for (int64_t i = 0; i < size; i++)
-        permutation->perm[i] = i;
+    if (!permutation->perm) return errno;
+    for (int64_t i = 0; i < size; i++) permutation->perm[i] = i;
     permutation->workspace_size = 0;
     permutation->workspace = NULL;
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -66,6 +68,10 @@ int mtxpermutation_init_default(
  * Applying the permutation to an array ‘x’ of length ‘size’ moves the
  * element located at position ‘i’ to the position ‘perm[i]’.  In
  * other words, ‘x[perm[i]] <- x[i]’, for ‘i=0,1,...,size-1’.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise. If any value in the ‘perm’ array is not in the range
+ * ‘[0,size)’, then ‘EINVAL’ is returned.
  */
 int mtxpermutation_init(
     struct mtxpermutation * permutation,
@@ -74,16 +80,15 @@ int mtxpermutation_init(
 {
     for (int64_t i = 0; i < size; i++) {
         if (perm[i] < 0 || perm[i] >= size)
-            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            return EINVAL;
     }
     permutation->size = size;
     permutation->perm = malloc(size * sizeof(int64_t));
-    if (!permutation->perm) return MTX_ERR_ERRNO;
-    for (int64_t i = 0; i < size; i++)
-        permutation->perm[i] = perm[i];
+    if (!permutation->perm) return errno;
+    for (int64_t i = 0; i < size; i++) permutation->perm[i] = perm[i];
     permutation->workspace_size = 0;
     permutation->workspace = NULL;
-    return MTX_SUCCESS;
+    return 0;
 }
 
 static int mtxpermutation_alloc_workspace(
@@ -91,18 +96,20 @@ static int mtxpermutation_alloc_workspace(
     int64_t size)
 {
     if (permutation->workspace && permutation->workspace_size >= size)
-        return MTX_SUCCESS;
+        return 0;
     else if (permutation->workspace)
         free(permutation->workspace);
     permutation->workspace = malloc(size);
-    if (!permutation->workspace)
-        return MTX_ERR_ERRNO;
+    if (!permutation->workspace) return errno;
     permutation->workspace_size = size;
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
  * ‘mtxpermutation_invert()’ inverts a permutation.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise.
  */
 int mtxpermutation_invert(
     struct mtxpermutation * permutation)
@@ -112,11 +119,9 @@ int mtxpermutation_invert(
     if (err) return err;
     int64_t * perm = permutation->perm;
     int64_t * invperm = (int64_t *) permutation->workspace;
-    for (int64_t i = 0; i < permutation->size; i++)
-        invperm[perm[i]] = i;
-    for (int64_t i = 0; i < permutation->size; i++)
-        perm[i] = invperm[i];
-    return MTX_SUCCESS;
+    for (int64_t i = 0; i < permutation->size; i++) invperm[perm[i]] = i;
+    for (int64_t i = 0; i < permutation->size; i++) perm[i] = invperm[i];
+    return 0;
 }
 
 /**
@@ -124,6 +129,10 @@ int mtxpermutation_invert(
  * product or combined permutation. If ‘a’ and ‘b’ are permutations of
  * the 0, 1, ..., N-1, then their product or composition ‘c’ is
  * defined as ‘c[i] = b[a[i]]’, for ‘i=0,1,...,N-1’.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise. If ‘a’ and ‘b’ are of different size ‘EINVAL’ is
+ * returned.
  */
 int mtxpermutation_compose(
     struct mtxpermutation * c,
@@ -131,8 +140,7 @@ int mtxpermutation_compose(
     struct mtxpermutation * b)
 {
     int err;
-    if (a->size != b->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (a->size != b->size) return EINVAL;
     int64_t size = a->size;
     int64_t * cperm;
     if (a->workspace && a->workspace_size >= size * sizeof(int64_t)) {
@@ -156,6 +164,9 @@ int mtxpermutation_compose(
  * ‘permutation->size’. Applying the permutation to ‘x’ moves the
  * element at position ‘i’ to the position ‘permutation->perm[i]’, or,
  * ‘x[permutation->perm[i]] <- x[i]’, for ‘i=0,1,...,size-1’.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise.
  */
 int mtxpermutation_permute_int(
     struct mtxpermutation * permutation,
@@ -166,11 +177,9 @@ int mtxpermutation_permute_int(
     if (err) return err;
     const int64_t * perm = permutation->perm;
     int * y = (int *) permutation->workspace;
-    for (int64_t i = 0; i < size; i++)
-        y[i] = x[i];
-    for (int64_t i = 0; i < size; i++)
-        x[perm[i]] = y[i];
-    return MTX_SUCCESS;
+    for (int64_t i = 0; i < size; i++) y[i] = x[i];
+    for (int64_t i = 0; i < size; i++) x[perm[i]] = y[i];
+    return 0;
 }
 
 /**
@@ -181,6 +190,9 @@ int mtxpermutation_permute_int(
  * ‘permutation->size’. Applying the permutation to ‘x’ moves the
  * element at position ‘i’ to the position ‘permutation->perm[i]’, or,
  * ‘x[permutation->perm[i]] <- x[i]’, for ‘i=0,1,...,size-1’.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise.
  */
 int mtxpermutation_permute_int64(
     struct mtxpermutation * permutation,
@@ -191,11 +203,9 @@ int mtxpermutation_permute_int64(
     if (err) return err;
     const int64_t * perm = permutation->perm;
     int64_t * y = (int64_t *) permutation->workspace;
-    for (int64_t i = 0; i < size; i++)
-        y[i] = x[i];
-    for (int64_t i = 0; i < size; i++)
-        x[perm[i]] = y[i];
-    return MTX_SUCCESS;
+    for (int64_t i = 0; i < size; i++) y[i] = x[i];
+    for (int64_t i = 0; i < size; i++) x[perm[i]] = y[i];
+    return 0;
 }
 
 /*
@@ -219,22 +229,24 @@ int mtxpermutation_permute_int64(
  * instead recommended to use ‘struct mtxpermutation’ to avoid
  * overhead associated with error checking and allocating storage
  * every time.
+ *
+ * Returns ‘0’ if successful, or an error code according to errno
+ * otherwise. If any value in the ‘perm’ array is not in the range
+ * ‘[0,size)’, then ‘EINVAL’ is returned.
  */
 int permute_int(
     int64_t size,
-    int64_t * perm,
+    const int64_t * perm,
     int * x)
 {
     for (int64_t i = 0; i < size; i++) {
         if (perm[i] < 0 || perm[i] >= size)
-            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            return EINVAL;
     }
     int * y = malloc(size * sizeof(int));
-    if (!y) return MTX_ERR_ERRNO;
-    for (int64_t i = 0; i < size; i++)
-        y[i] = x[i];
-    for (int64_t i = 0; i < size; i++)
-        x[perm[i]] = y[i];
+    if (!y) return errno;
+    for (int64_t i = 0; i < size; i++) y[i] = x[i];
+    for (int64_t i = 0; i < size; i++) x[perm[i]] = y[i];
     free(y);
-    return MTX_SUCCESS;
+    return 0;
 }

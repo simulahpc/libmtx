@@ -16,15 +16,14 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-25
+ * Last modified: 2022-10-10
  *
  * Unit tests for permutations.
  */
 
-#include <libmtx/error.h>
+#include "test.h"
 
 #include "libmtx/util/permute.h"
-#include "test.h"
 
 #include <errno.h>
 
@@ -45,9 +44,9 @@ int test_mtxpermutation(void)
         int64_t perm[] = {0,1,2,3,4};
         struct mtxpermutation permutation;
         err = mtxpermutation_init(&permutation, size, perm);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         err = mtxpermutation_permute_int(&permutation, size, values);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(  0, values[0]);
         TEST_ASSERT_EQ(255, values[1]);
         TEST_ASSERT_EQ( 30, values[2]);
@@ -61,9 +60,9 @@ int test_mtxpermutation(void)
         int64_t perm[] = {1,0,2,3,4};
         struct mtxpermutation permutation;
         err = mtxpermutation_init(&permutation, size, perm);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         err = mtxpermutation_permute_int(&permutation, size, values);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(255, values[0]);
         TEST_ASSERT_EQ(  0, values[1]);
         TEST_ASSERT_EQ( 30, values[2]);
@@ -77,9 +76,9 @@ int test_mtxpermutation(void)
         int64_t perm[] = {1,0,3,4,2};
         struct mtxpermutation permutation;
         err = mtxpermutation_init(&permutation, size, perm);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         err = mtxpermutation_permute_int(&permutation, size, values);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(255, values[0]);
         TEST_ASSERT_EQ(  0, values[1]);
         TEST_ASSERT_EQ(  2, values[2]);
@@ -102,11 +101,11 @@ int test_mtxpermutation_invert(void)
         int64_t perm[] = {0,1,2,3,4};
         struct mtxpermutation permutation;
         err = mtxpermutation_init(&permutation, size, perm);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         err = mtxpermutation_invert(&permutation);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         err = mtxpermutation_permute_int(&permutation, size, values);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(  0, values[0]);
         TEST_ASSERT_EQ(255, values[1]);
         TEST_ASSERT_EQ( 30, values[2]);
@@ -120,11 +119,11 @@ int test_mtxpermutation_invert(void)
         int64_t perm[] = {1,0,2,3,4};
         struct mtxpermutation permutation;
         err = mtxpermutation_init(&permutation, size, perm);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         err = mtxpermutation_invert(&permutation);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         err = mtxpermutation_permute_int(&permutation, size, values);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(255, values[0]);
         TEST_ASSERT_EQ(  0, values[1]);
         TEST_ASSERT_EQ( 30, values[2]);
@@ -138,11 +137,11 @@ int test_mtxpermutation_invert(void)
         int64_t perm[] = {1,2,3,4,0};
         struct mtxpermutation permutation;
         err = mtxpermutation_init(&permutation, size, perm);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         err = mtxpermutation_invert(&permutation);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         err = mtxpermutation_permute_int(&permutation, size, values);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(255, values[0]);
         TEST_ASSERT_EQ( 30, values[1]);
         TEST_ASSERT_EQ(  1, values[2]);
@@ -165,16 +164,16 @@ int test_mtxpermutation_compose(void)
         int64_t aperm[] = {0,1,2,3,4};
         struct mtxpermutation a;
         err = mtxpermutation_init(&a, size, aperm);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         int64_t bperm[] = {0,1,2,3,4};
         struct mtxpermutation b;
         err = mtxpermutation_init(&b, size, bperm);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         struct mtxpermutation c;
         err = mtxpermutation_compose(&c, &a, &b);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         err = mtxpermutation_permute_int(&c, size, values);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(  0, values[0]);
         TEST_ASSERT_EQ(255, values[1]);
         TEST_ASSERT_EQ( 30, values[2]);
@@ -190,16 +189,16 @@ int test_mtxpermutation_compose(void)
         int64_t aperm[] = {1,0,2,3,4};
         struct mtxpermutation a;
         err = mtxpermutation_init(&a, size, aperm);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         int64_t bperm[] = {4,3,2,1,0};
         struct mtxpermutation b;
         err = mtxpermutation_init(&b, size, bperm);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         struct mtxpermutation c;
         err = mtxpermutation_compose(&c, &a, &b);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         err = mtxpermutation_permute_int(&c, size, values);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(  2, values[0]);
         TEST_ASSERT_EQ(  1, values[1]);
         TEST_ASSERT_EQ( 30, values[2]);
@@ -223,7 +222,7 @@ int test_permute(void)
         int64_t size = sizeof(values) / sizeof(*values);
         int64_t perm[] = {0,1,2,3,4};
         err = permute_int(size, perm, values);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(  0, values[0]);
         TEST_ASSERT_EQ(255, values[1]);
         TEST_ASSERT_EQ( 30, values[2]);
@@ -235,7 +234,7 @@ int test_permute(void)
         int64_t size = sizeof(values) / sizeof(*values);
         int64_t perm[] = {1,0,2,3,4};
         err = permute_int(size, perm, values);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(255, values[0]);
         TEST_ASSERT_EQ(  0, values[1]);
         TEST_ASSERT_EQ( 30, values[2]);
@@ -247,7 +246,7 @@ int test_permute(void)
         int64_t size = sizeof(values) / sizeof(*values);
         int64_t perm[] = {1,0,3,4,2};
         err = permute_int(size, perm, values);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(err));
         TEST_ASSERT_EQ(255, values[0]);
         TEST_ASSERT_EQ(  0, values[1]);
         TEST_ASSERT_EQ(  2, values[2]);
