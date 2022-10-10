@@ -31,7 +31,6 @@
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/size.h>
 
-#include <libmtx/util/parse.h>
 #include <libmtx/util/fmtspec.h>
 #include <libmtx/util/morton.h>
 #include <libmtx/util/partition.h>
@@ -76,13 +75,207 @@ static inline uint64_t _pdep_u64(uint64_t val, uint64_t mask)
 
 #include <float.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <locale.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/**
+ * ‘parse_long_long_int()’ parses a string to produce a number that
+ * may be represented with the type ‘long long int’.
+ */
+static int parse_long_long_int(
+    long long int * outnumber,
+    int base,
+    const char * s,
+    char ** outendptr,
+    int64_t * bytes_read)
+{
+    errno = 0;
+    char * endptr;
+    long long int number = strtoll(s, &endptr, base);
+    if ((errno == ERANGE && (number == LLONG_MAX || number == LLONG_MIN)) ||
+        (errno != 0 && number == 0))
+        return errno;
+    if (s == endptr) return EINVAL;
+    if (outendptr) *outendptr = endptr;
+    if (bytes_read) *bytes_read += endptr - s;
+    *outnumber = number;
+    return 0;
+}
+
+/**
+ * ‘parse_int()’ parses a string to produce a number that may be
+ * represented as an integer.
+ *
+ * The number is parsed using ‘strtoll()’, following the conventions
+ * documented in the man page for that function. In addition, some
+ * further error checking is performed to ensure that the number is
+ * parsed correctly. The parsed number is stored in ‘x’.
+ *
+ * If ‘endptr’ is not ‘NULL’, the address stored in ‘endptr’ points to
+ * the first character beyond the characters that were consumed during
+ * parsing.
+ *
+ * On success, ‘0’ is returned. Otherwise, if the input contained
+ * invalid characters, ‘EINVAL’ is returned, or if the resulting
+ * number cannot be represented as a signed integer, ‘ERANGE’ is
+ * returned.
+ */
+static int parse_int(
+    int * x,
+    const char * s,
+    char ** endptr,
+    int64_t * bytes_read)
+{
+    long long int y;
+    int err = parse_long_long_int(&y, 10, s, endptr, bytes_read);
+    if (err) return err;
+    if (y < INT_MIN || y > INT_MAX) return ERANGE;
+    *x = y;
+    return 0;
+}
+
+/**
+ * ‘parse_int32()’ parses a string to produce a number that may be
+ * represented as a 32-bit integer.
+ *
+ * The number is parsed using ‘strtoll()’, following the conventions
+ * documented in the man page for that function.  In addition, some
+ * further error checking is performed to ensure that the number is
+ * parsed correctly.  The parsed number is stored in ‘x’.
+ *
+ * If ‘endptr’ is not ‘NULL’, the address stored in ‘endptr’ points to
+ * the first character beyond the characters that were consumed during
+ * parsing.
+ *
+ * On success, ‘0’ is returned. Otherwise, if the input contained
+ * invalid characters, ‘EINVAL’ is returned, or if the resulting
+ * number cannot be represented as a signed, 32-bit integer, ‘ERANGE’
+ * is returned.
+ */
+static int parse_int32(
+    int32_t * x,
+    const char * s,
+    char ** endptr,
+    int64_t * bytes_read)
+{
+    long long int y;
+    int err = parse_long_long_int(&y, 10, s, endptr, bytes_read);
+    if (err) return err;
+    if (y < INT32_MIN || y > INT32_MAX) return ERANGE;
+    *x = y;
+    return 0;
+}
+
+/**
+ * ‘parse_int64()’ parses a string to produce a number that may be
+ * represented as a 64-bit integer.
+ *
+ * The number is parsed using ‘strtoll()’, following the conventions
+ * documented in the man page for that function.  In addition, some
+ * further error checking is performed to ensure that the number is
+ * parsed correctly.  The parsed number is stored in ‘x’.
+ *
+ * If ‘endptr’ is not ‘NULL’, the address stored in ‘endptr’ points to
+ * the first character beyond the characters that were consumed during
+ * parsing.
+ *
+ * On success, ‘0’ is returned. Otherwise, if the input contained
+ * invalid characters, ‘EINVAL’ is returned, or if the resulting
+ * number cannot be represented as a signed, 64-bit integer, ‘ERANGE’
+ * is returned.
+ */
+static int parse_int64(
+    int64_t * x,
+    const char * s,
+    char ** endptr,
+    int64_t * bytes_read)
+{
+    long long int y;
+    int err = parse_long_long_int(&y, 10, s, endptr, bytes_read);
+    if (err) return err;
+    if (y < INT64_MIN || y > INT64_MAX) return ERANGE;
+    *x = y;
+    return 0;
+}
+
+/**
+ * ‘parse_float()’ parses a string to produce a number that may be
+ * represented as ‘float’.
+ *
+ * The number is parsed using ‘strtof()’, following the conventions
+ * documented in the man page for that function.  In addition, some
+ * further error checking is performed to ensure that the number is
+ * parsed correctly.  The parsed number is stored in ‘number’.
+ *
+ * If ‘endptr’ is not ‘NULL’, the address stored in ‘endptr’ points to
+ * the first character beyond the characters that were consumed during
+ * parsing.
+ *
+ * On success, ‘0’ is returned. Otherwise, if the input contained
+ * invalid characters, ‘EINVAL’ is returned, or if the resulting
+ * number cannot be represented as a single precision float, ‘ERANGE’
+ * is returned.
+ */
+static int parse_float(
+    float * x,
+    const char * s,
+    char ** outendptr,
+    int64_t * bytes_read)
+{
+    errno = 0;
+    char * endptr;
+    *x = strtof(s, &endptr);
+    if ((errno == ERANGE && (*x == HUGE_VALF || *x == -HUGE_VALF)) ||
+        (errno != 0 && x == 0)) {
+        return errno;
+    }
+    if (outendptr) *outendptr = endptr;
+    if (bytes_read) *bytes_read += endptr - s;
+    return 0;
+}
+
+/**
+ * ‘parse_double()’ parses a string to produce a number that may be
+ * represented as ‘double’.
+ *
+ * The number is parsed using ‘strtod()’, following the conventions
+ * documented in the man page for that function.  In addition, some
+ * further error checking is performed to ensure that the number is
+ * parsed correctly.  The parsed number is stored in ‘number’.
+ *
+ * If ‘endptr’ is not ‘NULL’, the address stored in ‘endptr’ points to
+ * the first character beyond the characters that were consumed during
+ * parsing.
+ *
+ * On success, ‘0’ is returned. Otherwise, if the input contained
+ * invalid characters, ‘EINVAL’ is returned, or if the resulting
+ * number cannot be represented as a double precision float, ‘ERANGE’
+ * is returned.
+ */
+static int parse_double(
+    double * x,
+    const char * s,
+    char ** outendptr,
+    int64_t * bytes_read)
+{
+    errno = 0;
+    char * endptr;
+    *x = strtod(s, &endptr);
+    if ((errno == ERANGE && (*x == HUGE_VAL || *x == -HUGE_VAL)) ||
+        (errno != 0 && x == 0)) {
+        return errno;
+    }
+    if (outendptr) *outendptr = endptr;
+    if (bytes_read) *bytes_read += endptr - s;
+    return 0;
+}
 
 /**
  * ‘mtxfiledata_dataptr()’ returns a pointer to the ‘k’-th data
