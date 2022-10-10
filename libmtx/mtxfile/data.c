@@ -4941,11 +4941,10 @@ int mtxfiledata_sort_keys(
         if (!sorting_permutation)
             return MTX_ERR_ERRNO;
     }
-    err = radix_sort_uint64(size, sizeof(*keys), keys, sorting_permutation);
-    if (err) {
-        if (alloc_sorting_permutation)
-            free(sorting_permutation);
-        return err;
+    errno = radix_sort_uint64(size, sizeof(*keys), keys, sorting_permutation);
+    if (errno) {
+        if (alloc_sorting_permutation) free(sorting_permutation);
+        return MTX_ERR_ERRNO;
     }
 
     /* Adjust from 0-based to 1-based indexing. */
@@ -4957,12 +4956,10 @@ int mtxfiledata_sort_keys(
         data, object, format, field, precision,
         num_rows, num_columns, size, sorting_permutation);
     if (err) {
-        if (alloc_sorting_permutation)
-            free(sorting_permutation);
+        if (alloc_sorting_permutation) free(sorting_permutation);
         return err;
     }
-    if (alloc_sorting_permutation)
-        free(sorting_permutation);
+    if (alloc_sorting_permutation) free(sorting_permutation);
     return MTX_SUCCESS;
 }
 
@@ -4988,12 +4985,12 @@ int mtxfiledata_sort_int(
         perm = malloc(size * sizeof(int64_t));
         if (!perm) return MTX_ERR_ERRNO;
     }
-    int err = radix_sort_int(size, keys, perm);
-    if (err) { if (alloc_perm) free(perm); return err; }
+    errno = radix_sort_int(size, keys, perm);
+    if (errno) { if (alloc_perm) free(perm); return MTX_ERR_ERRNO; }
 
     /* 2. Sort nonzeros according to the sorting permutation. */
     for (int64_t i = 0; i < size; i++) perm[i]++;
-    err = mtxfiledata_permute(
+    int err = mtxfiledata_permute(
         data, object, format, field, precision,
         num_rows, num_columns, size, perm);
     if (err) { if (alloc_perm) free(perm); return err; }
@@ -5020,13 +5017,14 @@ int mtxfiledata_sort_row_major(
     int64_t size,
     int64_t * perm)
 {
+    int err;
     if (format == mtxfile_array) {
         if (perm) { for (int64_t k = 0; k < size; k++) perm[k] = k+1; }
     } else if (format == mtxfile_coordinate) {
         int idxstride;
         int64_t * rowidx;
         int64_t * colidx;
-        int err = mtxfiledata_rowcolidxptr(
+        err = mtxfiledata_rowcolidxptr(
             data, object, format, field, precision,
             &idxstride, &rowidx, &colidx);
         if (err) return err;
@@ -5037,9 +5035,9 @@ int mtxfiledata_sort_row_major(
                 tmpperm = malloc(size * sizeof(int64_t));
                 if (!tmpperm) return MTX_ERR_ERRNO;
             }
-            int err = radix_sort_int64_pair(
+            errno = radix_sort_int64_pair(
                 size, idxstride, rowidx, idxstride, colidx, tmpperm);
-            if (err) { if (!perm) free(tmpperm); return err; }
+            if (errno) { if (!perm) free(tmpperm); return MTX_ERR_ERRNO; }
             if (tmpperm) {
                 err = mtxfiledata_coordinate_permute_values(
                     data, object, format, field, precision,
@@ -5048,7 +5046,6 @@ int mtxfiledata_sort_row_major(
             }
             if (!perm) { free(tmpperm); }
             else { for (int64_t i = 0; i < size; i++) perm[i]++; }
-
         } else if (object == mtxfile_vector) {
             /* sort row indices and then permute values */
             int64_t * tmpperm = perm;
@@ -5056,8 +5053,8 @@ int mtxfiledata_sort_row_major(
                 tmpperm = malloc(size * sizeof(int64_t));
                 if (!tmpperm) return MTX_ERR_ERRNO;
             }
-            int err = radix_sort_int64(size, idxstride, rowidx, tmpperm);
-            if (err) { if (!perm) free(tmpperm); return err; }
+            errno = radix_sort_int64(size, idxstride, rowidx, tmpperm);
+            if (errno) { if (!perm) free(tmpperm); return MTX_ERR_ERRNO; }
             if (tmpperm) {
                 err = mtxfiledata_coordinate_permute_values(
                     data, object, format, field, precision,
@@ -5089,8 +5086,9 @@ int mtxfiledata_sort_column_major(
     int64_t size,
     int64_t * perm)
 {
+    int err;
     if (format == mtxfile_array) {
-        int err = mtxfiledata_transpose(
+        err = mtxfiledata_transpose(
             data, object, format, field, precision,
             num_rows, num_columns, size);
         if (err) return err;
@@ -5104,7 +5102,7 @@ int mtxfiledata_sort_column_major(
         int idxstride;
         int64_t * rowidx;
         int64_t * colidx;
-        int err = mtxfiledata_rowcolidxptr(
+        err = mtxfiledata_rowcolidxptr(
             data, object, format, field, precision,
             &idxstride, &rowidx, &colidx);
         if (err) return err;
@@ -5115,9 +5113,9 @@ int mtxfiledata_sort_column_major(
                 tmpperm = malloc(size * sizeof(int64_t));
                 if (!tmpperm) return MTX_ERR_ERRNO;
             }
-            int err = radix_sort_int64_pair(
+            errno = radix_sort_int64_pair(
                 size, idxstride, colidx, idxstride, rowidx, tmpperm);
-            if (err) { if (!perm) free(tmpperm); return err; }
+            if (errno) { if (!perm) free(tmpperm); return MTX_ERR_ERRNO; }
             if (tmpperm) {
                 err = mtxfiledata_coordinate_permute_values(
                     data, object, format, field, precision,
@@ -5126,7 +5124,6 @@ int mtxfiledata_sort_column_major(
             }
             if (!perm) { free(tmpperm); }
             else { for (int64_t i = 0; i < size; i++) perm[i]++; }
-
         } else if (object == mtxfile_vector) {
             return mtxfiledata_sort_row_major(
                 data, object, format, field, precision,
@@ -5153,6 +5150,7 @@ int mtxfiledata_sort_morton(
     int64_t size,
     int64_t * perm)
 {
+    int err;
     if (format == mtxfile_array) {
         if (object == mtxfile_matrix) {
             int64_t * rowidx = malloc(size * sizeof(int64_t));
@@ -5178,9 +5176,9 @@ int mtxfiledata_sort_morton(
                 sizeof(*colidx), (const uint64_t *) colidx,
                 sizeof(*rowidx), (uint64_t *) rowidx,
                 sizeof(*colidx), (uint64_t *) colidx);
-            int err = radix_sort_int64_pair(
+            errno = radix_sort_int64_pair(
                 size, sizeof(*rowidx), rowidx, sizeof(*colidx), colidx, tmpperm);
-            if (err) { free(colidx); free(rowidx); if (!perm) free(tmpperm); return err; }
+            if (errno) { free(colidx); free(rowidx); if (!perm) free(tmpperm); return MTX_ERR_ERRNO; }
             free(colidx); free(rowidx);
             for (int64_t i = 0; i < size; i++) tmpperm[i]++;
             err = mtxfiledata_permute(
@@ -5196,7 +5194,7 @@ int mtxfiledata_sort_morton(
         int idxstride;
         int64_t * rowidx;
         int64_t * colidx;
-        int err = mtxfiledata_rowcolidxptr(
+        err = mtxfiledata_rowcolidxptr(
             data, object, format, field, precision,
             &idxstride, &rowidx, &colidx);
         if (err) return err;
@@ -5217,8 +5215,9 @@ int mtxfiledata_sort_morton(
             morton2d_from_cartesian_uint64(
                 size, idxstride, (uint64_t *) rowidx, idxstride, (uint64_t *) colidx,
                 idxstride, (uint64_t *) rowidx, idxstride, (uint64_t *) colidx);
-            int err = radix_sort_int64_pair(
+            errno = radix_sort_int64_pair(
                 size, idxstride, rowidx, idxstride, colidx, tmpperm);
+            if (errno) { if (!perm) free(tmpperm); return MTX_ERR_ERRNO; }
             morton2d_to_cartesian_uint64(
                 size, idxstride, (uint64_t *) rowidx, idxstride, (uint64_t *) colidx,
                 idxstride, (uint64_t *) rowidx, idxstride, (uint64_t *) colidx);

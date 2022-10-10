@@ -37,6 +37,8 @@
 
 #include <mpi.h>
 
+#include <errno.h>
+
 #include <math.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -1893,7 +1895,8 @@ int mtxmpivector_usscga_init(
         free(idxsrclocalidx); free(idxsrcrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = radix_sort_int(znum_nonzeros, idxsrcrank, zperm);
+    errno = radix_sort_int(znum_nonzeros, idxsrcrank, zperm);
+    err = errno ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(zperm); free(idxsrclocalidx); free(idxsrcrank);
         return MTX_ERR_MPI_COLLECTIVE;

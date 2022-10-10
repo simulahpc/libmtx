@@ -432,8 +432,8 @@ int compact_unsorted_int32(
     int64_t * perm,
     int64_t * dstidx)
 {
-    int err = radix_sort_int32(asize, a, perm);
-    if (err) return err;
+    errno = radix_sort_int32(asize, a, perm);
+    if (errno) return MTX_ERR_ERRNO;
     return compact_sorted_int32(bsize, b, asize, a, dstidx);
 }
 
@@ -472,8 +472,8 @@ int compact_unsorted_int64(
     int64_t * perm,
     int64_t * dstidx)
 {
-    int err = radix_sort_int64(asize, sizeof(*a), a, perm);
-    if (err) return err;
+    errno = radix_sort_int64(asize, sizeof(*a), a, perm);
+    if (errno) return MTX_ERR_ERRNO;
     return compact_sorted_int64(bsize, b, asize, a, dstidx);
 }
 
@@ -512,8 +512,8 @@ int compact_unsorted_int(
     int64_t * perm,
     int64_t * dstidx)
 {
-    int err = radix_sort_int(asize, a, perm);
-    if (err) return err;
+    errno = radix_sort_int(asize, a, perm);
+    if (errno) return MTX_ERR_ERRNO;
     return compact_sorted_int(bsize, b, asize, a, dstidx);
 }
 
@@ -552,9 +552,9 @@ int compact_unsorted_int32_pair(
     int64_t * perm,
     int64_t * dstidx)
 {
-    int err = radix_sort_int32_pair(
+    errno = radix_sort_int32_pair(
         asize, sizeof(*a), &a[0][0], sizeof(*a), &a[0][1], perm);
-    if (err) return err;
+    if (errno) return MTX_ERR_ERRNO;
     return compact_sorted_int32_pair(bsize, b, asize, a, dstidx);
 }
 
@@ -593,9 +593,9 @@ int compact_unsorted_int64_pair(
     int64_t * perm,
     int64_t * dstidx)
 {
-    int err = radix_sort_int64_pair(
+    errno = radix_sort_int64_pair(
         asize, sizeof(*a), &a[0][0], sizeof(*a), &a[0][1], perm);
-    if (err) return err;
+    if (errno) return MTX_ERR_ERRNO;
     return compact_sorted_int64_pair(bsize, b, asize, a, dstidx);
 }
 
@@ -634,9 +634,9 @@ int compact_unsorted_int_pair(
     int64_t * perm,
     int64_t * dstidx)
 {
-    int err = radix_sort_int_pair(
+    errno = radix_sort_int_pair(
         asize, sizeof(*a), &a[0][0], sizeof(*a), &a[0][1], perm);
-    if (err) return err;
+    if (errno) return MTX_ERR_ERRNO;
     return compact_sorted_int_pair(bsize, b, asize, a, dstidx);
 }
 
@@ -1389,10 +1389,10 @@ int setunion_unsorted_unique_int32(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    int err = radix_sort_int32(asize, a, aperm);
-    if (err) return err;
-    err = radix_sort_int32(bsize, b, bperm);
-    if (err) return err;
+    errno = radix_sort_int32(asize, a, aperm);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int32(bsize, b, bperm);
+    if (errno) return MTX_ERR_ERRNO;
     return setunion_sorted_unique_int32(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -1428,10 +1428,10 @@ int setunion_unsorted_unique_int64(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    int err = radix_sort_int64(asize, sizeof(*a), a, aperm);
-    if (err) return err;
-    err = radix_sort_int64(bsize, sizeof(*b), b, bperm);
-    if (err) return err;
+    errno = radix_sort_int64(asize, sizeof(*a), a, aperm);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int64(bsize, sizeof(*b), b, bperm);
+    if (errno) return MTX_ERR_ERRNO;
     return setunion_sorted_unique_int64(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -1467,10 +1467,10 @@ int setunion_unsorted_unique_int(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    int err = radix_sort_int(asize, a, aperm);
-    if (err) return err;
-    err = radix_sort_int(bsize, b, bperm);
-    if (err) return err;
+    errno = radix_sort_int(asize, a, aperm);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int(bsize, b, bperm);
+    if (errno) return MTX_ERR_ERRNO;
     return setunion_sorted_unique_int(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -1511,10 +1511,10 @@ int setunion_unsorted_nonunique_int32(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    int err = radix_sort_int32(asize, a, aperm);
-    if (err) return err;
-    err = radix_sort_int32(bsize, b, bperm);
-    if (err) return err;
+    errno = radix_sort_int32(asize, a, aperm);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int32(bsize, b, bperm);
+    if (errno) return MTX_ERR_ERRNO;
     return setunion_sorted_nonunique_int32(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -1550,10 +1550,10 @@ int setunion_unsorted_nonunique_int64(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    int err = radix_sort_int64(asize, sizeof(*a), a, aperm);
-    if (err) return err;
-    err = radix_sort_int64(bsize, sizeof(*b), b, bperm);
-    if (err) return err;
+    errno = radix_sort_int64(asize, sizeof(*a), a, aperm);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int64(bsize, sizeof(*b), b, bperm);
+    if (errno) return MTX_ERR_ERRNO;
     return setunion_sorted_nonunique_int64(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -1589,10 +1589,10 @@ int setunion_unsorted_nonunique_int(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    int err = radix_sort_int(asize, a, aperm);
-    if (err) return err;
-    err = radix_sort_int(bsize, b, bperm);
-    if (err) return err;
+    errno = radix_sort_int(asize, a, aperm);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int(bsize, b, bperm);
+    if (errno) return MTX_ERR_ERRNO;
     return setunion_sorted_nonunique_int(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2063,10 +2063,10 @@ int setintersection_unsorted_unique_int32(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    int err = radix_sort_int32(asize, a, aperm);
-    if (err) return err;
-    err = radix_sort_int32(bsize, b, bperm);
-    if (err) return err;
+    errno = radix_sort_int32(asize, a, aperm);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int32(bsize, b, bperm);
+    if (errno) return MTX_ERR_ERRNO;
     return setintersection_sorted_unique_int32(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2102,10 +2102,10 @@ int setintersection_unsorted_unique_int64(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    int err = radix_sort_int64(asize, sizeof(*a), a, aperm);
-    if (err) return err;
-    err = radix_sort_int64(bsize, sizeof(*b), b, bperm);
-    if (err) return err;
+    errno = radix_sort_int64(asize, sizeof(*a), a, aperm);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int64(bsize, sizeof(*b), b, bperm);
+    if (errno) return MTX_ERR_ERRNO;
     return setintersection_sorted_unique_int64(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2141,10 +2141,10 @@ int setintersection_unsorted_unique_int(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    int err = radix_sort_int(asize, a, aperm);
-    if (err) return err;
-    err = radix_sort_int(bsize, b, bperm);
-    if (err) return err;
+    errno = radix_sort_int(asize, a, aperm);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int(bsize, b, bperm);
+    if (errno) return MTX_ERR_ERRNO;
     return setintersection_sorted_unique_int(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2185,10 +2185,10 @@ int setintersection_unsorted_nonunique_int32(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    int err = radix_sort_int32(asize, a, aperm);
-    if (err) return err;
-    err = radix_sort_int32(bsize, b, bperm);
-    if (err) return err;
+    errno = radix_sort_int32(asize, a, aperm);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int32(bsize, b, bperm);
+    if (errno) return MTX_ERR_ERRNO;
     return setintersection_sorted_nonunique_int32(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2224,10 +2224,10 @@ int setintersection_unsorted_nonunique_int64(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    int err = radix_sort_int64(asize, sizeof(*a), a, aperm);
-    if (err) return err;
-    err = radix_sort_int64(bsize, sizeof(*b), b, bperm);
-    if (err) return err;
+    errno = radix_sort_int64(asize, sizeof(*a), a, aperm);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int64(bsize, sizeof(*b), b, bperm);
+    if (errno) return MTX_ERR_ERRNO;
     return setintersection_sorted_nonunique_int64(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2263,10 +2263,10 @@ int setintersection_unsorted_nonunique_int(
     int64_t * bperm,
     int64_t * bdstidx)
 {
-    int err = radix_sort_int(asize, a, aperm);
-    if (err) return err;
-    err = radix_sort_int(bsize, b, bperm);
-    if (err) return err;
+    errno = radix_sort_int(asize, a, aperm);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int(bsize, b, bperm);
+    if (errno) return MTX_ERR_ERRNO;
     return setintersection_sorted_nonunique_int(
         csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
@@ -2664,10 +2664,10 @@ int setdifference_unsorted_unique_int32(
     int64_t bsize,
     int32_t * b)
 {
-    int err = radix_sort_int32(asize, a, NULL);
-    if (err) return err;
-    err = radix_sort_int32(bsize, b, NULL);
-    if (err) return err;
+    errno = radix_sort_int32(asize, a, NULL);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int32(bsize, b, NULL);
+    if (errno) return MTX_ERR_ERRNO;
     return setdifference_sorted_unique_int32(csize, c, asize, a, bsize, b);
 }
 
@@ -2698,10 +2698,10 @@ int setdifference_unsorted_unique_int64(
     int64_t bsize,
     int64_t * b)
 {
-    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
-    if (err) return err;
-    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
-    if (err) return err;
+    errno = radix_sort_int64(asize, sizeof(*a), a, NULL);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int64(bsize, sizeof(*b), b, NULL);
+    if (errno) return MTX_ERR_ERRNO;
     return setdifference_sorted_unique_int64(csize, c, asize, a, bsize, b);
 }
 
@@ -2732,10 +2732,10 @@ int setdifference_unsorted_unique_int(
     int64_t bsize,
     int * b)
 {
-    int err = radix_sort_int(asize, a, NULL);
-    if (err) return err;
-    err = radix_sort_int(bsize, b, NULL);
-    if (err) return err;
+    errno = radix_sort_int(asize, a, NULL);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int(bsize, b, NULL);
+    if (errno) return MTX_ERR_ERRNO;
     return setdifference_sorted_unique_int(csize, c, asize, a, bsize, b);
 }
 
@@ -2771,10 +2771,10 @@ int setdifference_unsorted_nonunique_int32(
     int64_t bsize,
     int32_t * b)
 {
-    int err = radix_sort_int32(asize, a, NULL);
-    if (err) return err;
-    err = radix_sort_int32(bsize, b, NULL);
-    if (err) return err;
+    errno = radix_sort_int32(asize, a, NULL);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int32(bsize, b, NULL);
+    if (errno) return MTX_ERR_ERRNO;
     return setdifference_sorted_nonunique_int32(csize, c, asize, a, bsize, b);
 }
 
@@ -2805,10 +2805,10 @@ int setdifference_unsorted_nonunique_int64(
     int64_t bsize,
     int64_t * b)
 {
-    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
-    if (err) return err;
-    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
-    if (err) return err;
+    errno = radix_sort_int64(asize, sizeof(*a), a, NULL);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int64(bsize, sizeof(*b), b, NULL);
+    if (errno) return MTX_ERR_ERRNO;
     return setdifference_sorted_nonunique_int64(csize, c, asize, a, bsize, b);
 }
 
@@ -2839,9 +2839,9 @@ int setdifference_unsorted_nonunique_int(
     int64_t bsize,
     int * b)
 {
-    int err = radix_sort_int(asize, a, NULL);
-    if (err) return err;
-    err = radix_sort_int(bsize, b, NULL);
-    if (err) return err;
+    errno = radix_sort_int(asize, a, NULL);
+    if (errno) return MTX_ERR_ERRNO;
+    errno = radix_sort_int(bsize, b, NULL);
+    if (errno) return MTX_ERR_ERRNO;
     return setdifference_sorted_nonunique_int(csize, c, asize, a, bsize, b);
 }

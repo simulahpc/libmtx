@@ -711,7 +711,8 @@ int assumedpartition_write(
         free(globalidxsorted);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = radix_sort_int64(partsize, sizeof(*globalidxsorted), globalidxsorted, perm);
+    errno = radix_sort_int64(partsize, sizeof(*globalidxsorted), globalidxsorted, perm);
+    err = errno ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(perm); free(globalidxsorted);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1166,7 +1167,8 @@ int assumedpartition_write(
 #endif
 
     /* test for scatter conflicts */
-    err = radix_sort_int(rdispls[nrecvranks], assumedidxrecvbuf, NULL);
+    errno = radix_sort_int(rdispls[nrecvranks], assumedidxrecvbuf, NULL);
+    err = errno ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(owneridxsendbuf); free(owneridxrecvbuf); free(assumedidxrecvbuf);
         free(rdispls); free(recvcounts); free(recvranks); free(req);
@@ -1262,7 +1264,8 @@ int assumedpartition_read(
         free(globalidxsorted);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = radix_sort_int64(partsize, sizeof(*globalidxsorted), globalidxsorted, perm);
+    errno = radix_sort_int64(partsize, sizeof(*globalidxsorted), globalidxsorted, perm);
+    err = errno ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(perm); free(globalidxsorted);
         return MTX_ERR_MPI_COLLECTIVE;

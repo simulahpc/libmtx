@@ -1595,8 +1595,8 @@ int mtxbasecoo_split(
     } else {
         int64_t * perm = malloc(size * sizeof(int64_t));
         if (!perm) return MTX_ERR_ERRNO;
-        int err = radix_sort_int(size, parts, perm);
-        if (err) { free(perm); return err; }
+        errno = radix_sort_int(size, parts, perm);
+        if (errno) { free(perm); return MTX_ERR_ERRNO; }
         invperm = malloc(size * sizeof(int64_t));
         if (!invperm) { free(perm); return MTX_ERR_ERRNO; }
         for (int64_t k = 0; k < size; k++) invperm[perm[k]] = k;

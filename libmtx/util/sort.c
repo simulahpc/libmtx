@@ -25,8 +25,6 @@
 
 #include <libmtx/libmtx-config.h>
 
-#include <libmtx/error.h>
-
 #include <errno.h>
 
 #include <limits.h>
@@ -82,8 +80,7 @@ int counting_sort_uint8(
     bool alloc_bucketptr = !bucketptr;
     if (alloc_bucketptr) {
         bucketptr = malloc(257 * sizeof(int64_t));
-        if (!bucketptr)
-            return MTX_ERR_ERRNO;
+        if (!bucketptr) return errno;
     }
 
     /* 1. Count the number of keys in each bucket. */
@@ -129,7 +126,7 @@ int counting_sort_uint8(
             bucketptr[j] = bucketptr[j-1];
         bucketptr[0] = 0;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -174,8 +171,7 @@ int counting_sort_uint16(
     bool alloc_bucketptr = !bucketptr;
     if (alloc_bucketptr) {
         bucketptr = malloc(65537 * sizeof(int64_t));
-        if (!bucketptr)
-            return MTX_ERR_ERRNO;
+        if (!bucketptr) return errno;
     }
 
     /* 1. Count the number of keys in each bucket. */
@@ -225,7 +221,7 @@ int counting_sort_uint16(
             bucketptr[j] = bucketptr[j-1];
         bucketptr[0] = 0;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 int counting_sort_uint8_uint32(
@@ -240,8 +236,7 @@ int counting_sort_uint8_uint32(
     bool alloc_bucketptr = !bucketptr;
     if (alloc_bucketptr) {
         bucketptr = malloc(257 * sizeof(int64_t));
-        if (!bucketptr)
-            return MTX_ERR_ERRNO;
+        if (!bucketptr) return errno;
     }
 
     /* 1. Count the number of keys in each bucket. */
@@ -284,7 +279,7 @@ int counting_sort_uint8_uint32(
             bucketptr[j] = bucketptr[j-1];
         bucketptr[0] = 0;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 int counting_sort_uint8_values(
@@ -299,8 +294,7 @@ int counting_sort_uint8_values(
     bool alloc_bucketptr = !bucketptr;
     if (alloc_bucketptr) {
         bucketptr = malloc(257 * sizeof(int64_t));
-        if (!bucketptr)
-            return MTX_ERR_ERRNO;
+        if (!bucketptr) return errno;
     }
 
     /* 1. Count the number of keys in each bucket. */
@@ -332,7 +326,7 @@ int counting_sort_uint8_values(
             bucketptr[j] = bucketptr[j-1];
         bucketptr[0] = 0;
     }
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /*
@@ -360,14 +354,10 @@ int radix_sort_uint32(
     int64_t * perm)
 {
     uint32_t * extra_keys = malloc(size * sizeof(uint32_t));
-    if (!extra_keys)
-        return MTX_ERR_ERRNO;
+    if (!extra_keys) return errno;
 
     int64_t * bucketptr = malloc(257 * sizeof(int64_t));
-    if (!bucketptr) {
-        free(extra_keys);
-        return MTX_ERR_ERRNO;
-    }
+    if (!bucketptr) { free(extra_keys); return errno; }
 
     int64_t * extra_perm = NULL;
     if (perm) {
@@ -375,7 +365,7 @@ int radix_sort_uint32(
         if (!extra_perm) {
             free(bucketptr);
             free(extra_keys);
-            return MTX_ERR_ERRNO;
+            return errno;
         }
     }
 
@@ -432,7 +422,7 @@ int radix_sort_uint32(
         free(extra_perm);
     free(bucketptr);
     free(extra_keys);
-    return MTX_SUCCESS;
+    return 0;
 }
 
 static void swap_int(int * a, int * b) { int tmp = *a; *a = *b; *b = tmp; }
@@ -467,13 +457,13 @@ int radix_sort_uint64(
     int64_t * perm)
 {
     uint64_t * tmpkeys = malloc(size * sizeof(uint64_t));
-    if (!tmpkeys) return MTX_ERR_ERRNO;
+    if (!tmpkeys) return errno;
     int tmpkeysstride = sizeof(*tmpkeys);
 
     /* allocate six buckets to count occurrences and offsets for
      * 11-digit binary numbers. */
     int64_t * bucketptr = malloc(6*2049 * sizeof(int64_t));
-    if (!bucketptr) { free(tmpkeys); return MTX_ERR_ERRNO; }
+    if (!bucketptr) { free(tmpkeys); return errno; }
 
     int64_t * tmpperm = NULL;
     if (perm) {
@@ -481,7 +471,7 @@ int radix_sort_uint64(
         if (!tmpperm) {
             free(bucketptr);
             free(tmpkeys);
-            return MTX_ERR_ERRNO;
+            return errno;
         }
     }
 
@@ -609,7 +599,7 @@ int radix_sort_uint64(
 
     if (perm) free(tmpperm);
     free(bucketptr); free(tmpkeys);
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /*
@@ -702,9 +692,7 @@ int radix_sort_int(
         return radix_sort_int32(size, (int32_t *) keys, perm);
     } else if (sizeof(int) == sizeof(int64_t)) {
         return radix_sort_int64(size, sizeof(*keys), (int64_t *) keys, perm);
-    } else {
-        return MTX_ERR_NOT_SUPPORTED;
-    }
+    } else { return ENOTSUP; }
 }
 
 /*
@@ -740,22 +728,22 @@ int radix_sort_uint32_pair(
 {
     uint32_t * tmpa = malloc(size * sizeof(uint32_t));
     int tmpastride = sizeof(*tmpa);
-    if (!tmpa) return MTX_ERR_ERRNO;
+    if (!tmpa) return errno;
     uint32_t * tmpb = malloc(size * sizeof(uint32_t));
-    if (!tmpb) { free(tmpa); return MTX_ERR_ERRNO; }
+    if (!tmpb) { free(tmpa); return errno; }
     int tmpbstride = sizeof(*tmpb);
 
     /* allocate six buckets to count occurrences and offsets for
      * 11-digit binary numbers. */
     int64_t * bucketptr = malloc(6*2049 * sizeof(int64_t));
-    if (!bucketptr) { free(tmpb); free(tmpa); return MTX_ERR_ERRNO; }
+    if (!bucketptr) { free(tmpb); free(tmpa); return errno; }
 
     int64_t * tmpperm = NULL;
     if (perm) {
         tmpperm = malloc(size * sizeof(int64_t));
         if (!tmpperm) {
             free(bucketptr); free(tmpb); free(tmpa);
-            return MTX_ERR_ERRNO;
+            return errno;
         }
     }
 
@@ -919,7 +907,7 @@ int radix_sort_uint32_pair(
 
     if (perm) free(tmpperm);
     free(bucketptr); free(tmpb); free(tmpa);
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -951,22 +939,22 @@ int radix_sort_uint64_pair(
 {
     uint64_t * tmpa = malloc(size * sizeof(uint64_t));
     int tmpastride = sizeof(*tmpa);
-    if (!tmpa) return MTX_ERR_ERRNO;
+    if (!tmpa) return errno;
     uint64_t * tmpb = malloc(size * sizeof(uint64_t));
-    if (!tmpb) { free(tmpa); return MTX_ERR_ERRNO; }
+    if (!tmpb) { free(tmpa); return errno; }
     int tmpbstride = sizeof(*tmpb);
 
     /* allocate twelve buckets to count occurrences and offsets for
      * 11-digit binary numbers. */
     int64_t * bucketptr = malloc(12*2049 * sizeof(int64_t));
-    if (!bucketptr) { free(tmpb); free(tmpa); return MTX_ERR_ERRNO; }
+    if (!bucketptr) { free(tmpb); free(tmpa); return errno; }
 
     int64_t * tmpperm = NULL;
     if (perm) {
         tmpperm = malloc(size * sizeof(int64_t));
         if (!tmpperm) {
             free(bucketptr); free(tmpb); free(tmpa);
-            return MTX_ERR_ERRNO;
+            return errno;
         }
     }
 
@@ -1256,7 +1244,7 @@ int radix_sort_uint64_pair(
 
     if (perm) free(tmpperm);
     free(bucketptr); free(tmpb); free(tmpa);
-    return MTX_SUCCESS;
+    return 0;
 }
 
 /**
@@ -1372,6 +1360,5 @@ int radix_sort_int_pair(
     } else if (sizeof(int) == sizeof(int64_t)) {
         return radix_sort_int64_pair(
             size, astride, (int64_t *) a, bstride, (int64_t *) b, perm);
-    } else { return MTX_ERR_NOT_SUPPORTED; }
-}
+    } else { return ENOTSUP; }
 }

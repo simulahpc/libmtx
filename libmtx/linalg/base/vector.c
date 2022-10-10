@@ -33,6 +33,8 @@
 #include <libmtx/linalg/base/vector.h>
 #include <libmtx/linalg/local/vector.h>
 
+#include <errno.h>
+
 #include <math.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -1559,8 +1561,8 @@ int mtxbasevector_split(
     } else {
         int64_t * perm = malloc(size * sizeof(int64_t));
         if (!perm) return MTX_ERR_ERRNO;
-        int err = radix_sort_int(size, parts, perm);
-        if (err) { free(perm); return err; }
+        errno = radix_sort_int(size, parts, perm);
+        if (errno) { free(perm); return MTX_ERR_ERRNO; }
         if (!invperm) {
             invperm = malloc(size * sizeof(int64_t));
             if (!invperm) { free(perm); return MTX_ERR_ERRNO; }
