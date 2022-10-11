@@ -995,23 +995,20 @@ int mtxfile_fread(
     if (!linebuf) {
         line_max = sysconf(_SC_LINE_MAX);
         linebuf = malloc(line_max+1);
-        if (!linebuf)
-            return MTX_ERR_ERRNO;
+        if (!linebuf) return MTX_ERR_ERRNO;
     }
 
     err = mtxfileheader_fread(
         &mtxfile->header, f, lines_read, bytes_read, line_max, linebuf);
     if (err) {
-        if (free_linebuf)
-            free(linebuf);
+        if (free_linebuf) free(linebuf);
         return err;
     }
 
     err = mtxfile_fread_comments(
         &mtxfile->comments, f, lines_read, bytes_read, line_max, linebuf);
     if (err) {
-        if (free_linebuf)
-            free(linebuf);
+        if (free_linebuf) free(linebuf);
         return err;
     }
 
@@ -1020,8 +1017,7 @@ int mtxfile_fread(
         mtxfile->header.object, mtxfile->header.format);
     if (err) {
         mtxfilecomments_free(&mtxfile->comments);
-        if (free_linebuf)
-            free(linebuf);
+        if (free_linebuf) free(linebuf);
         return err;
     }
 
@@ -1029,8 +1025,7 @@ int mtxfile_fread(
         &mtxfile->size, mtxfile->header.symmetry, &mtxfile->datasize);
     if (err) {
         mtxfilecomments_free(&mtxfile->comments);
-        if (free_linebuf)
-            free(linebuf);
+        if (free_linebuf) free(linebuf);
         return err;
     }
 
@@ -1042,8 +1037,7 @@ int mtxfile_fread(
         precision, mtxfile->datasize);
     if (err) {
         mtxfilecomments_free(&mtxfile->comments);
-        if (free_linebuf)
-            free(linebuf);
+        if (free_linebuf) free(linebuf);
         return err;
     }
 
@@ -1062,14 +1056,12 @@ int mtxfile_fread(
             mtxfile->header.format, mtxfile->header.field,
             precision);
         mtxfilecomments_free(&mtxfile->comments);
-        if (free_linebuf)
-            free(linebuf);
+        if (free_linebuf) free(linebuf);
         return err;
     }
 
     mtxfile->precision = precision;
-    if (free_linebuf)
-        free(linebuf);
+    if (free_linebuf) free(linebuf);
     return MTX_SUCCESS;
 }
 
@@ -1106,23 +1098,20 @@ int mtxfile_gzread(
     if (!linebuf) {
         line_max = sysconf(_SC_LINE_MAX);
         linebuf = malloc(line_max+1);
-        if (!linebuf)
-            return MTX_ERR_ERRNO;
+        if (!linebuf) return MTX_ERR_ERRNO;
     }
 
     err = mtxfileheader_gzread(
         &mtxfile->header, f, lines_read, bytes_read, line_max, linebuf);
     if (err) {
-        if (free_linebuf)
-            free(linebuf);
+        if (free_linebuf) free(linebuf);
         return err;
     }
 
     err = mtxfile_gzread_comments(
         &mtxfile->comments, f, lines_read, bytes_read, line_max, linebuf);
     if (err) {
-        if (free_linebuf)
-            free(linebuf);
+        if (free_linebuf) free(linebuf);
         return err;
     }
 
@@ -1131,8 +1120,7 @@ int mtxfile_gzread(
         mtxfile->header.object, mtxfile->header.format);
     if (err) {
         mtxfilecomments_free(&mtxfile->comments);
-        if (free_linebuf)
-            free(linebuf);
+        if (free_linebuf) free(linebuf);
         return err;
     }
 
@@ -1140,8 +1128,7 @@ int mtxfile_gzread(
         &mtxfile->size, mtxfile->header.symmetry, &mtxfile->datasize);
     if (err) {
         mtxfilecomments_free(&mtxfile->comments);
-        if (free_linebuf)
-            free(linebuf);
+        if (free_linebuf) free(linebuf);
         return err;
     }
 
@@ -1153,8 +1140,7 @@ int mtxfile_gzread(
         precision, mtxfile->datasize);
     if (err) {
         mtxfilecomments_free(&mtxfile->comments);
-        if (free_linebuf)
-            free(linebuf);
+        if (free_linebuf) free(linebuf);
         return err;
     }
 
@@ -1173,14 +1159,12 @@ int mtxfile_gzread(
             mtxfile->header.format, mtxfile->header.field,
             precision);
         mtxfilecomments_free(&mtxfile->comments);
-        if (free_linebuf)
-            free(linebuf);
+        if (free_linebuf) free(linebuf);
         return err;
     }
 
     mtxfile->precision = precision;
-    if (free_linebuf)
-        free(linebuf);
+    if (free_linebuf) free(linebuf);
     return MTX_SUCCESS;
 }
 #endif
@@ -1222,8 +1206,7 @@ int mtxfile_write(
         FILE * f;
         if (strcmp(path, "-") == 0) {
             int fd = dup(STDOUT_FILENO);
-            if (fd == -1)
-                return MTX_ERR_ERRNO;
+            if (fd == -1) return MTX_ERR_ERRNO;
             if ((f = fdopen(fd, "w")) == NULL) {
                 close(fd);
                 return MTX_ERR_ERRNO;
@@ -1232,18 +1215,14 @@ int mtxfile_write(
             return MTX_ERR_ERRNO;
         }
         err = mtxfile_fwrite(mtxfile, f, fmt, bytes_written);
-        if (err) {
-            fclose(f);
-            return err;
-        }
+        if (err) { fclose(f); return err; }
         fclose(f);
     } else {
 #ifdef LIBMTX_HAVE_LIBZ
         gzFile f;
         if (strcmp(path, "-") == 0) {
             int fd = dup(STDOUT_FILENO);
-            if (fd == -1)
-                return MTX_ERR_ERRNO;
+            if (fd == -1) return MTX_ERR_ERRNO;
             if ((f = gzdopen(fd, "w")) == NULL) {
                 close(fd);
                 return MTX_ERR_ERRNO;
@@ -1252,10 +1231,7 @@ int mtxfile_write(
             return MTX_ERR_ERRNO;
         }
         err = mtxfile_gzwrite(mtxfile, f, fmt, bytes_written);
-        if (err) {
-            gzclose(f);
-            return err;
-        }
+        if (err) { gzclose(f); return err; }
         gzclose(f);
 #else
         return MTX_ERR_ZLIB_NOT_SUPPORTED;
@@ -1302,8 +1278,7 @@ int mtxfile_fwrite(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, mtxfile->datasize,
         f, fmt, bytes_written);
-    if (err)
-        return err;
+    if (err) return err;
     return MTX_SUCCESS;
 }
 
@@ -1370,13 +1345,10 @@ int mtxfile_transpose(
             mtxfile->size.num_columns, mtxfile->datasize);
         if (err) return err;
         err = mtxfilesize_transpose(&mtxfile->size);
-        if (err)
-            return err;
+        if (err) return err;
     } else if (mtxfile->header.object == mtxfile_vector) {
         return MTX_SUCCESS;
-    } else {
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    }
+    } else { return MTX_ERR_INVALID_MTX_OBJECT; }
     return MTX_SUCCESS;
 }
 
@@ -1495,8 +1467,7 @@ int mtxfile_sort(
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     if (sorting == mtxfile_unsorted) {
-        if (!perm)
-            return MTX_SUCCESS;
+        if (!perm) return MTX_SUCCESS;
         for (int64_t k = 0; k < mtxfile->datasize; k++)
             perm[k] = k+1;
         return MTX_SUCCESS;
@@ -1520,9 +1491,7 @@ int mtxfile_sort(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
             mtxfile->size.num_columns, mtxfile->datasize, perm);
-    } else {
-        return MTX_ERR_INVALID_MTX_SORTING;
-    }
+    } else { return MTX_ERR_INVALID_MTX_SORTING; }
 }
 
 /**
@@ -1562,8 +1531,7 @@ int mtxfile_compact(
         mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
         mtxfile->size.num_columns, mtxfile->size.num_nonzeros, perm,
         &outsize);
-    if (err)
-        return err;
+    if (err) return err;
     mtxfile->size.num_nonzeros = outsize;
     return MTX_SUCCESS;
 }
@@ -1607,11 +1575,9 @@ int mtxfile_assemble(
         return MTX_ERR_ERRNO;
     }
     err = mtxfile_sort(mtxfile, sorting, size, perm);
-    if (err)
-        return err;
+    if (err) return err;
     err = mtxfile_compact(mtxfile, size, perm);
-    if (err)
-        return err;
+    if (err) return err;
     return MTX_SUCCESS;
 }
 

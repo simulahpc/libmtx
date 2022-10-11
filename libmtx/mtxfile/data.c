@@ -1137,25 +1137,31 @@ int mtxfiledata_alloc(
             if (precision == mtx_single) {
                 data->array_real_single =
                     malloc(size * sizeof(*data->array_real_single));
+                if (!data->array_real_single) return MTX_ERR_ERRNO;
             } else if (precision == mtx_double) {
                 data->array_real_double =
                     malloc(size * sizeof(*data->array_real_double));
+                if (!data->array_real_double) return MTX_ERR_ERRNO;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (field == mtxfile_complex) {
             if (precision == mtx_single) {
                 data->array_complex_single =
                     malloc(size * sizeof(*data->array_complex_single));
+                if (!data->array_complex_single) return MTX_ERR_ERRNO;
             } else if (precision == mtx_double) {
                 data->array_complex_double =
                     malloc(size * sizeof(*data->array_complex_double));
+                if (!data->array_complex_double) return MTX_ERR_ERRNO;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (field == mtxfile_integer) {
             if (precision == mtx_single) {
                 data->array_integer_single =
                     malloc(size * sizeof(*data->array_integer_single));
+                if (!data->array_integer_single) return MTX_ERR_ERRNO;
             } else if (precision == mtx_double) {
                 data->array_integer_double =
                     malloc(size * sizeof(*data->array_integer_double));
+                if (!data->array_integer_double) return MTX_ERR_ERRNO;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_MTX_FIELD; }
     } else if (format == mtxfile_coordinate) {
@@ -1164,58 +1170,72 @@ int mtxfiledata_alloc(
                 if (precision == mtx_single) {
                     data->matrix_coordinate_real_single =
                         malloc(size * sizeof(*data->matrix_coordinate_real_single));
+                    if (!data->matrix_coordinate_real_single) return MTX_ERR_ERRNO;
                 } else if (precision == mtx_double) {
                     data->matrix_coordinate_real_double =
                         malloc(size * sizeof(*data->matrix_coordinate_real_double));
+                    if (!data->matrix_coordinate_real_double) return MTX_ERR_ERRNO;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_complex) {
                 if (precision == mtx_single) {
                     data->matrix_coordinate_complex_single =
                         malloc(size * sizeof(*data->matrix_coordinate_complex_single));
+                    if (!data->matrix_coordinate_complex_single) return MTX_ERR_ERRNO;
                 } else if (precision == mtx_double) {
                     data->matrix_coordinate_complex_double =
                         malloc(size * sizeof(*data->matrix_coordinate_complex_double));
+                    if (!data->matrix_coordinate_complex_double) return MTX_ERR_ERRNO;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_integer) {
                 if (precision == mtx_single) {
                     data->matrix_coordinate_integer_single =
                         malloc(size * sizeof(*data->matrix_coordinate_integer_single));
+                    if (!data->matrix_coordinate_integer_single) return MTX_ERR_ERRNO;
                 } else if (precision == mtx_double) {
                     data->matrix_coordinate_integer_double =
                         malloc(size * sizeof(*data->matrix_coordinate_integer_double));
+                    if (!data->matrix_coordinate_integer_double) return MTX_ERR_ERRNO;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_pattern) {
                 data->matrix_coordinate_pattern =
                     malloc(size * sizeof(*data->matrix_coordinate_pattern));
+                if (!data->matrix_coordinate_pattern) return MTX_ERR_ERRNO;
             } else { return MTX_ERR_INVALID_MTX_FIELD; }
         } else if (object == mtxfile_vector) {
             if (field == mtxfile_real) {
                 if (precision == mtx_single) {
                     data->vector_coordinate_real_single =
                         malloc(size * sizeof(*data->vector_coordinate_real_single));
+                    if (!data->vector_coordinate_real_single) return MTX_ERR_ERRNO;
                 } else if (precision == mtx_double) {
                     data->vector_coordinate_real_double =
                         malloc(size * sizeof(*data->vector_coordinate_real_double));
+                    if (!data->vector_coordinate_real_double) return MTX_ERR_ERRNO;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_complex) {
                 if (precision == mtx_single) {
                     data->vector_coordinate_complex_single =
                         malloc(size * sizeof(*data->vector_coordinate_complex_single));
+                    if (!data->vector_coordinate_complex_single) return MTX_ERR_ERRNO;
                 } else if (precision == mtx_double) {
                     data->vector_coordinate_complex_double =
                         malloc(size * sizeof(*data->vector_coordinate_complex_double));
+                    if (!data->vector_coordinate_complex_double) return MTX_ERR_ERRNO;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_integer) {
                 if (precision == mtx_single) {
                     data->vector_coordinate_integer_single =
                         malloc(size * sizeof(*data->vector_coordinate_integer_single));
+                    if (!data->vector_coordinate_integer_single) return MTX_ERR_ERRNO;
                 } else if (precision == mtx_double) {
                     data->vector_coordinate_integer_double =
                         malloc(size * sizeof(*data->vector_coordinate_integer_double));
+                    if (!data->vector_coordinate_integer_double) return MTX_ERR_ERRNO;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_pattern) {
                 data->vector_coordinate_pattern =
                     malloc(size * sizeof(*data->vector_coordinate_pattern));
+                    if (!data->vector_coordinate_pattern) return MTX_ERR_ERRNO;
             } else { return MTX_ERR_INVALID_MTX_FIELD; }
         } else { return MTX_ERR_INVALID_MTX_OBJECT; }
     } else { return MTX_ERR_INVALID_MTX_FORMAT; }
