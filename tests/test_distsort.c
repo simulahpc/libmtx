@@ -26,7 +26,7 @@
 
 #include <libmtx/error.h>
 
-#include "libmtx/util/sort.h"
+#include "libmtx/util/mpisort.h"
 
 #include "test.h"
 
