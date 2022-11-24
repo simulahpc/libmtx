@@ -1,5 +1,9 @@
 * Noteworthy changes in the upcoming release
 
+  ...
+
+* Noteworthy changes in release 0.3.0 (2022-11-24)
+
   This version adds support for reordering sparse matrices based on
   the nested dissection algorithm as implemented by the METIS graph
   partitioner.
