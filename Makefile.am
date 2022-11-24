@@ -333,14 +333,14 @@ tests_test_mtxompcsr_SOURCES = tests/test_mtxompcsr.c tests/test.h
 check_PROGRAMS += tests/test_mtxompcsr
 TESTS += tests/test_mtxompcsr
 endif
-if HAVE_MPI
-tests_test_mtxmpimatrix_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxmpimatrix_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-tests_test_mtxmpimatrix_SOURCES = tests/test_mtxmpimatrix.c tests/test.h
-check_PROGRAMS += tests/test_mtxmpimatrix
-TESTS += tests/test_mtxmpimatrix_parallel
-tests/test_mtxmpimatrix_parallel:  tests/test_mtxmpimatrix
-endif
+# if HAVE_MPI
+# tests_test_mtxmpimatrix_CPPFLAGS = $(MPICPPFLAGS)
+# tests_test_mtxmpimatrix_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
+# tests_test_mtxmpimatrix_SOURCES = tests/test_mtxmpimatrix.c tests/test.h
+# check_PROGRAMS += tests/test_mtxmpimatrix
+# TESTS += tests/test_mtxmpimatrix_parallel
+# tests/test_mtxmpimatrix_parallel:  tests/test_mtxmpimatrix
+# endif
 
 # solver
 tests_test_mtxcg_CPPFLAGS = $(MPICPPFLAGS)
@@ -365,7 +365,7 @@ tests_test_morton_LDADD =
 tests_test_morton_SOURCES = tests/test_morton.c tests/test.h libmtx/util/morton.c
 check_PROGRAMS += tests/test_morton
 TESTS += tests/test_morton
-tests_test_parse_CPPFLAGS =
+tests_test_parse_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_parse_LDADD =
 tests_test_parse_SOURCES = tests/test_parse.c tests/test.h src/parse.c src/parse.h
 check_PROGRAMS += tests/test_parse
