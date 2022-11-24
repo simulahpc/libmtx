@@ -64,11 +64,11 @@ some of the following dependencies are provided:
 @itemize
 @cindex MPI
 @item @emph{MPI}
-is needed for distributed-memory parallel matrices and vectors.
+is needed for distributed-memory computing.
 
 @cindex BLAS
 @item @emph{BLAS}
-is needed for various linear algebra operations. Different
+may be used to accelerate various linear algebra operations. Different
 implementations may be used, such as the netlib reference BLAS,
 OpenBLAS, BLIS, and so on.
 

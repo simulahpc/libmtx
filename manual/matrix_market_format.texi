@@ -15,7 +15,7 @@
 @c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-20
+@c Last modified: 2022-11-24
 @c
 @c Libmtx User Guide: Matrix Market format.
 
@@ -24,8 +24,8 @@
 
 @cindex Matrix Market format
 This chapter describes the Matrix Market file format. Matrix Market
-files, or @file{.mtx} files, are plain text ASCII files that consist
-of the following four parts:
+files, which are usually given a @file{.mtx} suffix, are plain text
+ASCII files consisting of the following four parts:
 
 @enumerate
 @item a @dfn{header line},
@@ -35,8 +35,9 @@ of the following four parts:
 @end enumerate
 
 @noindent
-Here is an example of a Matrix Market file, which describes a sparse
-matrix with 4 rows, 5 columns and 7 real-valued, non-zero entries:
+Here is an example of a Matrix Market file, which describes a
+rectangular, sparse matrix with 4 rows, 5 columns and 7 real-valued,
+nonzero entries:
 
 @example
 %%MatrixMarket matrix coordinate real general
@@ -120,16 +121,15 @@ The @t{@var{field}} value of the header is used as follows:
 
 @itemize
 @item For real-valued matrices or vectors,
-@t{@var{field}} is @samp{real}, and values are stored as decimal
-numbers.
+@t{@var{field}} is @samp{real} and values are stored as decimal numbers.
 
 @item For complex matrices or vectors,
-@t{@var{field}} is @samp{complex}, and values are stored as pairs of
+@t{@var{field}} is @samp{complex} and values are stored as pairs of
 decimal numbers, comprising the real and imaginary parts of a complex
 number.
 
 @item For integer-valued matrices or vectors,
-@t{@var{field}} is @samp{integer}, and values are stored as integers.
+@t{@var{field}} is @samp{integer} and values are stored as integers.
 
 @item For binary-valued sparse matrices or vectors,
 @t{@var{field}} is @samp{pattern}. No values are stored for nonzero
@@ -272,19 +272,19 @@ matrix lines or entries in the data section of the Matrix Market
 file. However, if @t{@var{symmetry}} is @samp{symmetric} or
 @samp{hermitian}, then @t{M} and @t{N} must be equal, and there are
 @iftex
-@tex${\tt M}\times ({\tt N}+1)/2$ @end tex
+@tex${\tt N}\times ({\tt N}+1)/2$ @end tex
 @end iftex
 @ifnottex
-@math{@t{M} times (@t{N}+1)/2}
+@math{@t{N} times (@t{N}+1)/2}
 @end ifnottex
 lines or entries in the data section.  Finally, if
 @t{@var{symmetry}} is @samp{skew-symmetric}, then @t{M} and @t{N}
 must again be equal, and there are
 @iftex
-@tex${\tt M}\times ({\tt N}-1)/2$ @end tex
+@tex${\tt N}\times ({\tt N}-1)/2$ @end tex
 @end iftex
 @ifnottex
-@math{@t{M} times (@t{N}-1)/2}
+@math{@t{N} times (@t{N}-1)/2}
 @end ifnottex
 lines or entries in the data section.
 
@@ -317,24 +317,25 @@ previous section.
 @cindex duplicate nonzeros
 @cindex assemble
 It is assumed that dense matrix entries are stored in row major
-order. However, for sparse matrices and vectors, the nonzero entries
-may appear in any order. Moreover, for any particular location in a
-sparse matrix or vector, there may be more than one data line or
-entry. In this case, the value associated with a particular matrix or
-vector location is obtained by taking the sum of all the nonzero
-values given for that location.  The procedure of adding together
-values for duplicate entries is sometimes referred to as
-@dfn{assembly} (see also @ref{Sort compact and assemble}).
+order. However, for sparse matrices and vectors, the nonzero entries may
+appear in any order. Moreover, for any particular location in a sparse
+matrix or vector, there may be more than one data line or entry. In this
+case, the value associated with a particular matrix or vector location
+is obtained as the sum of all nonzero values for that location. The
+procedure of adding together values for duplicate entries is sometimes
+referred to as @dfn{assembly} (see also @ref{Sort compact and
+assemble}).
 
-The format of a data line depends on the @t{@var{object}},
-@t{@var{format}} and @t{@var{field}} values in the header, as
-described in the following.
+The format of data lines in a Matrix Market file depends on the
+@t{@var{object}}, @t{@var{format}} and @t{@var{field}} values in the
+header (see @ref{Header line}). The different data line formats are
+described in detail below.
 
 @cindex dense matrix
 @cindex dense vector
-A dense matrix or vector with real or integer values (that is,
+First, dense matrices or vectors with real or integer values (that is,
 @t{@var{format}} is @samp{array} and @t{@var{field}} is @samp{real} or
-@samp{integer}), has data lines on the form
+@samp{integer}), have data lines on the form
 
 @example
 a
@@ -344,8 +345,9 @@ a
 where @t{a} is a decimal number if @t{@var{field}} is @samp{real}, or
 an integer if @t{@var{field}} is @samp{integer}.
 
-Otherwise, if @t{@var{format}} is @samp{array} and @t{@var{field}} is
-@samp{complex}, then data lines are on the form
+Dense, complex-valued matrices or vectors (i.e., @t{@var{format}} is
+@samp{array} and @t{@var{field}} is @samp{complex}), have data lines on
+the form
 
 @example
 a b
@@ -379,8 +381,8 @@ i j a
 @end example
 
 @noindent
-where @t{i} and @t{j} denote the row and column index of a nonzero
-entry and @t{a} denotes its value.
+where @t{i} and @t{j} are integers denoting the row and column index of
+a nonzero entry and @t{a} is a decimal number denoting its value.
 
 @item
 If @t{@var{field}} is @samp{complex}, then data lines are on the form
@@ -390,9 +392,9 @@ i j a b
 @end example
 
 @noindent
-where @t{i} and @t{j} again denote the row and column index. Here,
-@t{a} is the real part and @t{b} is the imaginary part of the complex
-number
+where @t{i} and @t{j} again denote the row and column index. Here, the
+decimal numbers @t{a} and @t{b} are the real and imaginary parts,
+respectively, of the complex number
 @iftex
 @tex$z={\tt a}+{\tt b}i$, @end tex
 @end iftex
@@ -404,7 +406,7 @@ where @math{i} is the imaginary unit.
 
 @item
 If @t{@var{field}} is @samp{pattern}, then each data line consists of
-two numbers
+two integers
 
 @example
 i j
@@ -431,8 +433,8 @@ i a
 @end example
 
 @noindent
-where @t{i} denotes the index of a nonzero entry and @t{a} denotes its
-value.
+where @t{i} is an integer denoting the index of a nonzero entry and
+@t{a} is a decimal number denoting its value.
 
 @item
 If @t{@var{field}} is @samp{complex}, then data lines are on the form
@@ -443,7 +445,8 @@ i a b
 
 @noindent
 The integer @t{i} is the nonzero index, whereas @t{a} and @t{b} are
-the real part and imaginary parts of the complex number
+decimal numbers representing the real and imaginary part, respectively,
+of the complex number
 @iftex
 @tex$z={\tt a}+{\tt b}i$, @end tex
 @end iftex
@@ -454,8 +457,8 @@ the real part and imaginary parts of the complex number
 where @math{i} is the imaginary unit.
 
 @item
-If @t{@var{field}} is @samp{pattern}, then each data line consists of
-a single integer
+If @t{@var{field}} is @samp{pattern}, then each data line consists of a
+single integer
 
 @example
 i

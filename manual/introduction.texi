@@ -15,20 +15,22 @@
 @c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-07
+@c Last modified: 2022-11-24
 @c
 @c Libmtx User Guide: Introduction to Libmtx.
 
 @node Introduction to Libmtx
 @chapter Introduction to Libmtx
 
-Libmtx is a C library and a collection of utility programs designed
-for high-performance, parallel and distributed linear algebra. These
-tools rely heavily on the Matrix Market file format, a commonly used,
-human-readable text file format for storing both dense and sparse
-matrices and vectors. This provides many, common linear algebra
-primitives to be used directly from the command line, and for data to
-be easily exchanged.
+Libmtx is a C library and a collection of utility programs for sparse
+linear algebra, including some of the most common linear algebra
+operations, as well as various preprocessing tasks, such as sorting,
+reordering and partitioning of sparse matrices and vectors. Libmtx
+enables these operations to be carried out directly from the command
+line, while also allowing for the underlying data to be easily
+exchanged. To do so, these tools rely heavily on the Matrix Market file
+format, a commonly used, human-readable text file format for storing
+both dense and sparse matrices and vectors.
 
 @cindex sparse matrix
 Matrices and vectors are basic objects of numerical linear algebra and
@@ -36,10 +38,10 @@ thus appear in most fields of science. In particular, sparse matrices,
 where most of the entries are zero, are especially important for
 representing sparse graphs and for solving partial differential
 equations, to name just two examples. Sparse matrices require methods
-that are different from those used with dense matrices, but, in
-return, they often result in significantly fewer arithmetic operations
-to be carried out, as well as lower memory footprint and memory
-bandwidth usage.
+that are different from those used with dense matrices. But, in return,
+they often result in significantly fewer arithmetic operations to be
+carried out, as well as lower memory footprint and memory bandwidth
+usage.
 
 
 @section Background
