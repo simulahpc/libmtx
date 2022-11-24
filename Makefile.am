@@ -156,92 +156,92 @@ bin_PROGRAMS =
 bin_PROGRAMS += mtxaxpy
 mtxaxpy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxaxpy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxaxpy_SOURCES = src/mtxaxpy.c src/parse.c
+mtxaxpy_SOURCES = src/mtxaxpy.c src/parse.c src/parse.h
 
 # mtxcg
 bin_PROGRAMS += mtxcg
 mtxcg_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxcg_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxcg_SOURCES = src/mtxcg.c src/parse.c
+mtxcg_SOURCES = src/mtxcg.c src/parse.c src/parse.h
 
 # mtxdot
 bin_PROGRAMS += mtxdot
 mtxdot_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxdot_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxdot_SOURCES = src/mtxdot.c src/parse.c
+mtxdot_SOURCES = src/mtxdot.c src/parse.c src/parse.h
 
 # mtxgemm
 bin_PROGRAMS += mtxgemm
 mtxgemm_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxgemm_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxgemm_SOURCES = src/mtxgemm.c src/parse.c
+mtxgemm_SOURCES = src/mtxgemm.c src/parse.c src/parse.h
 
 # mtxgemv
 bin_PROGRAMS += mtxgemv
 mtxgemv_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxgemv_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxgemv_SOURCES = src/mtxgemv.c src/parse.c
+mtxgemv_SOURCES = src/mtxgemv.c src/parse.c src/parse.h
 
 # mtxinfo
 bin_PROGRAMS += mtxinfo
 mtxinfo_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxinfo_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxinfo_SOURCES = src/mtxinfo.c src/parse.c
+mtxinfo_SOURCES = src/mtxinfo.c src/parse.c src/parse.h
 
 # mtxnrm2
 bin_PROGRAMS += mtxnrm2
 mtxnrm2_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxnrm2_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxnrm2_SOURCES = src/mtxnrm2.c src/parse.c
+mtxnrm2_SOURCES = src/mtxnrm2.c src/parse.c src/parse.h
 
 # mtxpartition
 bin_PROGRAMS += mtxpartition
 mtxpartition_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxpartition_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxpartition_SOURCES = src/mtxpartition.c src/parse.c
+mtxpartition_SOURCES = src/mtxpartition.c src/parse.c src/parse.h
 
 # mtxrand
 bin_PROGRAMS += mtxrand
 mtxrand_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxrand_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxrand_SOURCES = src/mtxrand.c src/parse.c
+mtxrand_SOURCES = src/mtxrand.c src/parse.c src/parse.h
 
 # mtxreorder
 bin_PROGRAMS += mtxreorder
 mtxreorder_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxreorder_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxreorder_SOURCES = src/mtxreorder.c src/parse.c
+mtxreorder_SOURCES = src/mtxreorder.c src/parse.c src/parse.h
 
 # mtxsplit
 bin_PROGRAMS += mtxsplit
 mtxsplit_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxsplit_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxsplit_SOURCES = src/mtxsplit.c src/parse.c
+mtxsplit_SOURCES = src/mtxsplit.c src/parse.c src/parse.h
 
 # mtxscal
 bin_PROGRAMS += mtxscal
 mtxscal_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxscal_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxscal_SOURCES = src/mtxscal.c src/parse.c
+mtxscal_SOURCES = src/mtxscal.c src/parse.c src/parse.h
 
 # mtxsort
 bin_PROGRAMS += mtxsort
 mtxsort_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxsort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxsort_SOURCES = src/mtxsort.c src/parse.c
+mtxsort_SOURCES = src/mtxsort.c src/parse.c src/parse.h
 
 # mtxtranspose
 bin_PROGRAMS += mtxtranspose
 mtxtranspose_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxtranspose_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS)
-mtxtranspose_SOURCES = src/mtxtranspose.c src/parse.c
+mtxtranspose_SOURCES = src/mtxtranspose.c src/parse.c src/parse.h
 
 # mtxspy
 if HAVE_LIBPNG
 bin_PROGRAMS += mtxspy
 mtxspy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS) $(LIBPNG_CPPFLAGS)
 mtxspy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS) $(LIBPNG_LIBS)
-mtxspy_SOURCES = src/mtxspy.c src/parse.c
+mtxspy_SOURCES = src/mtxspy.c src/parse.c src/parse.h
 endif
 
 #
@@ -367,7 +367,7 @@ check_PROGRAMS += tests/test_morton
 TESTS += tests/test_morton
 tests_test_parse_CPPFLAGS =
 tests_test_parse_LDADD =
-tests_test_parse_SOURCES = tests/test_parse.c tests/test.h src/parse.c
+tests_test_parse_SOURCES = tests/test_parse.c tests/test.h src/parse.c src/parse.h
 check_PROGRAMS += tests/test_parse
 TESTS += tests/test_parse
 tests_test_partition_CPPFLAGS =
