@@ -176,7 +176,11 @@ int mtxmatrix_precision(
     } else if (A->type == mtxnullcoo) {
         *precision = mtxnullcoo_precision(&A->storage.nullcoo);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         *precision = mtxompcsr_precision(&A->storage.ompcsr);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
     return MTX_SUCCESS;
 }
@@ -203,7 +207,11 @@ int mtxmatrix_symmetry(
     } else if (A->type == mtxnullcoo) {
         *symmetry = mtxnullcoo_symmetry(&A->storage.nullcoo);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         *symmetry = mtxompcsr_symmetry(&A->storage.ompcsr);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
     return MTX_SUCCESS;
 }
@@ -232,7 +240,11 @@ int mtxmatrix_num_nonzeros(
     } else if (A->type == mtxnullcoo) {
         *num_nonzeros = mtxnullcoo_num_nonzeros(&A->storage.nullcoo);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         *num_nonzeros = mtxompcsr_num_nonzeros(&A->storage.ompcsr);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
     return MTX_SUCCESS;
 }
@@ -260,7 +272,11 @@ int mtxmatrix_size(
     } else if (A->type == mtxnullcoo) {
         *size = mtxnullcoo_size(&A->storage.nullcoo);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         *size = mtxompcsr_size(&A->storage.ompcsr);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
     return MTX_SUCCESS;
 }
@@ -293,7 +309,11 @@ int mtxmatrix_rowcolidx(
     } else if (A->type == mtxnullcoo) {
         return mtxnullcoo_rowcolidx(&A->storage.nullcoo, size, rowidx, colidx);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_rowcolidx(&A->storage.ompcsr, size, rowidx, colidx);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -320,7 +340,9 @@ void mtxmatrix_free(
     } else if (matrix->type == mtxnullcoo) {
         mtxnullcoo_free(&matrix->storage.nullcoo);
     } else if (matrix->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         mtxompcsr_free(&matrix->storage.ompcsr);
+#endif
     }
 }
 
@@ -352,8 +374,12 @@ int mtxmatrix_alloc_copy(
         return mtxnullcoo_alloc_copy(
             &dst->storage.nullcoo, &src->storage.nullcoo);
     } else if (src->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_alloc_copy(
             &dst->storage.ompcsr, &src->storage.ompcsr);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -385,8 +411,12 @@ int mtxmatrix_init_copy(
         return mtxnullcoo_init_copy(
             &dst->storage.nullcoo, &src->storage.nullcoo);
     } else if (src->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_init_copy(
             &dst->storage.ompcsr, &src->storage.ompcsr);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -447,11 +477,15 @@ int mtxmatrix_alloc_entries(
             num_rows, num_columns, num_nonzeros,
             idxstride, idxbase, rowidx, colidx);
     } else if (type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         A->type = mtxompcsr;
         return mtxompcsr_alloc_entries(
             &A->storage.ompcsr, field, precision, symmetry,
             num_rows, num_columns, num_nonzeros,
             idxstride, idxbase, rowidx, colidx, NULL);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -501,10 +535,14 @@ int mtxmatrix_init_entries_real_single(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         A->type = mtxompcsr;
         return mtxompcsr_init_entries_real_single(
             &A->storage.ompcsr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -554,10 +592,14 @@ int mtxmatrix_init_entries_real_double(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         A->type = mtxompcsr;
         return mtxompcsr_init_entries_real_double(
             &A->storage.ompcsr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -607,10 +649,14 @@ int mtxmatrix_init_entries_complex_single(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         A->type = mtxompcsr;
         return mtxompcsr_init_entries_complex_single(
             &A->storage.ompcsr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -660,10 +706,14 @@ int mtxmatrix_init_entries_complex_double(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         A->type = mtxompcsr;
         return mtxompcsr_init_entries_complex_double(
             &A->storage.ompcsr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -713,10 +763,14 @@ int mtxmatrix_init_entries_integer_single(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         A->type = mtxompcsr;
         return mtxompcsr_init_entries_integer_single(
             &A->storage.ompcsr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -766,10 +820,14 @@ int mtxmatrix_init_entries_integer_double(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         A->type = mtxompcsr;
         return mtxompcsr_init_entries_integer_double(
             &A->storage.ompcsr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -818,10 +876,14 @@ int mtxmatrix_init_entries_pattern(
             &A->storage.nullcoo, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx);
     } else if (type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         A->type = mtxompcsr;
         return mtxompcsr_init_entries_pattern(
             &A->storage.ompcsr, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1006,7 +1068,11 @@ int mtxmatrix_setzero(
     } else if (A->type == mtxnullcoo) {
         return mtxnullcoo_setzero(&A->storage.nullcoo);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_setzero(&A->storage.ompcsr);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1040,8 +1106,12 @@ int mtxmatrix_set_real_single(
         return mtxnullcoo_set_real_single(
             &A->storage.nullcoo, size, stride, a);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_set_real_single(
             &A->storage.ompcsr, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1075,8 +1145,12 @@ int mtxmatrix_set_real_double(
         return mtxnullcoo_set_real_double(
             &A->storage.nullcoo, size, stride, a);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_set_real_double(
             &A->storage.ompcsr, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1110,8 +1184,12 @@ int mtxmatrix_set_complex_single(
         return mtxnullcoo_set_complex_single(
             &A->storage.nullcoo, size, stride, a);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_set_complex_single(
             &A->storage.ompcsr, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1145,8 +1223,12 @@ int mtxmatrix_set_complex_double(
         return mtxnullcoo_set_complex_double(
             &A->storage.nullcoo, size, stride, a);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_set_complex_double(
             &A->storage.ompcsr, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1180,8 +1262,12 @@ int mtxmatrix_set_integer_single(
         return mtxnullcoo_set_integer_single(
             &A->storage.nullcoo, size, stride, a);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_set_integer_single(
             &A->storage.ompcsr, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1215,8 +1301,12 @@ int mtxmatrix_set_integer_double(
         return mtxnullcoo_set_integer_double(
             &A->storage.nullcoo, size, stride, a);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_set_integer_double(
             &A->storage.ompcsr, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1254,8 +1344,12 @@ int mtxmatrix_alloc_row_vector(
         return mtxnullcoo_alloc_row_vector(
             &matrix->storage.nullcoo, vector, vectortype);
     } else if (matrix->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_alloc_row_vector(
             &matrix->storage.ompcsr, vector, vectortype);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1289,8 +1383,12 @@ int mtxmatrix_alloc_column_vector(
         return mtxnullcoo_alloc_column_vector(
             &matrix->storage.nullcoo, vector, vectortype);
     } else if (matrix->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_alloc_column_vector(
             &matrix->storage.ompcsr, vector, vectortype);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1332,9 +1430,13 @@ int mtxmatrix_from_mtxfile(
         return mtxnullcoo_from_mtxfile(
             &matrix->storage.nullcoo, mtxfile);
     } else if (type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         matrix->type = mtxompcsr;
         return mtxompcsr_from_mtxfile(
             &matrix->storage.ompcsr, mtxfile);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1375,9 +1477,13 @@ int mtxmatrix_to_mtxfile(
             dst, &src->storage.nullcoo,
             num_rows, rowidx, num_columns, colidx, mtxfmt);
     } else if (src->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_to_mtxfile(
             dst, &src->storage.ompcsr,
             num_rows, rowidx, num_columns, colidx, mtxfmt);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1694,10 +1800,14 @@ int mtxmatrix_partition_rowwise(
             parttype, num_parts, partsizes, blksize, parts,
             dstnzpart, dstnzpartsizes, dstrowpart, dstrowpartsizes);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_partition_rowwise(
             &A->storage.ompcsr,
             parttype, num_parts, partsizes, blksize, parts,
             dstnzpart, dstnzpartsizes, dstrowpart, dstrowpartsizes);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1752,10 +1862,14 @@ int mtxmatrix_partition_columnwise(
             parttype, num_parts, partsizes, blksize, parts,
             dstnzpart, dstnzpartsizes, dstcolpart, dstcolpartsizes);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_partition_columnwise(
             &A->storage.ompcsr,
             parttype, num_parts, partsizes, blksize, parts,
             dstnzpart, dstnzpartsizes, dstcolpart, dstcolpartsizes);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1827,6 +1941,7 @@ int mtxmatrix_partition_2d(
             dstrowpart, dstrowpartsizes,
             dstcolpart, dstcolpartsizes);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_partition_2d(
             &A->storage.ompcsr,
             rowparttype, num_row_parts, rowpartsizes, rowblksize, rowparts,
@@ -1834,6 +1949,9 @@ int mtxmatrix_partition_2d(
             dstnzpart, dstnzpartsizes,
             dstrowpart, dstrowpartsizes,
             dstcolpart, dstcolpartsizes);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1901,6 +2019,7 @@ int mtxmatrix_split(
         free(nullcoodsts);
         return err;
     } else if (src->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         struct mtxompcsr ** ompcsrdsts = malloc(
             num_parts * sizeof(struct mtxompcsr *));
         if (!ompcsrdsts) return MTX_ERR_ERRNO;
@@ -1912,6 +2031,9 @@ int mtxmatrix_split(
             num_parts, ompcsrdsts, &src->storage.ompcsr, size, parts);
         free(ompcsrdsts);
         return err;
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1947,8 +2069,12 @@ int mtxmatrix_swap(
         return mtxnullcoo_swap(
             &X->storage.nullcoo, &Y->storage.nullcoo);
     } else if (X->type == mtxompcsr && Y->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_swap(
             &X->storage.ompcsr, &Y->storage.ompcsr);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1979,8 +2105,12 @@ int mtxmatrix_copy(
         return mtxnullcoo_copy(
             &Y->storage.nullcoo, &X->storage.nullcoo);
     } else if (X->type == mtxompcsr && Y->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_copy(
             &Y->storage.ompcsr, &X->storage.ompcsr);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2013,8 +2143,12 @@ int mtxmatrix_sscal(
         return mtxnullcoo_sscal(
             a, &X->storage.nullcoo, num_flops);
     } else if (X->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_sscal(
             a, &X->storage.ompcsr, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2047,8 +2181,12 @@ int mtxmatrix_dscal(
         return mtxnullcoo_dscal(
             a, &X->storage.nullcoo, num_flops);
     } else if (X->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_dscal(
             a, &X->storage.ompcsr, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2134,8 +2272,12 @@ int mtxmatrix_saxpy(
         return mtxnullcoo_saxpy(
             a, &X->storage.nullcoo, &Y->storage.nullcoo, num_flops);
     } else if (X->type == mtxompcsr && Y->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_saxpy(
             a, &X->storage.ompcsr, &Y->storage.ompcsr, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2169,8 +2311,12 @@ int mtxmatrix_daxpy(
         return mtxnullcoo_daxpy(
             a, &X->storage.nullcoo, &Y->storage.nullcoo, num_flops);
     } else if (X->type == mtxompcsr && Y->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_daxpy(
             a, &X->storage.ompcsr, &Y->storage.ompcsr, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2204,8 +2350,12 @@ int mtxmatrix_saypx(
         return mtxnullcoo_saypx(
             a, &Y->storage.nullcoo, &X->storage.nullcoo, num_flops);
     } else if (X->type == mtxompcsr && Y->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_saypx(
             a, &Y->storage.ompcsr, &X->storage.ompcsr, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2239,8 +2389,12 @@ int mtxmatrix_daypx(
         return mtxnullcoo_daypx(
             a, &Y->storage.nullcoo, &X->storage.nullcoo, num_flops);
     } else if (X->type == mtxompcsr && Y->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_daypx(
             a, &Y->storage.ompcsr, &X->storage.ompcsr, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2274,8 +2428,12 @@ int mtxmatrix_sdot(
         return mtxnullcoo_sdot(
             &X->storage.nullcoo, &Y->storage.nullcoo, dot, num_flops);
     } else if (X->type == mtxompcsr && Y->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_sdot(
             &X->storage.ompcsr, &Y->storage.ompcsr, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2309,8 +2467,12 @@ int mtxmatrix_ddot(
         return mtxnullcoo_ddot(
             &X->storage.nullcoo, &Y->storage.nullcoo, dot, num_flops);
     } else if (X->type == mtxompcsr && Y->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_ddot(
             &X->storage.ompcsr, &Y->storage.ompcsr, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2346,8 +2508,12 @@ int mtxmatrix_cdotu(
         return mtxnullcoo_cdotu(
             &X->storage.nullcoo, &Y->storage.nullcoo, dot, num_flops);
     } else if (X->type == mtxompcsr && Y->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_cdotu(
             &X->storage.ompcsr, &Y->storage.ompcsr, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2383,8 +2549,12 @@ int mtxmatrix_zdotu(
         return mtxnullcoo_zdotu(
             &X->storage.nullcoo, &Y->storage.nullcoo, dot, num_flops);
     } else if (X->type == mtxompcsr && Y->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_zdotu(
             &X->storage.ompcsr, &Y->storage.ompcsr, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2419,8 +2589,12 @@ int mtxmatrix_cdotc(
         return mtxnullcoo_cdotc(
             &X->storage.nullcoo, &Y->storage.nullcoo, dot, num_flops);
     } else if (X->type == mtxompcsr && Y->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_cdotc(
             &X->storage.ompcsr, &Y->storage.ompcsr, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2455,8 +2629,12 @@ int mtxmatrix_zdotc(
         return mtxnullcoo_zdotc(
             &X->storage.nullcoo, &Y->storage.nullcoo, dot, num_flops);
     } else if (X->type == mtxompcsr && Y->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_zdotc(
             &X->storage.ompcsr, &Y->storage.ompcsr, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2484,7 +2662,11 @@ int mtxmatrix_snrm2(
     } else if (X->type == mtxnullcoo) {
         return mtxnullcoo_snrm2(&X->storage.nullcoo, nrm2, num_flops);
     } else if (X->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_snrm2(&X->storage.ompcsr, nrm2, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2512,7 +2694,11 @@ int mtxmatrix_dnrm2(
     } else if (X->type == mtxnullcoo) {
         return mtxnullcoo_dnrm2(&X->storage.nullcoo, nrm2, num_flops);
     } else if (X->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_dnrm2(&X->storage.ompcsr, nrm2, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2542,7 +2728,11 @@ int mtxmatrix_sasum(
     } else if (X->type == mtxnullcoo) {
         return mtxnullcoo_sasum(&X->storage.nullcoo, asum, num_flops);
     } else if (X->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_sasum(&X->storage.ompcsr, asum, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2572,7 +2762,11 @@ int mtxmatrix_dasum(
     } else if (X->type == mtxnullcoo) {
         return mtxnullcoo_dasum(&X->storage.nullcoo, asum, num_flops);
     } else if (X->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_dasum(&X->storage.ompcsr, asum, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2601,7 +2795,11 @@ int mtxmatrix_iamax(
     } else if (X->type == mtxnullcoo) {
         return mtxnullcoo_iamax(&X->storage.nullcoo, iamax);
     } else if (X->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_iamax(&X->storage.ompcsr, iamax);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2647,8 +2845,12 @@ int mtxmatrix_sgemv(
         return mtxnullcoo_sgemv(
             trans, alpha, &A->storage.nullcoo, x, beta, y, num_flops);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_sgemv(
             trans, alpha, &A->storage.ompcsr, x, beta, y, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2690,8 +2892,12 @@ int mtxmatrix_dgemv(
         return mtxnullcoo_dgemv(
             trans, alpha, &A->storage.nullcoo, x, beta, y, num_flops);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_dgemv(
             trans, alpha, &A->storage.ompcsr, x, beta, y, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2734,8 +2940,12 @@ int mtxmatrix_cgemv(
         return mtxnullcoo_cgemv(
             trans, alpha, &A->storage.nullcoo, x, beta, y, num_flops);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_cgemv(
             trans, alpha, &A->storage.ompcsr, x, beta, y, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2778,8 +2988,12 @@ int mtxmatrix_zgemv(
         return mtxnullcoo_zgemv(
             trans, alpha, &A->storage.nullcoo, x, beta, y, num_flops);
     } else if (A->type == mtxompcsr) {
+#ifdef LIBMTX_HAVE_OPENMP
         return mtxompcsr_zgemv(
             trans, alpha, &A->storage.ompcsr, x, beta, y, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2825,12 +3039,16 @@ int mtxmatrix_sgemm(
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_sgemm(
             Atrans, Btrans, alpha, &A->storage.dense, &B->storage.dense, beta, &C->storage.dense, num_flops);
-    /* } else if (A->type == mtxnullcoo) { */
-    /*     return mtxnullcoo_sgemm( */
-    /*         Atrans, Btrans, alpha, &A->storage.nullcoo, &B->storage.nullcoo, beta, &C->storage.nullcoo, num_flops); */
-    /* } else if (A->type == mtxompcsr) { */
-    /*     return mtxompcsr_sgemm( */
-    /*         Atrans, Btrans, alpha, &A->storage.ompcsr, &B->storage.ompcsr, beta, &C->storage.ompcsr, num_flops); */
+/*     } else if (A->type == mtxnullcoo) { */
+/*         return mtxnullcoo_sgemm( */
+/*             Atrans, Btrans, alpha, &A->storage.nullcoo, &B->storage.nullcoo, beta, &C->storage.nullcoo, num_flops); */
+/*     } else if (A->type == mtxompcsr) { */
+/* #ifdef LIBMTX_HAVE_OPENMP */
+/*         return mtxompcsr_sgemm( */
+/*             Atrans, Btrans, alpha, &A->storage.ompcsr, &B->storage.ompcsr, beta, &C->storage.ompcsr, num_flops); */
+/* #else */
+/*         return MTX_ERR_OPENMP_NOT_SUPPORTED; */
+/* #endif */
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -2872,11 +3090,15 @@ int mtxmatrix_dgemm(
     } else if (A->type == mtxbasedense) {
         return mtxbasedense_dgemm(
             Atrans, Btrans, alpha, &A->storage.dense, &B->storage.dense, beta, &C->storage.dense, num_flops);
-    /* } else if (A->type == mtxnullcoo) { */
-    /*     return mtxnullcoo_dgemm( */
-    /*         Atrans, Btrans, alpha, &A->storage.nullcoo, &B->storage.nullcoo, beta, &C->storage.nullcoo, num_flops); */
-    /* } else if (A->type == mtxompcsr) { */
-    /*     return mtxompcsr_dgemm( */
-    /*         Atrans, Btrans, alpha, &A->storage.ompcsr, &B->storage.ompcsr, beta, &C->storage.ompcsr, num_flops); */
+/*     } else if (A->type == mtxnullcoo) { */
+/*         return mtxnullcoo_dgemm( */
+/*             Atrans, Btrans, alpha, &A->storage.nullcoo, &B->storage.nullcoo, beta, &C->storage.nullcoo, num_flops); */
+/*     } else if (A->type == mtxompcsr) { */
+/* #ifdef LIBMTX_HAVE_OPENMP */
+/*         return mtxompcsr_dgemm( */
+/*             Atrans, Btrans, alpha, &A->storage.ompcsr, &B->storage.ompcsr, beta, &C->storage.ompcsr, num_flops); */
+/* #else */
+/*         return MTX_ERR_OPENMP_NOT_SUPPORTED; */
+/* #endif */
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }

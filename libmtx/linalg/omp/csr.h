@@ -26,6 +26,7 @@
 
 #include <libmtx/libmtx-config.h>
 
+#ifdef LIBMTX_HAVE_OPENMP
 #include <libmtx/linalg/precision.h>
 #include <libmtx/linalg/field.h>
 #include <libmtx/linalg/symmetry.h>
@@ -1462,5 +1463,6 @@ int mtxompcsr_zgemv(
     double beta[2],
     struct mtxvector * y,
     int64_t * num_flops);
+#endif
 
 #endif

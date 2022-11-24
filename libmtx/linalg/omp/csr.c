@@ -23,6 +23,7 @@
 
 #include <libmtx/libmtx-config.h>
 
+#ifdef LIBMTX_HAVE_OPENMP
 #include <libmtx/error.h>
 #include <libmtx/linalg/field.h>
 #include <libmtx/linalg/local/matrix.h>
@@ -3757,3 +3758,4 @@ int mtxompcsr_zgemv(
     } else { return MTX_ERR_INVALID_SYMMETRY; }
     return MTX_SUCCESS;
 }
+#endif
