@@ -155,8 +155,8 @@ AX_CHECK_ZLIB([
   libmtx_CPPFLAGS="$libmtx_CPPFLAGS -DLIBMTX_HAVE_LIBZ"
   AC_DEFINE([LIBMTX_HAVE_LIBZ], [1],
     [Define to 1 if you have `z' library (-lz)])
-  AC_SUBST(LIBMTX_HAVE_LIBZ)
-])
+  AC_SUBST(LIBMTX_HAVE_LIBZ)],
+ [AC_MSG_WARN([could not find a valid zlib installation; building without zlib support])])
 
 dnl Check for libpng
 AX_LIBPNG([
@@ -167,8 +167,8 @@ AX_LIBPNG([
   AC_SUBST(LIBPNG_LDFLAGS)
   AC_SUBST(LIBPNG_LIBS)
   AC_DEFINE([LIBMTX_HAVE_LIBPNG], [1], [Define to 1 if you have libpng])
-  AC_SUBST(LIBMTX_HAVE_LIBPNG)
-])
+  AC_SUBST(LIBMTX_HAVE_LIBPNG)],
+ [AC_MSG_WARN([could not find a valid libpng installation; building without libpng support])])
 AM_CONDITIONAL([HAVE_LIBPNG],
   [test x"$with_libpng" != xno -a x"$libpng_found" != xno])
 
@@ -179,9 +179,8 @@ AX_LIB_METIS([
   LIBS="-lmetis $LIBS"
   libmtx_CPPFLAGS="$libmtx_CPPFLAGS -DLIBMTX_HAVE_METIS"
   AC_DEFINE([LIBMTX_HAVE_METIS], [1], [Define to 1 if you have METIS])
-  AC_SUBST(LIBMTX_HAVE_METIS)
-],
-AC_MSG_WARN([either specify a valid METIS installation with --with-metis=DIR or disable METIS usage with --without-metis]))
+  AC_SUBST(LIBMTX_HAVE_METIS)],
+ [AC_MSG_WARN([could not find a valid METIS installation; building without METIS support])])
 AM_CONDITIONAL([HAVE_METIS],
   [test x"$with_metis" != xno -a x"$metis_found" != xno])
 
