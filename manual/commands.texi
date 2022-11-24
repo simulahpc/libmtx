@@ -16,7 +16,7 @@
 @c <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-16
+@c Last modified: 2022-11-24
 @c
 @c Libmtx User Guide: Commands.
 
@@ -24,7 +24,8 @@
 @chapter Commands
 
 This chapter decribes a collection of command-line programs that are
-provided by Libmtx for working with Matrix Market files.
+provided by Libmtx for workiang with Matrix Market files.
+
 
 @table @command
 @cindex vector addition
@@ -37,12 +38,6 @@ adds two vectors.
 @pindex mtxdot
 @item mtxdot
 computes the dot product of two vectors.
-
-@pindex mtxgather
-@item mtxgather
-collects Matrix Market files that represent a distributed matrix or
-vector from multiple MPI processes, accumulates the results on a
-single MPI root process and stores the resulting Matrix Market file.
 
 @pindex mtxgemv
 @item mtxgemv
@@ -58,22 +53,22 @@ high-level information about the Matrix Market object.
 @item mtxnrm2
 computes the Euclidean norm of a vector.
 
+@cindex partition
+@pindex mtxpartition
+@item mtxpartition
+partitions a sparse matrix by rows, columns or nonzeros, or using a graph
+partitioner such as METIS.
+
 @cindex reorder
 @pindex mtxreorder
 @item mtxreorder
-reorders the nonzeros of a sparse matrix, for example, using the
-Reverse Cuthill-McKee (RCM) ordering (@pxref{E. Cuthill and J. McKee
-(1969)}).
+reorders the nonzeros of a sparse matrix, for example, using the Reverse
+Cuthill-McKee (RCM) ordering (@pxref{E. Cuthill and J. McKee (1969)}).
 
 @cindex vector scaling
 @pindex mtxscal
 @item mtxscal
 scales a vector by a scalar.
-
-@pindex mtxscatter
-@item mtxscatter
-distributes a Matrix Market file among MPI processes and stores the
-resulting distributed Matrix Market file for each process.
 
 @cindex sort
 @pindex mtxsort
@@ -84,24 +79,21 @@ column-major order.
 @cindex sparsity pattern
 @pindex mtxspy
 @item mtxspy
-draws an image of a matrix sparsity pattern and writes it to a PNG
-file.
+draws an image of a matrix sparsity pattern and writes it to a PNG file.
 
 @end table
 
-Further details about each program are given in the following
-sections.
+Further details about each program are given in the following sections.
 
 @menu
 * @command{mtxaxpy}::
 * @command{mtxdot}::
-* @command{mtxgather}::
 * @command{mtxgemv}::
 * @command{mtxinfo}::
 * @command{mtxnrm2}::
+* @command{mtxpartition}::
 * @command{mtxreorder}::
 * @command{mtxscal}::
-* @command{mtxscatter}::
 * @command{mtxsort}::
 * @command{mtxspy}::
 @end menu
@@ -111,8 +103,8 @@ sections.
 @section @command{mtxaxpy}
 @cindex vector addition
 @pindex mtxaxpy
-The command @command{mtxaxpy} is used to add two vectors. The result
-is written to standard output in the form of a Matrix Market file
+The command @command{mtxaxpy} is used to add two vectors. The result is
+written to standard output in the form of a Matrix Market file
 representing the result vector. More specifically, the calculation
 carried out is @samp{@var{y} := @var{alpha}*@var{x} + @var{y}}.
 
@@ -234,41 +226,6 @@ Do not print the resulting Matrix Market file to standard output.
 
 @item -v, --verbose
 Print some diagnostics to the standard error stream.
-
-@end table
-
-
-@node @command{mtxgather}
-@section @command{mtxgather}
-@pindex mtxgather
-
-The command @command{mtxgather} collects Matrix Market files that
-represent a distributed matrix or vector from multiple MPI processes,
-accumulates the results on a single MPI root process and stores the
-resulting Matrix Market file. This command is only included if MPI
-support is enabled.
-@example
-@code{mtxgather [OPTION..] FILE..}
-@end example
-
-The following options are accepted:
-
-@table @option
-@item -z, --gzip, --gunzip, --ungzip
-Filter files through gzip.
-
-@item --format=FORMAT
-Format string for outputting numerical values.  For real, double and
-complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
-@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
-be used for integers. Flags, field width and precision can optionally
-be specified, e.g., @samp{%+3.1f}.
-
-@item -q, --quiet
-Do not print the resulting Matrix Market file to standard output.
-
-@item -v, --verbose
-Print diagnostics to standard error.
 
 @end table
 
@@ -406,6 +363,78 @@ Print some diagnostics to the standard error stream.
 @end table
 
 
+@node @command{mtxpartition}
+@section @command{mtxpartition}
+@pindex mtxpartition
+
+The command @command{mtxpartition} is used to partition sparse matrices.x
+@example
+@code{mtxpartition [OPTION..] FILE}
+@end example
+
+@table @option
+@item -z, --gzip, --gunzip, --ungzip
+Filter the file through gzip
+
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must be
+used for integers. Flags, field width and precision can optionally be
+specified, e.g., @samp{%+3.1f}.
+
+@item --row-part-path=FILE
+Path for outputting row partition as a dense vector in Matrix Market
+format.
+
+@item --col-part-path=FILE
+Path for outputting column partition as a dense vector in Matrix Market
+format.
+
+@item --part-type=TYPE
+The method of partitioning algorithm to use: @samp{nonzeros} (default),
+@samp{rows}, @samp{columns}, @samp{2d} or @samp{metis}.
+
+
+@item --nz-parts=N
+number of parts to use when partitioning nonzeros.
+
+@item --nz-part-type=TYPE
+method of partitioning nonzeros if @code{--part-type=nonzeros}:
+@samp{block} (default), @samp{cyclic} or @samp{block-cyclic}.
+
+@item --nz-blksize=N
+block size to use if --nz-part-type is @samp{block-cyclic}.
+
+@item --row-parts=N
+number of parts to use when partitioning rows.
+
+@item --row-part-type=TYPE method of partitioning
+rows if @code{--part-type} is @samp{rows} or @samp{2d}: @samp{block}
+(default), @samp{cyclic} or @samp{block-cyclic}.
+
+@item --row-blksize=N
+block size to use if @code{--row-part-type} is @samp{block-cyclic}.
+
+@item --column-parts=N
+number of parts to use when partitioning columns.
+
+@item --column-part-type=TYPE
+method of partitioning columns if @code{--part-type} is @samp{columns} or
+@samp{2d}: @samp{block} (default), @samp{cyclic} or @samp{block-cyclic}.
+
+@item --column-blksize=N
+block size to use if @code{--column-part-type} is @samp{block-cyclic}.
+
+@item -q, --quiet
+Do not print the resulting Matrix Market file to standard output.
+
+@item -v, --verbose
+Print diagnostics to standard error.
+
+@end table
+
+
 @node @command{mtxreorder}
 @section @command{mtxreorder}
 @pindex mtxreorder
@@ -504,42 +533,6 @@ Do not print the resulting Matrix Market file to standard output.
 
 @item -v, --verbose
 Print some diagnostics to the standard error stream.
-
-@end table
-
-
-@node @command{mtxscatter}
-@section @command{mtxscatter}
-@pindex mtxscatter
-
-The command @command{mtxscatter} distributes a Matrix Market file among
-MPI processes and stores the resulting distributed Matrix Market file
-for each process. This command is only included if MPI support is
-enabled.
-@example
-@code{mtxscatter [OPTION..] FILE}
-@end example
-
-The following options are accepted:
-
-@table @option
-@item -z, --gzip, --gunzip, --ungzip
-Filter files through gzip.
-
-@item --output-path=FILE
-Output path for the scattered Matrix Market files, where @samp{%p} in
-the string is replaced with the rank of each MPI process. If not
-specified, the default output path is @samp{out%p.mtx}.
-
-@item --format=FORMAT
-Format string for outputting numerical values.  For real, double and
-complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
-@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
-be used for integers. Flags, field width and precision can optionally
-be specified, e.g., @samp{%+3.1f}.
-
-@item -v, --verbose
-Print diagnostics to standard error.
 
 @end table
 
