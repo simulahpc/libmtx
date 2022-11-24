@@ -15,23 +15,22 @@
 @c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-28
+@c Last modified: 2022-11-24
 @c
 @c Libmtx User Guide: Matrix Market files.
 
 @node Matrix Market files
 @chapter Matrix Market files
 
-This chapter provides a detailed explanation of how to work with
-Matrix Market files using the Libmtx C library.  For now, we are
-concerned with Matrix Market files on a single, shared-memory machine
-or node.  For files that are distributed across multiple processes
-using MPI, see @ref{Distributed Matrix Market files}.
+This chapter explains in detail how to use the Libmtx C library to work
+with Matrix Market files. For now, we are concerned with using a single,
+shared-memory machine or node. To distribute Matrix Market files across
+multiple processes using MPI for large-scale, parallel computations, see
+@ref{Distributed Matrix Market files}.
 
-For any user-facing types and functions, the library uses the
-convention of prefixing their names with @code{mtx}. This makes it
-easier to avoid possible name clashes with other code when using
-Libmtx.
+For any user-facing types and functions, Libmtx uses the convention of
+prefixing names with @code{mtx} or @code{mtxfile}. This makes it easier
+to avoid possible name clashes with other code when using Libmtx.
 
 @menu
 * Error handling:: How to handle errors when working with the Libmtx C library.
@@ -69,26 +68,26 @@ codes from the @code{mtxerror} enum type.
 @code{mtxstrerror} is typically used as shown in the example below.
 
 @example
-FILE * f = fopen("test.mtx", "r");
-
 struct mtxfile mtx;
- int64_t lines_read;
+int64_t lines_read = 0;
+FILE * f = fopen("test.mtx", "r");
 int err = mtxfile_fread(
     &mtx, mtx_double, f,
     &lines_read, NULL, 0, NULL);
 if (err) @{
-    fprintf(stderr, "Error: test.mtx:%d: %s\n",
-            lines_read, mtxstrerror(err));
+    fprintf(stderr, "test.mtx:%d: %s\n",
+            lines_read+1, mtxstrerror(err));
     fclose(f);
 @}
 @end example
 
 @noindent
-If @code{mtxfile_fread} returns @samp{MTX_ERR_INVALID_MTX_OBJECT}, for
-example, then the following message will be printed:
+If @code{mtxfile_fread} returns an error, for example,
+@samp{MTX_ERR_INVALID_MTX_OBJECT}, then the following message will be
+printed:
 
 @example
-Error: test.mtx:1: invalid Matrix Market object
+test.mtx:1: invalid Matrix Market object
 @end example
 
 
@@ -102,19 +101,18 @@ in the Matrix Market file format.
 The file @file{libmtx/mtxfile/mtxfile.h} defines the @code{struct
 mtxfile} type.  The main purpose of @code{struct mtxfile} is to
 represent objects in Matrix Market format, including dense and sparse
-matrices and vectors with real, complex, integer or binary values. In
-addition to @code{struct mtxfile}, Libmtx also implements other data
-structures to represent matrices and vectors with different underlying
-storage formats.
-@c These are described in @ref{...}.
+matrices and vectors with real, complex, integer or binary values.
 
-The @code{mtxfile} struct is very close to the ASCII representation of
-a Matrix Market file.  However, instead of ASCII strings, the header
-values are converted to appropriate enum types.  The object size and
-row and column indices are represented as 32-bit integers. Finally,
-depending on the underlying field and desired precision, the matrix or
-vector values are converted to 32- or 64-bit floating point numbers or
-integers.
+@c In addition to @code{struct mtxfile}, Libmtx also implements other
+@c data structures to represent matrices and vectors with different
+@c underlying storage formats.  These are described in @ref{...}.
+
+The @code{mtxfile} struct is very close to the ASCII representation of a
+Matrix Market file.  However, instead of ASCII strings, the header
+values are converted to appropriate enum types, row and column offsets
+are represented as 64-bit signed integers, and (depending on the
+underlying field and desired precision) matrix or vector values are
+converted to 32- or 64-bit integers or floating point numbers.
 
 The definition of the @code{mtxfile} struct is shown below.
 @example
@@ -123,6 +121,7 @@ The definition of the @code{mtxfile} struct is shown below.
     struct mtxfilecomments comments;
     struct mtxfilesize size;
     enum mtxprecision precision;
+    int64_t datasize;
     union mtxfiledata data;
 @};}
 @end example
@@ -130,7 +129,8 @@ The definition of the @code{mtxfile} struct is shown below.
 Roughly speaking, the @code{mtxfile} struct consists of four parts:
 header information, comment lines, size information and data. In
 addition, the @code{precision} struct member describes the precision
-used to store matrix or vector values.
+used to store matrix or vector values, and @code{datasize} stores the
+number of entries in the array of matrix or vector values.
 
 The following sections provide detailed explanations of the
 @code{mtxfile} struct members.
@@ -161,8 +161,8 @@ meaning of the values associated with these types is described in
 detail in @ref{Matrix Market format}.
 @example
 @code{enum mtxfileobject @{
-    mtxfile_matrix,
-    mtxfile_vector
+    mtxfile_matrix,    /* matrix */
+    mtxfile_vector     /* vector */
 @};
 
 enum mtxfileformat @{
@@ -171,14 +171,14 @@ enum mtxfileformat @{
 @};
 
 enum mtxfilefield @{
-    mtxfile_real,    /* real, floating point coefficients */
-    mtxfile_complex, /* complex, floating point coefficients */
+    mtxfile_real,    /* real coefficients */
+    mtxfile_complex, /* complex coefficients */
     mtxfile_integer, /* integer coefficients */
     mtxfile_pattern  /* boolean coefficients (sparsity pattern) */
 @};
 
 enum mtxfilesymmetry @{
-    mtxfile_general,        /* general, non-symmetric matrix */
+    mtxfile_general,        /* general, unsymmetric matrix or vector */
     mtxfile_symmetric,      /* symmetric matrix */
     mtxfile_skew_symmetric, /* skew-symmetric matrix */
     mtxfile_hermitian       /* Hermitian matrix */
@@ -214,8 +214,8 @@ The size information in @code{struct mtxfilesize} includes the number
 of rows, columns and nonzeros in the underlying matrix or vector.
 @example
 @code{struct mtxfilesize @{
-    int num_rows;
-    int num_columns;
+    int64_t num_rows;
+    int64_t num_columns;
     int64_t num_nonzeros;
 @};}
 @end example
@@ -243,9 +243,9 @@ data section of a Matrix Market file can be obtained by calling
     enum mtxfile_symmetry symmetry,
     int64_t * num_data_lines);}
 @end example
-Briefly explained, @code{num_data_lines} will contain the number of
-data lines in data section of a Matrix Market file with the given size
-line and symmetry. More specifically, @code{num_data_lines} is set to
+The number of data lines in a Matrix Market file with the given size
+line and symmetry is stored in the integer pointed to by
+@code{num_data_lines}. More specifically, it is set to
 @itemize
 @item @code{num_nonzeros},
 if @code{num_nonzeros} is non-negative; or
@@ -266,15 +266,13 @@ if @code{num_rows} is non-negative.
 
 @node Precision
 @subsection Precision
-The Matrix Market file format stores matrix or vector values as
-integers or decimal numbers in ASCII text. The format is thus quite
-flexible, since it does not prescribe any limits or fixed precision on
-the values that are stored.
-
-In practice, however, it is more convenient to convert matrix and
-vector values to fixed-precision integer or floating point types. The
-@code{mtxprecision} enum type can be used to choose between single
-(32-bit) and double (64-bit) precision at runtime.
+Matrix Market files represent matrix or vector values as integers or
+decimal numbers in ASCII text. In this form, there is no limit or
+prescribed precision associated with the values that are stored, making
+the format is quite flexible. In practice, however, it is necessary to
+convert matrix and vector values to fixed-precision integer or floating
+point types. For this purpose, the @code{mtxprecision} enum type can be
+used to choose between single (32-bit) and double (64-bit) precision.
 
 @cindex precision
 @cindex single precision
@@ -291,14 +289,13 @@ vector values to fixed-precision integer or floating point types. The
 @node Data
 @subsection Data
 
-Matrix or vector values are stored in an array whose type depends on
-the object, format and field of the Matrix Market file, as well as the
+Matrix or vector values are stored in an array whose type depends on the
+object, format and field of the Matrix Market file, as well as the
 chosen precision.  The appropriate array can therefore be accessed
-through the @code{mtxfiledata} union type, which is shown below.
-Furthermore, as explained in @ref{Size}, the length of the array
-corresponds to the number of data lines in the Matrix Market file.
-The length thus depends on the size and symmetry of the Matrix Market
-object, and is obtained by calling @code{mtxfilesize_num_data_lines}.
+through the @code{mtxfiledata} union type, which is shown below.  The
+length of the array (which depends on the size and symmetry of the
+matrix or vector, see @ref{Size}) is given by the @code{datasize} member
+of @code{struct mtxfile}.
 @example
 @code{union mtxfiledata @{
     /* Array formats */
@@ -353,13 +350,13 @@ type
 @item @code{int32_t} or @code{int64_t} if @code{field} is @samp{mtxfile_integer} and @code{precision} is @samp{mtx_single} or @samp{mtx_double}, respectively.
 @end itemize
 Note that the type used for complex values, e.g., @code{float (*)[2]},
-denotes a pointer to an array of size @code{2}. Thus, complex values
-are accessed using two-dimensional array indexing, e.g.,
-@code{array_complex_single[i][j]}. The first index, @code{i},
-indicates the position in array of complex vector or matrix values,
-while the second index, @code{j}, is @code{0} for the real part and
-@code{1} for the imaginary part of the complex number. Also, note that
-matrices or vectors in array format may not have @code{field} set to
+denotes a pointer to an array of size @code{2}. Thus, complex values are
+accessed using two-dimensional array indexing, e.g.,
+@code{array_complex_single[i][j]}. The first index, @code{i}, indicates
+the position in array of complex vector or matrix values, while the
+second index, @code{j}, is @code{0} for the real part and @code{1} for
+the imaginary part of the complex number. Also, note that matrices or
+vectors in array format must not have @code{field} set to
 @samp{mtxfile_pattern}.
 
 @cindex coordinate format
@@ -380,37 +377,37 @@ the chosen precision. The struct data types for each combination of
 field and precision are shown below.
 @example
 @code{struct mtxfile_matrix_coordinate_real_single @{
-    int i, j;    /* row and column index */
-    float a;     /* nonzero value */
+    int64_t i, j; /* row and column index */
+    float a;      /* nonzero value */
 @};
 
 struct mtxfile_matrix_coordinate_real_double @{
-    int i, j;    /* row and column index */
-    double a;    /* nonzero value */
+    int64_t i, j; /* row and column index */
+    double a;     /* nonzero value */
 @};
 
 struct mtxfile_matrix_coordinate_complex_single @{
-    int i, j;    /* row and column index */
-    float a[2];  /* real and imaginary parts of nonzero value */
+    int64_t i, j; /* row and column index */
+    float a[2];   /* real and imaginary part of nonzero value */
 @};
 
 struct mtxfile_matrix_coordinate_complex_double @{
-    int i, j;    /* row and column index */
-    double a[2]; /* real and imaginary parts of nonzero value */
+    int64_t i, j; /* row and column index */
+    double a[2];  /* real and imaginary part of nonzero value */
 @};
 
 struct mtxfile_matrix_coordinate_integer_single @{
-    int i, j;    /* row and column index */
-    int32_t a;   /* nonzero value */
+    int64_t i, j; /* row and column index */
+    int32_t a;    /* nonzero value */
 @};
 
 struct mtxfile_matrix_coordinate_integer_double @{
-    int i, j;    /* row and column index */
-    int64_t a;   /* nonzero value */
+    int64_t i, j; /* row and column index */
+    int64_t a;    /* nonzero value */
 @};
 
 struct mtxfile_matrix_coordinate_pattern @{
-    int i, j;    /* row and column index */
+    int64_t i, j; /* row and column index */
 @};}
 @end example
 Note that there is no precision associated with matrices whose
@@ -438,37 +435,37 @@ the chosen precision. The struct data types for each combination of
 field and precision are shown below.
 @example
 @code{struct mtxfile_vector_coordinate_real_single @{
-    int i;       /* row index */
+    int64_t i;   /* row index */
     float a;     /* nonzero value */
 @};
 
 struct mtxfile_vector_coordinate_real_double @{
-    int i;       /* row index */
+    int64_t i;   /* row index */
     double a;    /* nonzero value */
 @};
 
 struct mtxfile_vector_coordinate_complex_single @{
-    int i;       /* row index */
-    float a[2];  /* real and imaginary parts of nonzero value */
+    int64_t i;   /* row index */
+    float a[2];  /* real and imaginary part of nonzero value */
 @};
 
 struct mtxfile_vector_coordinate_complex_double @{
-    int i;       /* row index */
-    double a[2]; /* real and imaginary parts of nonzero value */
+    int64_t i;   /* row index */
+    double a[2]; /* real and imaginary part of nonzero value */
 @};
 
 struct mtxfile_vector_coordinate_integer_single @{
-    int i;       /* row index */
+    int64_t i;   /* row index */
     int32_t a;   /* nonzero value */
 @};
 
 struct mtxfile_vector_coordinate_integer_double @{
-    int i;       /* row index */
+    int64_t i;   /* row index */
     int64_t a;   /* nonzero value */
 @};
 
 struct mtxfile_vector_coordinate_pattern @{
-    int i;       /* row index */
+    int64_t i;   /* row index */
 @};}
 @end example
 Note that there is no precision associated with vectors whose
@@ -497,7 +494,7 @@ function @code{mtxfile_fread}:
     struct mtxfile * mtxfile,
     enum mtxprecision precision,
     FILE * f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf);}
@@ -519,9 +516,9 @@ the values of matrix or vector entries, as described in
 point to an array that can hold a null-terminated string whose length
 (including the terminating null-character) is at most @code{line_max}.
 This buffer is used for reading lines from the stream. Otherwise, if
-@code{linebuf} is @samp{NULL}, then a temporary buffer is allocated
-and used, and the maximum line length is determined by calling
-@code{sysconf()} with @code{_SC_LINE_MAX}.
+@code{linebuf} is @samp{NULL}, a temporary buffer is allocated and used,
+and the maximum line length is determined by calling @code{sysconf()}
+with @code{_SC_LINE_MAX}.
 
 @cindex zlib
 @cindex gzip compression
@@ -533,7 +530,7 @@ be used to read gzip-compressed @file{mtx} files.
     struct mtxfile * mtxfile,
     enum mtxprecision precision,
     gzFile f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf);}
@@ -548,7 +545,7 @@ an @file{mtx} file from a given path.
     enum mtxprecision precision,
     const char * path,
     bool gzip,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read);}
 @end example
 The file is assumed to be gzip-compressed if @code{gzip} is
@@ -574,20 +571,19 @@ vector was written to the @code{FILE} stream. Moreover, if it is not
 returned in @code{bytes_written}.
 
 The @code{fmt} argument may optionally be used to specify a format
-string for outputting of numerical values. If @code{fmt} is
-@samp{NULL}, then the format specifier @samp{%g} is used to print
-floating point numbers with enough digits to ensure correct round-trip
-conversion from decimal text and back. Otherwise, the given format
-string is used to print numerical values. The format string follows
-the conventions of @code{printf}. If the field of @code{mtxfile} is
-@samp{mtxfile_real} or @samp{mtxfile_complex}, then the format
-specifiers @samp{%e}, @samp{%E}, @samp{%f}, @samp{%F}, @samp{%g} or
-@samp{%G} may be used. If the field is @samp{mtxfile_integer}, then
-the format specifier must be @samp{%d}. The format string is ignored
-if the field is @samp{mtxfile_pattern}. Field width and precision may
-be specified (e.g., @samp{%3.1f}), but variable field width and
-precision (e.g., @samp{%*.*f}), as well as length modifiers (e.g.,
-@samp{%Lf}) are not allowed.
+string for outputting of numerical values. If @code{fmt} is @samp{NULL},
+then the format specifier @samp{%g} is used to print floating point
+numbers with enough digits to ensure correct round-trip conversion from
+decimal text and back. Otherwise, the given format string is used to
+print numerical values. The format string follows the conventions of
+@code{printf}. If the field of @code{mtxfile} is @samp{mtxfile_real} or
+@samp{mtxfile_complex}, then the format specifiers @samp{%e}, @samp{%E},
+@samp{%f}, @samp{%F}, @samp{%g} or @samp{%G} may be used. If the field
+is @samp{mtxfile_integer}, then the format specifier must be
+@samp{%d}. The format string is ignored if the field is
+@samp{mtxfile_pattern}. Field width and precision may be specified
+(e.g., @samp{%3.1f}), but variable field width and precision (e.g.,
+@samp{%*.*f}) or length modifiers (e.g., @samp{%Lf}) are not allowed.
 
 Note that the locale is temporarily changed to "C" to ensure that
 locale-specific settings, such as the type of decimal point, do not
@@ -630,11 +626,11 @@ This section covers a number of functions that are provided to
 construct matrices and vectors in Matrix Market format.
 
 @findex mtxfile_free
-But first, it must be noted that routines for constructing matrices
-and vectors will allocate their own storage for matrix or vector
-data. As a result, once the user is finished with an object of type
-@code{struct mtxfile}, it is important to free any allocated storage
-by calling @code{mtxfile_free}:
+Routines for constructing matrices and vectors typically allocate their
+own storage for matrix or vector data. Therefore, once a user is
+finished with an object of type @code{struct mtxfile}, they should free
+any allocated storage by calling @code{mtxfile_free}:
+
 @example
 @code{void mtxfile_free(struct mtxfile * mtxfile);}
 @end example
@@ -653,6 +649,7 @@ newly allocated storage.
 The function @code{mtxfile_alloc} can be used to allocate storage for
 a Matrix Market file with specified header line, comment lines, size
 line and precision.
+
 @example
 @code{int mtxfile_alloc(
     struct mtxfile * mtxfile,
@@ -661,17 +658,22 @@ line and precision.
     const struct mtxfilesize * size,
     enum mtxprecision precision);}
 @end example
+
+@noindent
 The underlying matrix or vector values are not initialised, and it is
 therefore up to the user to initialise them.
 
 @findex mtxfile_alloc_copy
 To allocate storage for a copy of an existing Matrix Market file, the
 function @code{mtxfile_alloc_copy} may be used.
+
 @example
 @code{int mtxfile_alloc_copy(
     struct mtxfile * dst,
     const struct mtxfile * src);}
 @end example
+
+@noindent
 Although storage is allocated for the underlying matrix or vector
 values, the data is not initialised. It is therefore up to the user to
 initialise the matrix or vector values.
@@ -699,13 +701,14 @@ matrices and vectors in array format.
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
-    int num_rows, int num_columns);
+    int64_t num_rows,
+    int64_t num_columns);
 
 int mtxfile_alloc_vector_array(
     struct mtxfile * mtxfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows);}
+    int64_t num_rows);}
 @end example
 The field and precision must be specified, and storage is allocated
 appropriately. (For matrices, the symmetry must also be specified.)
@@ -739,7 +742,7 @@ double precision floating point coefficients is initialised with
 @code{int mtxfile_init_matrix_array_real_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows, int num_columns,
+    int64_t num_rows, int64_t num_columns,
     const double * data);}
 @end example
 Similarly, a vector in array format with 32-bit integer values is
@@ -747,7 +750,7 @@ initialised with @code{mtxfile_init_vector_array_integer_single}:
 @example
 @code{int mtxfile_init_vector_array_integer_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const int32_t * data);}
 @end example
 
@@ -762,7 +765,8 @@ To allocate storage for a matrix in coordinate format, the function
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
-    int num_rows, int num_columns, int64_t num_nonzeros);}
+    int64_t num_rows, int64_t num_columns,
+    int64_t num_nonzeros);}
 @end example
 The field, symmetry and precision must be specified, along with the
 matrix dimensions and the number of nonzero matrix entries to allocate
@@ -776,7 +780,7 @@ Similarly, a vector in coordinate format can be allocated with
     struct mtxfile * mtxfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows, int64_t num_nonzeros);}
+    int64_t num_rows, int64_t num_nonzeros);}
 @end example
 The field and precision must be given, along with the number of rows
 in the vector and the number of nonzero vector entries to allocate
@@ -810,7 +814,8 @@ real, double precision floating point coefficients is allocated with
 @code{int mtxfile_init_matrix_coordinate_real_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows, int num_columns, int64_t num_nonzeros,
+    int64_t num_rows, int64_t num_columns,
+    int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_double * data);}
 @end example
 The matrix values are copied from the @code{data} array.
@@ -821,7 +826,7 @@ integer values is created and initialised with the function
 @example
 @code{int mtxfile_init_vector_coordinate_integer_single(
     struct mtxfile * mtxfile,
-    int num_rows, int64_t num_nonzeros,
+    int64_t num_rows, int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_integer_single * data);}
 @end example
 
@@ -929,13 +934,13 @@ file @code{mtxfile}.
 @cindex compact
 @cindex duplicate nonzeros
 @findex mtxfile_compact
-When dealing with matrices in coordinate format, there may in general
-be multiple entries in a Matrix Market file with the same row and
-column index. Similarly, for vectors in coordinate format, there may
-be multiple entries with the same row. In some cases, these duplicate
-entries need to be merged into a single, unique entry, because certain
-computations involving sparse matrices and vectors assume that there
-are no such duplicates.
+When dealing with matrices in coordinate format, there may in general be
+multiple entries in a Matrix Market file with the same row and column
+index. Similarly, for vectors in coordinate format, there may be
+multiple entries with the same row offset. In some cases, these
+duplicate entries need to be merged into a single, unique entry, because
+certain computations involving sparse matrices and vectors assume that
+there are no such duplicates.
 
 If a Matrix Market file is already sorted, then @code{mtxfile_compact}
 can be used to perform a @dfn{compaction}. This will merge duplicate
@@ -950,18 +955,20 @@ Matrix Market file.
 For a matrix or vector in array format, this does nothing.
 
 The number of nonzero matrix or vector entries,
-(@samp{mtxfile->size.num_nonzeros}), is updated to reflect entries
-that were removed as a result of compacting. However, the underlying
-storage is not changed or reallocated. This may result in large
-amounts of unused memory if many entries are removed. In such cases,
-it is recommended to create a copy of the compacted Matrix Market file
-(e.g., using @code{mtxfile_init_copy}) and use that instead.
+(@samp{mtxfile->size.num_nonzeros}), is updated to reflect entries that
+were removed as a result of compacting. However, the underlying storage
+is not changed or reallocated. This may result in large amounts of
+unused memory if many entries are removed.  In such cases, it may be
+necessary to allocate new storage, copy the compacted data, and,
+finally, free the old storage.
+@c In such cases, it is recommended to create a copy of the compacted
+@c Matrix Market file (e.g., using @code{mtxfile_init_copy}) and use
+@c that instead.
 
 If @code{perm} is not @samp{NULL}, then it must point to an array of
 length @samp{size}. Each entry in @code{perm} is used to store the
-index of the corresponding data line in the compacted array that the
-data line was moved to or merged with. Note that the indexing is
-1-based.
+offset to the corresponding entry in the compacted array that the entry
+was moved to or merged with. Note that the indexing is 1-based.
 
 To give an example, consider the following Matrix Market file:
 @example
@@ -1015,6 +1022,267 @@ compaction.
 
 @node Partition
 @subsection Partition
+
+@cindex partitioning
+Partitioning matrices and vectors is a prerequisite for most
+distributed-memory, parallel operations in linear algebra. This is
+usually done to divide up the work among multiple processes. But
+Partitioning can also be done for other reasons, such as reordering
+matrix rows and columns. In the most general case, Libmtx provides
+functions for partitioning the nonzeros of sparse matrices and vectors
+in an arbitrary manner. However, there are also functions to cover more
+common use cases, such as partitioning a matrix by rows or columns.
+
+
+@findex mtxfile_partition_nonzeros
+The function @code{mtxfile_partition_nonzeros} is used to partition the
+nonzeros of a Matrix Market file.
+
+@example
+@code{int mtxfile_partition_nonzeros(
+    const struct mtxfile * mtxfile,
+    enum mtxpartitioning parttype,
+    int num_parts,
+    const int64_t * partsizes,
+    int64_t blksize,
+    const int * parts,
+    int * dstpart,
+    int64_t * dstpartsizes);}
+@end example
+
+@noindent
+The array pointed to by @code{dstpart} is used to store the part number
+assigned to each matrix or vector nonzero, and its length must therefore
+be at least equal to the number of nonzeros. If @code{dstpartsizes} is
+not @samp{NULL}, then it must be an array of length @samp{num_parts},
+and it is used to store the number of nonzeros assigned to each part.
+
+The type of partitioning performed is determined by the arguments
+@code{parttype}, @code{num_parts}, @code{partsizes}, @code{blksize} and
+@code{parts}. More specifically, if the set to be partitioned consists of
+@samp{N} nonzeros, then
+@itemize
+@item if @code{type} is @samp{mtx_cyclic}, nonzeros are partitioned in a cyclic
+  fashion into @code{num_parts} parts; or,
+@item if @code{type} is @samp{mtx_block}, the array @code{partsizes} contains
+  @code{num_parts} integers, specifying the size of each block of the
+  partitioned set; or,
+@item if @code{type} is @samp{mtx_block_cyclic}, nonzeros are arranged in
+  contiguous blocks of size @samp{blksize}, which are then partitioned
+  in a cyclic fashion into @code{num_parts} parts; or,
+@item if @code{type} is @samp{mtx_custom_partition}, the array @code{parts} must
+  be of length @samp{size} and should contain the part number (i.e., an
+  integer in the range @samp{[0,num_parts)}) for each nonzero.
+@end itemize
+
+
+To partition the entries of a Matrix Market file by rows or columns, the
+functions @code{mtxfile_partition_rowwise} or
+@code{mtxfile_partition_columnwise} can be used.
+
+@findex mtxfile_partition_rowwise
+@findex mtxfile_partition_columnwise
+@example
+@code{int mtxfile_partition_rowwise(
+    const struct mtxfile * mtxfile,
+    enum mtxpartitioning parttype,
+    int num_parts,
+    const int64_t * partsizes,
+    int64_t blksize,
+    const int * parts,
+    int * dstpart,
+    int64_t * dstpartsizes);
+
+int mtxfile_partition_columnwise(
+    const struct mtxfile * mtxfile,
+    enum mtxpartitioning parttype,
+    int num_parts,
+    const int64_t * partsizes,
+    int64_t blksize,
+    const int * parts,
+    int * dstpart,
+    int64_t * dstpartsizes);}
+@end example
+
+@noindent
+In the same way as for @code{mtxfile_partition_nonzeros}, the output is
+a partitioning of the nonzeros, which is written to the array pointed to
+by @code{dstpart} (whose length must therefore be at least equal to the
+number of nonzeros). Similarly, if @code{dstpartsizes} is not
+@samp{NULL}, then it must be an array of length @samp{num_parts}, and it
+is used to store the number of nonzeros assigned to each part.
+
+The type of partitioning performed is determined by the arguments
+@code{parttype}, @code{num_parts}, @code{partsizes}, @code{blksize} and
+@code{parts}, as described above. However, the chosen method is applied
+to partition the matrix rows (or columns) instead of partitioning the
+nonzeros directly. Afterwards, the partitioning of the nonzeros is
+determined based on the row (or column) they belong to.
+
+
+@findex mtxfile_partition_2d
+In cases where a 2D partitioning is needed, the function
+@code{mtxfile_partition_2d} can be used.
+
+@example
+@code{int mtxfile_partition_2d(
+    const struct mtxfile * mtxfile,
+    enum mtxpartitioning rowparttype,
+    int num_row_parts,
+    const int64_t * rowpartsizes,
+    int64_t rowblksize,
+    const int * rowparts,
+    enum mtxpartitioning colparttype,
+    int num_column_parts,
+    const int64_t * colpartsizes,
+    int64_t colblksize,
+    const int * colparts,
+    int * dstpart,
+    int64_t * dstpartsizes);}
+@end example
+
+@noindent
+The rows and columns of the matrix are then partitioned independently.
+The total number of parts is equal to the product of
+@samp{num_row_parts} and @samp{num_column_parts}.
+
+The meaning of the arguments @code{rowparttype}, @code{num_row_parts},
+@code{rowpartsizes} and @code{rowblksize}, and @code{rowparts}, are the
+same as described above for @code{mtxfile_partition_rowwise}.
+
+
+@cindex METIS
+@findex mtxfile_partition
+Finally, there is a function @code{mtxfile_partition}, which can be used
+to perform any of the partitionings described above, as well as
+partitioning sparse matrices by using an external graph partitioning
+library, METIS.
+
+@example
+@code{int mtxfile_partition(
+    struct mtxfile * mtxfile,
+    enum mtxmatrixparttype matrixparttype,
+    enum mtxpartitioning nzparttype,
+    int num_nz_parts,
+    const int64_t * nzpartsizes,
+    int64_t nzblksize,
+    const int * nzparts,
+    enum mtxpartitioning rowparttype,
+    int num_row_parts,
+    const int64_t * rowpartsizes,
+    int64_t rowblksize,
+    const int * rowparts,
+    enum mtxpartitioning colparttype,
+    int num_column_parts,
+    const int64_t * colpartsizes,
+    int64_t colblksize,
+    const int * colparts,
+    int * dstnzpart,
+    int64_t * dstnzpartsizes,
+    bool * rowpart,
+    int * dstrowpart,
+    int64_t * dstrowpartsizes,
+    bool * colpart,
+    int * dstcolpart,
+    int64_t * dstcolpartsizes,
+    int verbose);}
+@end example
+
+@c ‘mtxfile_partition()’ partitions the entries of a Matrix Market
+@c file, and, optionally, also partitions the rows and columns of the
+@c underlying matrix or vector.
+
+@noindent
+The type of partitioning to perform is determined by
+@code{matrixparttype}:
+@itemize
+@item If @code{matrixparttype} is @samp{mtx_matrixparttype_nonzeros}, the
+   nonzeros of the underlying matrix or vector are partitioned as a
+   one-dimensional array. The nonzeros are partitioned into
+   @code{num_nz_parts} parts according to the partitioning @code{nzparttype}. If
+   @code{nzparttype} is @samp{mtx_block}, then @code{nzpartsizes} may be used to
+   specify the size of each part. If @code{nzparttype} is @samp{mtx_block_cyclic},
+   then @code{nzblksize} is used to specify the block size.
+@item If @code{matrixparttype} is @samp{mtx_matrixparttype_rows}, the nonzeros
+   of the underlying matrix or vector are partitioned rowwise.
+@item If @code{matrixparttype} is @samp{mtx_matrixparttype_columns}, the
+   nonzeros of the underlying matrix are partitioned columnwise.
+@item If @code{matrixparttype} is @samp{mtx_matrixparttype_2d}, the nonzeros of
+   the underlying matrix are partitioned in rectangular blocks according
+   to the partitioning of the rows and columns.
+@item If @code{matrixparttype} is @samp{mtx_matrixparttype_metis}, then the rows
+   and columns of the underlying matrix are partitioned by the METIS
+   graph partitioner, and the matrix nonzeros are partitioned
+   accordingly.
+@end itemize
+
+In any case, the array @code{dstnzpart} is used to store the part
+numbers assigned to the matrix nonzeros, and must therefore be of length
+@samp{mtxfile->datasize}.
+
+If the rows are partitioned, then the array @code{dstrowpart} must be of
+length @samp{mtxfile->size.num_rows}, and it is used to store the part
+numbers assigned to the matrix rows. Furthermore, the value pointed to
+by ‘rowpart’ is also set to @samp{true}, whereas it is @samp{false} otherwise.
+
+Similarly, if the columns are partitioned (e.g., when partitioning
+columnwise, 2d or a graph-based partitioning of a non-square matrix),
+then @code{dstcolpart} is used to store the part numbers assigned to the
+matrix columns, and it must therefore be an array of length
+@samp{mtxfile->size.num_columns}. Moreover, the value pointed to by
+‘colpart’ is set to @samp{true}, whereas it is @samp{false} otherwise.
+
+Unless they are set to @samp{NULL}, then @code{dstnzpartsizes},
+@code{dstrowpartsizes} and @code{dstcolpartsizes} must be arrays of
+length @samp{num_parts}, which are then used to store the number of
+nonzeros, rows and columns assigned to each part, respectively.
+
+
+@findex mtxfile_split
+Given a partitioning of the (nonzero) entries of a Matrix Market file,
+the function @code{mtxfile_split} can be used to split the file into
+several files, one for each part.
+@example
+@code{int mtxfile_split(
+    int num_parts,
+    struct mtxfile ** dsts,
+    const struct mtxfile * src,
+    int64_t size,
+    int * parts,
+    const int64_t * num_rows_per_part,
+    const int64_t * num_columns_per_part);}
+@end example
+The partitioning of the matrix or vector entries is given by the array
+@code{parts}. The length of the @code{parts} array is given by
+@code{size}, and it must match the number of (nonzero) matrix or vector
+entries in @code{src}. Each entry in the array is an integer in the
+range @samp{[0, num_parts)} designating the part to which the
+corresponding nonzero element belongs.
+
+The argument @code{dsts} is an array of @code{num_parts} pointers to
+objects of type @code{struct mtxfile}. If successful, then
+@samp{dsts[p]} points to a Matrix Market file consisting of (nonzero)
+entries from ‘src’ that belong to the @samp{p}th part, according to the
+@code{parts} array.
+
+If @code{src} is a matrix (or vector) in coordinate format, then each of
+the matrices or vectors in @code{dsts} is also a matrix (or vector) in
+coordinate format with the same number of rows and columns as
+@code{src}. In this case, the arguments @code{num_rows_per_part} and
+@code{num_columns_per_part} are not used and may be set to @samp{NULL}.
+
+Otherwise, if @code{src} is a matrix (or vector) in array format, then
+the arrays @code{num_rows_per_part} and @code{num_columns_per_part}
+(both of length @samp{num_parts}) are used to specify the dimensions of
+each matrix (or vector) in @code{dsts}. For a given part @samp{p}, the
+number of matrix (or vector) elements assigned to that part must be
+equal to the product of @samp{num_rows_per_part[p]} and
+@samp{num_columns_per_part[p]}.
+
+The user is responsible for freeing storage allocated for each Matrix
+Market file in the @code{dsts} array.
+
+
 @c @cindex partition
 @c @cindex join
 @c Partitioning refers to the process of dividing up a matrix or vector
@@ -1318,6 +1586,7 @@ compaction.
 @c @code{p}, the sum of @samp{srcs[p*Q+q]->size.num_columns} for
 @c @samp{q=0,1,...,Q-1} must be equal to @samp{colpart->size}.
 
+
 @node Reorder
 @subsection Reorder
 @cindex reorder
@@ -1359,8 +1628,9 @@ The enum type @code{mtxfileordering} is used to enumerate different
 orderings for the rows and columns of a matrix.
 @example
 @code{enum mtxfileordering @{
-    mtxfile_unordered,  /* general, unordered matrix */
-    mtxfile_rcm,        /* Reverse Cuthill-McKee ordering */
+    mtxfile_custom_order,  /* general, user-defined ordering */
+    mtxfile_rcm,           /* Reverse Cuthill-McKee ordering */
+    mtxfile_nd,            /* nested dissection ordering */
 @};}
 @end example
 
@@ -1372,30 +1642,31 @@ matrix according to the specified ordering method.
     struct mtxfile * mtxfile,
     enum mtxfileordering ordering,
     int * rowperm,
+    int * rowperminv,
     int * colperm,
+    int * colperminv,
     bool permute,
+    bool * symmetric,
     int * rcm_starting_vertex);}
 @end example
 If successful, @code{mtxfile_reorder} returns @samp{MTX_SUCCESS}, and
-the rows and columns of @code{mtxfile} have been reordered according
-to the specified method. If @code{rowperm} is not @samp{NULL}, then it
-must point to an array whose length equals or exceeds the number of
-rows in the matrix. In this case, the array is used to store the
-permutation for reordering the matrix rows. Similarly, @code{colperm}
-may be used to store the permutation for reordering the matrix
-columns.
+the rows and columns of @code{mtxfile} have been reordered according to
+the specified method. If @code{rowperm} is not @samp{NULL}, then it must
+point to an array whose length is at least equal to the number of rows
+in the matrix. In this case, the array is used to store the permutation
+for reordering the matrix rows. Similarly, @code{colperm} may be used to
+store the permutation for reordering the matrix columns.
 
-In some cases, only the row and column permutations are needed, and
-the permutations should not be applied to @code{mtxfile}.  Therefore,
-the computed permutations are only applied if @code{permute} is
-@samp{true}.
+In some cases, only the row and column permutations are needed, and the
+permutations should not be applied to @code{mtxfile}.  Therefore, the
+computed permutations are only applied if @code{permute} is @samp{true}.
 
 Finally, if @code{ordering} is @samp{mtxfile_rcm}, then
-@code{rcm_starting_vertex} can be used to specify a starting vertex
-for the Reverse Cuthill-McKee algorithm. Moreover, if the starting
-vertex is set to @samp{0}, then a starting vertex is chosen
-automatically, and @code{rcm_starting_vertex} will be used to return
-the chosen starting vertex.
+@code{rcm_starting_vertex} can be used to specify a starting vertex for
+the Reverse Cuthill-McKee algorithm. Moreover, if the starting vertex is
+set to @samp{0}, then a starting vertex is chosen automatically, and
+@code{rcm_starting_vertex} will be used to return the chosen starting
+vertex.
 
 
 @node Reverse Cuthill-McKee (RCM)
@@ -1449,6 +1720,18 @@ of the matrix, whereas a starting vertex in the range
 @code{[@var{M}+1,@var{M}+@var{N}]}, where @code{@var{N}} is the number
 of matrix columns, selects a vertex corresponding to a column of the
 matrix.
+
+
+@node Nested Dissection
+@subsubsection Nested Dissection
+@cindex Nested Dissection
+@cindex METIS
+@cindex graph partitioning
+If @code{mtxfile_reorder} is called with @code{ordering} set to
+@samp{mtxfile_nd}, then the nested dissection algorithm is used to
+reorder the rows and columns of the given sparse matrix. The METIS graph
+partitioning library is used to perform the ordering, which is based on
+a multilevel recursive bisection algorithm,
 
 
 @node Communicating Matrix Market files

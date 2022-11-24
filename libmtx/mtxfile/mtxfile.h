@@ -634,8 +634,7 @@ int LIBMTX_API mtxfile_gzread(
  * must be '%d'. The format string is ignored if the field is
  * ‘mtxfile_pattern’. Field width and precision may be specified
  * (e.g., "%3.1f"), but variable field width and precision (e.g.,
- * "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
- * allowed.
+ * "%*.*f") or length modifiers (e.g., "%Lf") are not allowed.
  *
  * The locale is temporarily changed to "C" to ensure that
  * locale-specific settings, such as the type of decimal point, do not
@@ -663,8 +662,7 @@ int LIBMTX_API mtxfile_write(
  * must be '%d'. The format string is ignored if the field is
  * ‘mtxfile_pattern’. Field width and precision may be specified
  * (e.g., "%3.1f"), but variable field width and precision (e.g.,
- * "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
- * allowed.
+ * "%*.*f") or length modifiers (e.g., "%Lf") are not allowed.
  *
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
@@ -696,8 +694,7 @@ int LIBMTX_API mtxfile_fwrite(
  * must be '%d'. The format string is ignored if the field is
  * ‘mtxfile_pattern’. Field width and precision may be specified
  * (e.g., "%3.1f"), but variable field width and precision (e.g.,
- * "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
- * allowed.
+ * "%*.*f") or length modifiers (e.g., "%Lf") are not allowed.
  *
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.

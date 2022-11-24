@@ -1186,8 +1186,7 @@ int mtxfile_gzread(
  * then the format specifier must be '%d'. The format string is
  * ignored if the field is ‘pattern’. Field width and precision may be
  * specified (e.g., "%3.1f"), but variable field width and precision
- * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
- * allowed.
+ * (e.g., "%*.*f") or length modifiers (e.g., "%Lf") are not allowed.
  *
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
@@ -1254,8 +1253,7 @@ int mtxfile_write(
  * then the format specifier must be '%d'. The format string is
  * ignored if the field is ‘pattern’. Field width and precision may be
  * specified (e.g., "%3.1f"), but variable field width and precision
- * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
- * allowed.
+ * (e.g., "%*.*f") or length modifiers (e.g., "%Lf") are not allowed.
  *
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
@@ -1298,8 +1296,7 @@ int mtxfile_fwrite(
  * then the format specifier must be '%d'. The format string is
  * ignored if the field is ‘pattern’. Field width and precision may be
  * specified (e.g., "%3.1f"), but variable field width and precision
- * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
- * allowed.
+ * (e.g., "%*.*f") or length modifiers (e.g., "%Lf") are not allowed.
  *
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
