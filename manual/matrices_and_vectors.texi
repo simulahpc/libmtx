@@ -26,9 +26,9 @@ This chapter explains how to convert Matrix Market files to matrices
 and vectors based on other storage formats, and how to perform various
 linear algebra operations involving matrices and vectors. For now, we
 are concerned with matrices and vectors on a single, shared-memory
-machine or node. For matrices and vectors that are distributed across
-multiple processes using MPI, see @ref{Distributed matrices and
-vectors}.
+machine or node.
+@c For matrices and vectors that are distributed across multiple
+@c processes using MPI, see @ref{Distributed matrices and vectors}.
 
 One of the goals of Libmtx is to allow for experimenting with various
 storage formats for matrices and vectors, as well as different

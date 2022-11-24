@@ -82,6 +82,8 @@ use the Libmtx C library to work with Matrix Market files, refer to
 for basic linear algebra, refer to @ref{Matrices and vectors}. If you
 are working in a distributed-memory setting and would like to use
 distributed matrices and vectors, see @ref{Distributed Matrix Market
-files} and @ref{Distributed matrices and vectors}. If you would like
+files}.
+@c and @ref{Distributed matrices and vectors}
+If you would like
 to get an overview of the command-line programs included in Libmtx,
 then you should read @ref{Commands}.

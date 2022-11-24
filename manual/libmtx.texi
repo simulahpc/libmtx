@@ -78,8 +78,8 @@ Texts.  A copy of the license is included in the section entitled
 * Distributed Matrix Market files:: Distributing Matrix Market files
   across multiple processes.
 * Matrices and vectors:: Working with matrices and vectors.
-* Distributed matrices and vectors:: Distributing matrices and vectors
-  across multiple processes.
+@c * Distributed matrices and vectors:: Distributing matrices and vectors
+@c   across multiple processes.
 * Commands:: Command-line tools for Matrix Market files.
 
 * References:: List of useful references.
@@ -114,7 +114,7 @@ along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @include matrix_market_files.texi
 @include distributed_matrix_market_files.texi
 @include matrices_and_vectors.texi
-@include distributed_matrices_and_vectors.texi
+@c @include distributed_matrices_and_vectors.texi
 @include commands.texi
 @include references.texi
 
