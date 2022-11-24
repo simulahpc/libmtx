@@ -147,7 +147,7 @@ const char * mtxstrerror(
         return "METIS: value too large for defined data type; "
             "please rebuild METIS with support for 64-bit integer types";
 #else
-        return "METIS: value too large for defined data type;";
+        return "METIS: value too large for defined data type";
 #endif
     case MTX_ERR_EOF:
         if (errno) return strerror(errno);

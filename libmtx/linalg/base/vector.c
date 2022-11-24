@@ -2555,9 +2555,7 @@ int mtxbasevector_snrm2(
                 c += xdata[k]*xdata[k];
             *nrm2 = sqrtf(c);
             if (num_flops) *num_flops += 2*x->num_nonzeros;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
@@ -2573,9 +2571,7 @@ int mtxbasevector_snrm2(
                 c += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
             *nrm2 = sqrtf(c);
             if (num_flops) *num_flops += 4*x->num_nonzeros;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
@@ -2611,50 +2607,46 @@ int mtxbasevector_dnrm2(
             double c = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 c += xdata[k]*xdata[k];
-            *nrm2 = sqrtf(c);
+            *nrm2 = sqrt(c);
             if (num_flops) *num_flops += 2*x->num_nonzeros;
         } else if (x->precision == mtx_double) {
             const double * xdata = x->data.real_double;
             double c = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 c += xdata[k]*xdata[k];
-            *nrm2 = sqrtf(c);
+            *nrm2 = sqrt(c);
             if (num_flops) *num_flops += 2*x->num_nonzeros;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
             double c = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 c += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
-            *nrm2 = sqrtf(c);
+            *nrm2 = sqrt(c);
             if (num_flops) *num_flops += 4*x->num_nonzeros;
         } else if (x->precision == mtx_double) {
             const double (* xdata)[2] = x->data.complex_double;
             double c = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 c += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
-            *nrm2 = sqrtf(c);
+            *nrm2 = sqrt(c);
             if (num_flops) *num_flops += 4*x->num_nonzeros;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
             double c = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 c += xdata[k]*xdata[k];
-            *nrm2 = sqrtf(c);
+            *nrm2 = sqrt(c);
             if (num_flops) *num_flops += 2*x->num_nonzeros;
         } else if (x->precision == mtx_double) {
             const int64_t * xdata = x->data.integer_double;
             double c = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 c += xdata[k]*xdata[k];
-            *nrm2 = sqrtf(c);
+            *nrm2 = sqrt(c);
             if (num_flops) *num_flops += 2*x->num_nonzeros;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else { return MTX_ERR_INVALID_FIELD; }
