@@ -2626,7 +2626,8 @@ int mtxfile_reorder(
     int * colperminv,
     bool permute,
     bool * symmetric,
-    int * rcm_starting_vertex)
+    int * rcm_starting_vertex,
+    int verbose)
 {
     /* rectangular matrices always yield unsymmetric orderings */
     int64_t num_rows = mtxfile->size.num_rows;
@@ -2660,7 +2661,6 @@ int mtxfile_reorder(
             mtxfile, rowperm, colperm, permute,
             symmetric, rcm_starting_vertex);
     } else if (ordering == mtxfile_nd) {
-        int verbose = 0;
         return mtxfile_reorder_nd(
             mtxfile, rowperm, rowperminv, colperm, colperminv,
             permute, symmetric, verbose);

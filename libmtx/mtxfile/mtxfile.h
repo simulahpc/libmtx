@@ -1288,7 +1288,8 @@ int LIBMTX_API mtxfile_reorder(
     int * colperminv,
     bool permute,
     bool * symmetric,
-    int * rcm_starting_vertex);
+    int * rcm_starting_vertex,
+    int verbose);
 
 /*
  * MPI functions

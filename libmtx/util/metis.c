@@ -485,24 +485,9 @@ int metis_ndsym(
     else if (err == METIS_ERROR_MEMORY) { return MTX_ERR_METIS_MEMORY; }
     else if (err == METIS_ERROR) { return MTX_ERR_METIS; }
 
-    /* METIS_OBJTYPE_CUT for edge-cut minimization (default) or
-     * METIS_OBJTYPE_VOL for total communication volume
-     * minimization */
-    // options[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_CUT;
-
     /* METIS_CTYPE_RM for random matching or METIS_CTYPE_SHEM for
      * sorted heavy-edge matching (default) */
     // options[METIS_OPTION_CTYPE] = METIS_CTYPE_SHEM;
-
-    /*
-     * METIS_IPTYPE_GROW - grows a bisection using a greedy strategy (default)
-     * METIS_IPTYPE_RANDOM - computes a bisection at random followed
-     *                       by a refinement
-     * METIS_IPTYPE_EDGE - derives a separator from an edge cut
-     * METIS_IPTYPE_NODE - grow a bisection using a greedy node-based
-     *                     strategy
-     */
-    // options[METIS_OPTION_IPTYPE] = METIS_IPTYPE_GROW;
 
     /*
      * METIS_RTYPE_FM - FM-based cut refinement
@@ -515,10 +500,10 @@ int metis_ndsym(
     /* 0 (default) performs a 2–hop matching or 1 does not */
     // options[METIS_OPTION_NO2HOP] = 0;
 
-    /* The number of different partitionings to compute. The final
-     * partitioning is the one that achieves the best edgecut or
-     * communication volume. Default is 1. */
-    // options[METIS_OPTION_NCUTS] = 1;
+    /* Specifies the number of different separators that it will
+     * compute at each level of nested dissection. The final separator
+     * that is used is the smallest one. Default is 1. */
+    // options[METIS_OPTION_NSEPS] = 1;
 
     /* The number of iterations for the refinement algorithms at each
      * stage of the uncoarsening process. Default is 10. */
@@ -537,16 +522,47 @@ int metis_ndsym(
      * 1.03). */
     // options[METIS_OPTION_UFACTOR] = 30;
 
-    /* 0 does not explicitly minimize maximum connectivity (default),
-     * or 1 explicitly minimizes maximum connectivity. */
-    // options[METIS_OPTION_MINCONN] = 0;
+    /* Specifies that the graph should be compressed by combining
+     * together vertices that have identical adjacency lists.
+     *
+     * 0 Does not try to compress the graph.
+     * 1 Tries to compress the graph. (default) */
+    // options[METIS_OPTION_COMPRESS] = 0;
 
-    /* 0 does not force contiguous partitions (default), or 1 forces
-     * contiguous partitions. */
-    // options[METIS_OPTION_CONTIG] = 0;
+    /* Specifies if the connected components of the graph should first
+     * be identified and ordered separately.
+     *
+     *  0 Does not identify the connected components. (default)
+     *  1 Identifies the connected components. */
+    // options[METIS_OPTION_CCORDER] = 1;
 
     /* seed for the random number generator */
     // options[METIS_OPTION_SEED] = 0;
+
+    /*
+     * Specifies the minimum degree of the vertices that will be
+     * ordered last. If the specified value is x > 0, then any
+     * vertices with a degree greater than 0.1*x*(average degree) are
+     * removed from the graph, an ordering of the rest of the vertices
+     * is computed, and an overall ordering is computed by ordering
+     * the removed vertices at the end of the overall ordering. For
+     * example if x = 40, and the average degree is 5, then the
+     * algorithm will remove all vertices with degree greater than
+     * 20. The vertices that are removed are ordered last (i.e., they
+     * are automatically placed in the top-level separator). Good
+     * values are often in the range of 60 to 200 (i.e., 6 to 20 times
+     * more than the average). Default value is 0, indicating that no
+     * vertices are removed.
+     *
+     * Used to control whether or not the ordering algorithm should
+     * remove any vertices with high degree (i.e., dense
+     * columns). This is particularly helpful for certain classes of
+     * LP matrices, in which there a few vertices that are connected
+     * to many other vertices. By removing these vertices prior to
+     * ordering, the quality and the amount of time required to do the
+     * ordering improves.
+     */
+    // options[METIS_OPTION_PFACTOR] = 0;
 
     /* 0 for C-style numbering that starts from 0 (default), or 1 for
      * Fortran-style numbering that starts from 1 */
@@ -563,7 +579,16 @@ int metis_ndsym(
      * METIS_DBG_CONNINFO (128)
      * METIS_DBG_CONTIGINFO (256)
      */
-    options[METIS_OPTION_DBGLVL] = verbose ? 1 : 0;
+    options[METIS_OPTION_DBGLVL] = !verbose ? 0
+        : (METIS_DBG_INFO |
+           METIS_DBG_TIME |
+           METIS_DBG_COARSEN |
+           METIS_DBG_REFINE |
+           METIS_DBG_IPART |
+           METIS_DBG_MOVEINFO |
+           METIS_DBG_SEPINFO |
+           METIS_DBG_CONNINFO |
+           METIS_DBG_CONTIGINFO);
 
     /* the number of vertices in the graph */
     idx_t nvtxs = N;
@@ -757,7 +782,7 @@ int metis_nd(
         }
         int err = compact_unsorted_int64_pair(
             &num_nonzeros, idx, num_nonzeros, idx, NULL, NULL);
-        if (err) { free(idx); return err; }
+        if (err) { free(idx); return MTX_ERR_ERRNO; }
         err = metis_ndsym(
             N, num_nonzeros, sizeof(*idx), 0, &idx[0][0],
             sizeof(*idx), 0, &idx[0][1], rowperm, rowperminv, verbose);
@@ -768,15 +793,35 @@ int metis_nd(
          * Handle non-square matrices by partitioning the bipartite
          * graph whose vertices are the rows and columns of the
          * matrix.
+         *
+         * According to Section 5.5 in the METIS manual, for each
+         * undirected edge of the underlying graph with vertices i and
+         * j, it is necessary to include a nonzero in the ith row i
+         * and jth column, as well as the symmetric nonzero in the jth
+         * row and ith column. In practice, METIS_NodeND may fail if
+         * this criteria is not met.
          */
         int * perm = malloc(N * sizeof(int));
         if (!perm) return MTX_ERR_ERRNO;
         int * perminv = malloc(N * sizeof(int));
         if (!perminv) { free(perm); return MTX_ERR_ERRNO; }
-        int err = metis_ndsym(
-            N, num_nonzeros, rowidxstride, rowidxbase, rowidx,
-            colidxstride, colidxbase, colidx, perm, perminv, verbose);
-        if (err) { free(perminv); free(perm); return err; }
+        int64_t (* idx)[2] = malloc(2*num_nonzeros * sizeof(int64_t[2]));
+        if (!idx) { free(perminv); free(perm); return MTX_ERR_ERRNO; }
+        for (int64_t k = 0; k < num_nonzeros; k++) {
+            int64_t i = *(const int64_t *) ((const char *) rowidx + k*rowidxstride)-rowidxbase;
+            int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
+            idx[2*k+0][0] = i; idx[2*k+0][1] = num_rows+j;
+            idx[2*k+1][0] = num_rows+j; idx[2*k+1][1] = i;
+        }
+        num_nonzeros *= 2;
+        int err = compact_unsorted_int64_pair(
+            &num_nonzeros, idx, num_nonzeros, idx, NULL, NULL);
+        if (err) { free(idx); free(perminv); free(perm); return MTX_ERR_ERRNO; }
+        err = metis_ndsym(
+            N, num_nonzeros, sizeof(*idx), 0, &idx[0][0],
+            sizeof(*idx), 0, &idx[0][1], perm, perminv, verbose);
+        if (err) { free(idx); free(perminv); free(perm); return err; }
+        free(idx);
         int k = 0, l = 0;
         for (int64_t i = 0; i < N; i++) {
             if (perm[i] < num_rows) { rowperm[k++] = perm[i]; }

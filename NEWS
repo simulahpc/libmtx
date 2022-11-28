@@ -1,6 +1,10 @@
 * Noteworthy changes in the upcoming release
 
-  ...
+  This version fixes an issue with the nested dissection reordering,
+  which failed for many non-square matrices. METIS requires that for
+  an edge (i,j) both nonzeros must be present in the CSR matrix that
+  is passed to METIS_NodeND.
+
 
 * Noteworthy changes in release 0.3.0 (2022-11-24)
 

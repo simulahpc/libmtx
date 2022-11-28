@@ -651,7 +651,8 @@ int main(int argc, char *argv[])
     int rcm_starting_vertex = args.rcm_starting_vertex;
     err = mtxfile_reorder(
         &mtxfile, args.ordering, rowperm, rowperminv, colperm, colperminv,
-        !args.quiet, &symmetric, &rcm_starting_vertex);
+        !args.quiet, &symmetric, &rcm_starting_vertex,
+        args.verbose > 1 ? args.verbose-- : 0);
     if (err) {
         if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n",
