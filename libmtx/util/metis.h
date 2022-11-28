@@ -137,7 +137,10 @@ int metis_partgraph(
  * nonzero entries. The nonzeros may be located in the upper or lower
  * triangle of the adjacency matrix. However, if there is a nonzero
  * entry at row ‘i’ and column ‘j’, then there should not be a nonzero
- * entry row ‘j’ and column ‘i’.
+ * entry row ‘j’ and column ‘i’. (Although both nonzeros are required
+ * in the undirected graph data structure passed to METIS, as
+ * described in Section 5.5 of the METIS manual, the required nonzeros
+ * will be added by ‘metis_ndsym()’ before calling METIS.)
  *
  * The values ‘rowidxstride’ and ‘colidxstride’ may be used to specify
  * strides (in bytes) that are used when accessing the row and column

@@ -3546,9 +3546,9 @@ int test_mtxfile_reorder_nd(void)
     {
         /* Rectangular matrix: */
 
-        /* Rows:      3 2 1      1 2 3 */
+        /* Rows:      3 2 1      3 1 2 */
         /*            |/|/   ==> |/|/  */
-        /* Columns:   2 1        2 1   */
+        /* Columns:   2 1        1 2   */
 
         int err;
         struct mtxfile mtxfile;
@@ -3575,16 +3575,16 @@ int test_mtxfile_reorder_nd(void)
             true, &symmetric, verbose);
         TEST_ASSERT_EQ(false, symmetric);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(3, rowperm[0]);
-        TEST_ASSERT_EQ(2, rowperm[1]);
-        TEST_ASSERT_EQ(1, rowperm[2]);
-        TEST_ASSERT_EQ(1, colperm[0]);
-        TEST_ASSERT_EQ(2, colperm[1]);
-        TEST_ASSERT_EQ(3, rowperminv[0]);
-        TEST_ASSERT_EQ(2, rowperminv[1]);
-        TEST_ASSERT_EQ(1, rowperminv[2]);
-        TEST_ASSERT_EQ(1, colperminv[0]);
-        TEST_ASSERT_EQ(2, colperminv[1]);
+        TEST_ASSERT_EQ(2, rowperm[0]);
+        TEST_ASSERT_EQ(1, rowperm[1]);
+        TEST_ASSERT_EQ(3, rowperm[2]);
+        TEST_ASSERT_EQ(2, colperm[0]);
+        TEST_ASSERT_EQ(1, colperm[1]);
+        TEST_ASSERT_EQ(2, rowperminv[0]);
+        TEST_ASSERT_EQ(1, rowperminv[1]);
+        TEST_ASSERT_EQ(3, rowperminv[2]);
+        TEST_ASSERT_EQ(2, colperminv[0]);
+        TEST_ASSERT_EQ(1, colperminv[1]);
 
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -3596,13 +3596,13 @@ int test_mtxfile_reorder_nd(void)
         TEST_ASSERT_EQ(4, mtxfile.size.num_nonzeros);
         const struct mtxfile_matrix_coordinate_real_single * data =
             mtxfile.data.matrix_coordinate_real_single;
-        TEST_ASSERT_EQ(    3, data[0].i); TEST_ASSERT_EQ(1, data[0].j);
+        TEST_ASSERT_EQ(    2, data[0].i); TEST_ASSERT_EQ(2, data[0].j);
         TEST_ASSERT_EQ( 1.0f, data[0].a);
-        TEST_ASSERT_EQ(    2, data[1].i); TEST_ASSERT_EQ(1, data[1].j);
+        TEST_ASSERT_EQ(    1, data[1].i); TEST_ASSERT_EQ(2, data[1].j);
         TEST_ASSERT_EQ( 2.0f, data[1].a);
-        TEST_ASSERT_EQ(    2, data[2].i); TEST_ASSERT_EQ(2, data[2].j);
+        TEST_ASSERT_EQ(    1, data[2].i); TEST_ASSERT_EQ(1, data[2].j);
         TEST_ASSERT_EQ( 3.0f, data[2].a);
-        TEST_ASSERT_EQ(    1, data[3].i); TEST_ASSERT_EQ(2, data[3].j);
+        TEST_ASSERT_EQ(    3, data[3].i); TEST_ASSERT_EQ(1, data[3].j);
         TEST_ASSERT_EQ( 4.0f, data[3].a);
         mtxfile_free(&mtxfile);
     }

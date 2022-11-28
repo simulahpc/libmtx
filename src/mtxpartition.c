@@ -599,7 +599,8 @@ int main(int argc, char *argv[])
         args.rowparttype, args.num_row_parts, NULL, args.rowblksize, NULL,
         args.colparttype, args.num_column_parts, NULL, args.colblksize, NULL,
         dstnzpart, dstnzpartsizes, &rowpart, dstrowpart, dstrowpartsizes,
-        &colpart, dstcolpart, dstcolpartsizes, args.verbose > 2);
+        &colpart, dstcolpart, dstcolpartsizes,
+        args.verbose > 2 ? args.verbose-2 : 0);
     if (err) {
         if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, mtxstrerror(err));

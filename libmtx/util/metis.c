@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-09-06
+ * Last modified: 2022-11-28
  *
  * METIS graph partitioning and sparse matrix reordering algorithms.
  */
@@ -178,7 +178,18 @@ int metis_partgraphsym(
      * METIS_DBG_CONNINFO (128)
      * METIS_DBG_CONTIGINFO (256)
      */
-    options[METIS_OPTION_DBGLVL] = verbose ? 1 : 0;
+    options[METIS_OPTION_DBGLVL] = 0;
+    if (verbose > 0) options[METIS_OPTION_DBGLVL] |= METIS_DBG_INFO | METIS_DBG_TIME;
+    if (verbose > 1) {
+        options[METIS_OPTION_DBGLVL] |= (
+            METIS_DBG_COARSEN |
+            METIS_DBG_REFINE |
+            METIS_DBG_IPART |
+            METIS_DBG_MOVEINFO |
+            METIS_DBG_SEPINFO |
+            METIS_DBG_CONNINFO |
+            METIS_DBG_CONTIGINFO);
+    }
 
     /* the number of vertices in the graph */
     idx_t nvtxs = N;
@@ -410,14 +421,22 @@ int metis_partgraph(
         /*
          * Handle non-square matrices by partitioning the bipartite
          * graph whose vertices are the rows and columns of the
-         * matrix.
+         * matrix. This requires shifting the column indices to the
+         * right by an offset equal to the number of matrix rows.
          */
         int * dstpart = malloc(N * sizeof(int));
         if (!dstpart) return MTX_ERR_ERRNO;
+        int64_t * tmpcolidx = malloc(num_nonzeros * sizeof(int64_t));
+        if (!tmpcolidx) { free(dstpart); return MTX_ERR_ERRNO; }
+        for (int64_t k = 0; k < num_nonzeros; k++) {
+            int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
+            tmpcolidx[k] = num_rows+j;
+        }
         int err = metis_partgraphsym(
             num_parts, N, num_nonzeros, rowidxstride, rowidxbase, rowidx,
-            colidxstride, colidxbase, colidx, dstpart, verbose);
-        if (err) { free(dstpart); return err; }
+            sizeof(*tmpcolidx), 0, tmpcolidx, dstpart, verbose);
+        if (err) { free(tmpcolidx); free(dstpart); return err; }
+        free(tmpcolidx);
         for (int64_t i = 0; i < num_rows; i++) dstrowpart[i] = dstpart[i];
         for (int64_t j = 0; j < num_columns; j++) dstcolpart[j] = dstpart[num_rows+j];
         free(dstpart);
@@ -440,7 +459,10 @@ int metis_partgraph(
  * nonzero entries. The nonzeros may be located in the upper or lower
  * triangle of the adjacency matrix. However, if there is a nonzero
  * entry at row ‘i’ and column ‘j’, then there should not be a nonzero
- * entry row ‘j’ and column ‘i’.
+ * entry row ‘j’ and column ‘i’. (Although both nonzeros are required
+ * in the undirected graph data structure passed to METIS, as
+ * described in Section 5.5 of the METIS manual, the required nonzeros
+ * will be added by ‘metis_ndsym()’ before calling METIS.)
  *
  * The values ‘rowidxstride’ and ‘colidxstride’ may be used to specify
  * strides (in bytes) that are used when accessing the row and column
@@ -579,16 +601,18 @@ int metis_ndsym(
      * METIS_DBG_CONNINFO (128)
      * METIS_DBG_CONTIGINFO (256)
      */
-    options[METIS_OPTION_DBGLVL] = !verbose ? 0
-        : (METIS_DBG_INFO |
-           METIS_DBG_TIME |
-           METIS_DBG_COARSEN |
-           METIS_DBG_REFINE |
-           METIS_DBG_IPART |
-           METIS_DBG_MOVEINFO |
-           METIS_DBG_SEPINFO |
-           METIS_DBG_CONNINFO |
-           METIS_DBG_CONTIGINFO);
+    options[METIS_OPTION_DBGLVL] = 0;
+    if (verbose > 0) options[METIS_OPTION_DBGLVL] |= METIS_DBG_INFO | METIS_DBG_TIME;
+    if (verbose > 1) {
+        options[METIS_OPTION_DBGLVL] |= (
+            METIS_DBG_COARSEN |
+            METIS_DBG_REFINE |
+            METIS_DBG_IPART |
+            METIS_DBG_MOVEINFO |
+            METIS_DBG_SEPINFO |
+            METIS_DBG_CONNINFO |
+            METIS_DBG_CONTIGINFO);
+    }
 
     /* the number of vertices in the graph */
     idx_t nvtxs = N;
@@ -790,38 +814,26 @@ int metis_nd(
         free(idx);
     } else {
         /*
-         * Handle non-square matrices by partitioning the bipartite
+         * Handle non-square matrices by reordering the bipartite
          * graph whose vertices are the rows and columns of the
-         * matrix.
-         *
-         * According to Section 5.5 in the METIS manual, for each
-         * undirected edge of the underlying graph with vertices i and
-         * j, it is necessary to include a nonzero in the ith row i
-         * and jth column, as well as the symmetric nonzero in the jth
-         * row and ith column. In practice, METIS_NodeND may fail if
-         * this criteria is not met.
+         * matrix. This requires shifting the column indices to the
+         * right by an offset equal to the number of matrix rows.
          */
         int * perm = malloc(N * sizeof(int));
         if (!perm) return MTX_ERR_ERRNO;
         int * perminv = malloc(N * sizeof(int));
         if (!perminv) { free(perm); return MTX_ERR_ERRNO; }
-        int64_t (* idx)[2] = malloc(2*num_nonzeros * sizeof(int64_t[2]));
-        if (!idx) { free(perminv); free(perm); return MTX_ERR_ERRNO; }
+        int64_t * tmpcolidx = malloc(num_nonzeros * sizeof(int64_t));
+        if (!tmpcolidx) { free(perminv); free(perm); return MTX_ERR_ERRNO; }
         for (int64_t k = 0; k < num_nonzeros; k++) {
-            int64_t i = *(const int64_t *) ((const char *) rowidx + k*rowidxstride)-rowidxbase;
             int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
-            idx[2*k+0][0] = i; idx[2*k+0][1] = num_rows+j;
-            idx[2*k+1][0] = num_rows+j; idx[2*k+1][1] = i;
+            tmpcolidx[k] = num_rows+j;
         }
-        num_nonzeros *= 2;
-        int err = compact_unsorted_int64_pair(
-            &num_nonzeros, idx, num_nonzeros, idx, NULL, NULL);
-        if (err) { free(idx); free(perminv); free(perm); return MTX_ERR_ERRNO; }
-        err = metis_ndsym(
-            N, num_nonzeros, sizeof(*idx), 0, &idx[0][0],
-            sizeof(*idx), 0, &idx[0][1], perm, perminv, verbose);
-        if (err) { free(idx); free(perminv); free(perm); return err; }
-        free(idx);
+        int err = metis_ndsym(
+            N, num_nonzeros, rowidxstride, rowidxbase, rowidx,
+            sizeof(*tmpcolidx), 0, tmpcolidx, perm, perminv, verbose);
+        if (err) { free(tmpcolidx); free(perminv); free(perm); return err; }
+        free(tmpcolidx);
         int k = 0, l = 0;
         for (int64_t i = 0; i < N; i++) {
             if (perm[i] < num_rows) { rowperm[k++] = perm[i]; }
