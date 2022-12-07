@@ -288,6 +288,7 @@ int metis_partgraphsym(
      * that METIS prints its output to the standard error stream */
     int tmpfd = -1;
     if (verbose) {
+        fflush(stdout);
         tmpfd = dup(STDOUT_FILENO);
         if (tmpfd != -1) dup2(STDERR_FILENO, STDOUT_FILENO);
     }
@@ -302,7 +303,7 @@ int metis_partgraphsym(
         &nvtxs, &ncon, xadj, adjncy, vwgt, vsize, adjwgt,
         &nparts, tpwgts, ubvec, options, &objval, part);
 
-    if (tmpfd != -1) dup2(tmpfd, STDOUT_FILENO);
+    if (tmpfd != -1) { fflush(stdout); dup2(tmpfd, STDOUT_FILENO); }
 
     if (err == METIS_ERROR_INPUT) { err = MTX_ERR_METIS_INPUT; }
     else if (err == METIS_ERROR_MEMORY) { err = MTX_ERR_METIS_MEMORY; }
@@ -681,6 +682,7 @@ int metis_ndsym(
      * that METIS prints its output to the standard error stream */
     int tmpfd = -1;
     if (verbose) {
+        fflush(stdout);
         tmpfd = dup(STDOUT_FILENO);
         if (tmpfd != -1) dup2(STDERR_FILENO, STDOUT_FILENO);
     }
@@ -695,7 +697,7 @@ int metis_ndsym(
     err = METIS_NodeND(
         &nvtxs, xadj, adjncy, vwgt, options, perminv, perm);
 
-    if (tmpfd != -1) dup2(tmpfd, STDOUT_FILENO);
+    if (tmpfd != -1) { fflush(stdout); dup2(tmpfd, STDOUT_FILENO); }
 
     if (err == METIS_ERROR_INPUT) { err = MTX_ERR_METIS_INPUT; }
     else if (err == METIS_ERROR_MEMORY) { err = MTX_ERR_METIS_MEMORY; }
