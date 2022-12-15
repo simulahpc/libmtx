@@ -66,16 +66,10 @@ gl_VISIBILITY
 dnl Check for x86 features
 AC_CHECK_HEADERS([immintrin.h])
 AC_ARG_ENABLE(bmi2,
-  AS_HELP_STRING([--disable-bmi2], [disable use of x86 BMI2 instructions]))
-BMI2_CFLAGS=
-AS_IF([test "x$enable_bmi2" != "xno"], [
-  AX_GCC_X86_CPU_SUPPORTS(bmi2,
-    [AC_DEFINE(LIBMTX_USE_BMI2, 1, [Define to use x86 BMI2 instructions.])
-     BMI2_CFLAGS="$BMI2_CFLAGS -mbmi2 -DLIBMTX_USE_BMI2"],
-    [if test x"$enable_bmi2" = xyes; then
-      AC_MSG_FAILURE([BMI2 not supported.])
-     fi])
-  ])
+  AS_HELP_STRING([--enable-bmi2], [enable use of x86 BMI2 instructions]),
+  [AC_DEFINE(LIBMTX_USE_BMI2, 1, [Define to use x86 BMI2 instructions.])
+  BMI2_CFLAGS="-mbmi2 -DLIBMTX_USE_BMI2"],
+  [AC_MSG_WARN([BMI2 not supported])])
 AC_SUBST([BMI2_CFLAGS])
 
 dnl Check for C math library
@@ -220,14 +214,15 @@ AS_IF(
 
 dnl check for OpenBLAS
 AS_IF([test x"$with_blas" != xno -a x"$blas_found" == xno],
-  [AX_OPENBLAS(
-    [AC_DEFINE([LIBMTX_HAVE_OPENBLAS], [1], [Define to 1 if you have OpenBLAS])
-     AC_SUBST(LIBMTX_HAVE_OPENBLAS)
-     BLAS_CPPFLAGS="-I${OPENBLAS_HOME}/include"
-     BLAS_LDFLAGS="-L${OPENBLAS_HOME}/lib"
-     BLAS_LIBS="-lopenblas"
-     with_blas=openblas
-     blas_found=yes], [])])
+  [AX_OPENBLAS([
+    with_blas=openblas
+    blas_found=yes
+    BLAS_CPPFLAGS="-I${OPENBLAS_HOME}/include"
+    BLAS_LDFLAGS="-L${OPENBLAS_HOME}/lib"
+    BLAS_LIBS="-lopenblas"
+    AC_DEFINE([LIBMTX_HAVE_OPENBLAS], [1], [Define to 1 if you have OpenBLAS])
+    AC_SUBST(LIBMTX_HAVE_OPENBLAS)],
+    [AC_MSG_WARN([could not find a valid OpenBLAS installation; building without OpenBLAS support])])])
 AM_CONDITIONAL([HAVE_OPENBLAS],
   [test x"$with_openblas" != xno -a x"$openblas_found" != xno])
 
