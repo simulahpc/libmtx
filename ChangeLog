@@ -1,3 +1,8 @@
+2023-02-10  James D. Trotter  <james@simula.no>
+
+	* mtxrand: add generator for rectangular block matrices, which is
+	sometimes useful as an ideal case for performance testing.
+
 2022-11-28  James D. Trotter  <james@simula.no>
 
 	* libmtx/util/metis.c (metis_nd): fix an issue where nested
