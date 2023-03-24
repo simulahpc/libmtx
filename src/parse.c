@@ -1,6 +1,6 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2022 James D. Trotter
+ * Copyright (C) 2023 James D. Trotter
  *
  * Libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-10-08
+ * Last modified: 2023-03-24
  *
  * String parsing.
  */
@@ -464,6 +464,8 @@ int parse_mtxfileordering(
         t += strlen("rcm"); *fileordering = mtxfile_rcm;
     } else if (strncmp("nd", t, strlen("nd")) == 0) {
         t += strlen("nd"); *fileordering = mtxfile_nd;
+    } else if (strncmp("metis", t, strlen("metis")) == 0) {
+        t += strlen("metis"); *fileordering = mtxfile_metis;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
     if (endptr) *endptr = (char *) t;

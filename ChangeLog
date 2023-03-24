@@ -1,3 +1,8 @@
+2023-03-24  James D. Trotter  <james@simula.no>
+
+	* mtxreorder: implement reordering based on graph partitioning
+	with METIS.
+
 2023-02-10  James D. Trotter  <james@simula.no>
 
 	* mtxrand: add generator for rectangular block matrices, which is
@@ -108,6 +113,6 @@
 
         Initial version.
 
-Copyright (C) 2021 James D. Trotter
+Copyright (C) 2023 James D. Trotter
 Copying and distribution of this file, with or without modification, are
 permitted provided the copyright notice and this notice are preserved.

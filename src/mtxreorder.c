@@ -1,6 +1,6 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2022 James D. Trotter
+ * Copyright (C) 2023 James D. Trotter
  *
  * Libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-10-08
+ * Last modified: 2023-03-24
  *
  * Reorder the nonzeros of a sparse matrix and any number of vectors
  * in Matrix Market format according to a specified reordering
@@ -41,7 +41,7 @@
 const char * program_name = "mtxreorder";
 const char * program_version = LIBMTX_VERSION;
 const char * program_copyright =
-    "Copyright (C) 2022 James D. Trotter";
+    "Copyright (C) 2023 James D. Trotter";
 const char * program_license =
     "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n"
     "This is free software: you are free to change and redistribute it.\n"
@@ -64,6 +64,9 @@ struct program_options
     char * colperminvpath;
     enum mtxfileordering ordering;
     int64_t rcm_starting_vertex;
+    int nparts;
+    char * rowpartsizespath;
+    char * colpartsizespath;
     int verbose;
     bool quiet;
 };
@@ -84,6 +87,9 @@ static int program_options_init(
     args->colperminvpath = NULL;
     args->ordering = mtxfile_rcm;
     args->rcm_starting_vertex = 0;
+    args->nparts = 2;
+    args->rowpartsizespath = NULL;
+    args->colpartsizespath = NULL;
     args->verbose = 0;
     args->quiet = false;
     return 0;
@@ -102,6 +108,8 @@ static void program_options_free(
     if (args->rowperminvpath) free(args->rowperminvpath);
     if (args->colpermpath) free(args->colpermpath);
     if (args->colperminvpath) free(args->colperminvpath);
+    if (args->rowpartsizespath) free(args->rowpartsizespath);
+    if (args->colpartsizespath) free(args->colpartsizespath);
 }
 
 /**
@@ -136,7 +144,7 @@ static void program_options_print_help(
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
     fprintf(f, " Options for reordering are:\n");
-    fprintf(f, "  --ordering=ORDERING\tordering to use: default, custom, nd, rcm (default).\n");
+    fprintf(f, "  --ordering=ORDERING\tordering to use: default, custom, metis, nd, rcm. [rcm]\n");
     fprintf(f, "  --rowperm-path=FILE\tPath for outputting row permutation, unless the ordering\n");
     fprintf(f, "\t\t\tis ‘custom’, in which case the path is used to specify\n");
     fprintf(f, "\t\t\ta row permutation to apply.\n");
@@ -145,8 +153,15 @@ static void program_options_print_help(
     fprintf(f, "\t\t\ta column permutation to apply.\n");
     fprintf(f, "  --rowperm-inv-path=FILE\tpath for outputting inverse row permutation\n");
     fprintf(f, "  --colperm-inv-path=FILE\tpath for outputting inverse column permutation\n");
+    fprintf(f, "\n");
+    fprintf(f, " Options for RCM are:\n");
     fprintf(f, "  --rcm-starting-vertex=N\tStarting vertex for the RCM algorithm.\n");
     fprintf(f, "\t\t\tThe default value is 0, which means to choose automatically.\n");
+    fprintf(f, "\n");
+    fprintf(f, " Options for METIS are:\n");
+    fprintf(f, "  --parts=N\tnumber of parts in partitioning. [2]\n");
+    fprintf(f, "  --rowpartsize-path=FILE\tpath for outputting size of row partitions\n");
+    fprintf(f, "  --colpartsize-path=FILE\tpath for outputting size of column partitions\n");
     fprintf(f, "\n");
     fprintf(f, "  -h, --help\t\tdisplay this help and exit\n");
     fprintf(f, "  --version\t\tdisplay version information and exit\n");
@@ -302,6 +317,40 @@ static int parse_program_options(
             else { program_options_free(args); return EINVAL; }
             err = parse_int64(&args->rcm_starting_vertex, s, (char **) &s, NULL);
             if (err || *s != '\0') { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strstr(argv[0], "--parts") == argv[0]) {
+            int n = strlen("--parts");
+            const char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            err = parse_int(&args->nparts, s, (char **) &s, NULL);
+            if (err || *s != '\0') { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strstr(argv[0], "--rowpartsize-path") == argv[0]) {
+            int n = strlen("--rowpartsize-path");
+            const char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            if (args->rowpartsizespath) free(args->rowpartsizespath);
+            args->rowpartsizespath = strdup(s);
+            if (!args->rowpartsizespath) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strstr(argv[0], "--colpartsize-path") == argv[0]) {
+            int n = strlen("--colpartsize-path");
+            const char * s = &argv[0][n];
+            if (*s == '=') { s++; }
+            else if (*s == '\0' && argc-*nargs > 1) { (*nargs)++; argv++; s=argv[0]; }
+            else { program_options_free(args); return EINVAL; }
+            if (args->colpartsizespath) free(args->colpartsizespath);
+            args->colpartsizespath = strdup(s);
+            if (!args->colpartsizespath) { program_options_free(args); return errno; }
             (*nargs)++; argv++; continue;
         }
 
@@ -640,6 +689,36 @@ int main(int argc, char *argv[])
         }
     }
 
+    int32_t * rowpartsizes = NULL;
+    int32_t * colpartsizes = NULL;
+    if (args.ordering == mtxfile_metis && args.rowpartsizespath) {
+        rowpartsizes = malloc(args.nparts * sizeof(int32_t));
+        if (!rowpartsizes) {
+            if (args.verbose > 0) fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtxstrerror(MTX_ERR_ERRNO));
+            free(colperminv); free(rowperminv); free(colperm); free(rowperm);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+    }
+    if (args.ordering == mtxfile_metis && args.colpartsizespath) {
+        colpartsizes = malloc(args.nparts * sizeof(int32_t));
+        if (!colpartsizes) {
+            if (args.verbose > 0) fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtxstrerror(MTX_ERR_ERRNO));
+            free(rowpartsizes);
+            free(colperminv); free(rowperminv); free(colperm); free(rowperm);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+    }
+
     /* 3. Reorder the matrix. */
     if (args.verbose > 0) {
         fprintf(diagf, "mtxfile_reorder: ");
@@ -652,12 +731,14 @@ int main(int argc, char *argv[])
     err = mtxfile_reorder(
         &mtxfile, args.ordering, rowperm, rowperminv, colperm, colperminv,
         !args.quiet, &symmetric, &rcm_starting_vertex,
+        args.nparts, rowpartsizes, colpartsizes,
         args.verbose > 1 ? args.verbose-1 : 0);
     if (err) {
         if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
                 mtxstrerror(err));
+        free(colpartsizes); free(rowpartsizes);
         free(colperminv); free(rowperminv); free(colperm); free(rowperm);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
@@ -692,6 +773,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
+            free(colpartsizes); free(rowpartsizes);
             free(colperminv); free(rowperminv); free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -705,6 +787,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
+            free(colpartsizes); free(rowpartsizes);
             free(colperminv); free(rowperminv); free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -720,7 +803,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* Write the row permutation to a Matrix Market file. */
+    /* 5. Write the row permutation to a Matrix Market file. */
     if (args.ordering != mtxfile_custom_order && args.rowpermpath) {
         struct mtxfile rowperm_mtxfile;
         err = mtxfile_init_vector_array_integer_single(
@@ -729,6 +812,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
+            free(colpartsizes); free(rowpartsizes);
             free(colperminv); free(rowperminv); free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -756,6 +840,7 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     mtxstrerror(err));
             mtxfile_free(&rowperm_mtxfile);
+            free(colpartsizes); free(rowpartsizes);
             free(colperminv); free(rowperminv); free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -771,6 +856,7 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     mtxstrerror(err));
             mtxfile_free(&rowperm_mtxfile);
+            free(colpartsizes); free(rowpartsizes);
             free(colperminv); free(rowperminv); free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -788,7 +874,7 @@ int main(int argc, char *argv[])
         mtxfile_free(&rowperm_mtxfile);
     }
 
-    /* Write the column permutation to a Matrix Market file. */
+    /* 6. Write the column permutation to a Matrix Market file. */
     if (args.ordering != mtxfile_custom_order && args.colpermpath && !symmetric) {
         struct mtxfile colperm_mtxfile;
         err = mtxfile_init_vector_array_integer_single(
@@ -797,6 +883,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
+            free(colpartsizes); free(rowpartsizes);
             free(colperminv); free(rowperminv); free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -824,6 +911,7 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     mtxstrerror(err));
             mtxfile_free(&colperm_mtxfile);
+            free(colpartsizes); free(rowpartsizes);
             free(colperminv); free(rowperminv); free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -839,6 +927,7 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     mtxstrerror(err));
             mtxfile_free(&colperm_mtxfile);
+            free(colpartsizes); free(rowpartsizes);
             free(colperminv); free(rowperminv); free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -855,7 +944,136 @@ int main(int argc, char *argv[])
         mtxfile_free(&colperm_mtxfile);
     }
 
-    /* 5. clean up. */
+    /* 7. write size of row partitions to a Matrix Market file */
+    if (args.ordering == mtxfile_metis && args.rowpartsizespath) {
+        struct mtxfile rowpartsizes_mtxfile;
+        err = mtxfile_init_vector_array_integer_single(
+            &rowpartsizes_mtxfile, args.nparts, rowpartsizes);
+        if (err) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtxstrerror(err));
+            free(colpartsizes); free(rowpartsizes);
+            free(colperminv); free(rowperminv); free(colperm); free(rowperm);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtxfile_write: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        err = mtxfilecomments_printf(
+            &rowpartsizes_mtxfile.comments, "%% This file was generated by %s %s (%s)\n",
+            program_name, program_version, mtxfileorderingstr(args.ordering));
+        if (err) {
+            if (args.verbose > 0) fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtxstrerror(err));
+            mtxfile_free(&rowpartsizes_mtxfile);
+            free(colpartsizes); free(rowpartsizes);
+            free(colperminv); free(rowperminv); free(colperm); free(rowperm);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        int64_t bytes_written = 0;
+        err = mtxfile_write(
+            &rowpartsizes_mtxfile, args.rowpartsizespath, false, "%d", &bytes_written);
+        if (err) {
+            if (args.verbose > 0) fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtxstrerror(err));
+            mtxfile_free(&rowpartsizes_mtxfile);
+            free(colpartsizes); free(rowpartsizes);
+            free(colperminv); free(rowperminv); free(colperm); free(rowperm);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+        mtxfile_free(&rowpartsizes_mtxfile);
+    }
+
+    /* 7. write size of column partitions to a Matrix Market file */
+    if (args.ordering == mtxfile_metis && args.colpartsizespath && !symmetric) {
+        struct mtxfile colpartsizes_mtxfile;
+        err = mtxfile_init_vector_array_integer_single(
+            &colpartsizes_mtxfile, args.nparts, colpartsizes);
+        if (err) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtxstrerror(err));
+            free(colpartsizes); free(rowpartsizes);
+            free(colperminv); free(rowperminv); free(colperm); free(rowperm);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtxfile_write: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        err = mtxfilecomments_printf(
+            &colpartsizes_mtxfile.comments, "%% This file was generated by %s %s (%s)\n",
+            program_name, program_version, mtxfileorderingstr(args.ordering));
+        if (err) {
+            if (args.verbose > 0) fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtxstrerror(err));
+            mtxfile_free(&colpartsizes_mtxfile);
+            free(colpartsizes); free(rowpartsizes);
+            free(colperminv); free(rowperminv); free(colperm); free(rowperm);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        int64_t bytes_written = 0;
+        err = mtxfile_write(
+            &colpartsizes_mtxfile, args.colpartsizespath, false, "%d", &bytes_written);
+        if (err) {
+            if (args.verbose > 0) fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtxstrerror(err));
+            mtxfile_free(&colpartsizes_mtxfile);
+            free(colpartsizes); free(rowpartsizes);
+            free(colperminv); free(rowperminv); free(colperm); free(rowperm);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+        mtxfile_free(&colpartsizes_mtxfile);
+    }
+
+    /* 7. clean up. */
+    free(colpartsizes); free(rowpartsizes);
     free(colperminv); free(rowperminv); free(colperm); free(rowperm);
     mtxfile_free(&mtxfile);
     program_options_free(&args);

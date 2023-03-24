@@ -1,5 +1,9 @@
 * Noteworthy changes in the upcoming release
 
+  This version adds support for reordering sparse matrices by first
+  partitioning the adjacency graph using METIS and then grouping rows
+  and columns by the parts that were assigned by the partitioner.
+
   This version fixes an issue with the METIS partitioning and nested
   dissection reordering of non-square matrices. The fix ensures that
   the data structure representing the (undirected) bipartite graph of
@@ -44,7 +48,7 @@
   operations, such as matrix-vector multiplication.
 
 
-Copyright (C) 2022 James D. Trotter
+Copyright (C) 2023 James D. Trotter
 
 Copying and distribution of this file, with or without modification,
 are permitted provided the copyright notice and this notice are

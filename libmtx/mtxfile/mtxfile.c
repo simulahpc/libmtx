@@ -1,6 +1,6 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2022 James D. Trotter
+ * Copyright (C) 2023 James D. Trotter
  *
  * Libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-10-08
+ * Last modified: 2023-03-24
  *
  * Matrix Market files.
  */
@@ -2182,6 +2182,7 @@ const char * mtxfileorderingstr(
     case mtxfile_custom_order: return "custom";
     case mtxfile_rcm: return "rcm";
     case mtxfile_nd: return "nd";
+    case mtxfile_metis: return "metis";
     default: return mtxstrerror(MTX_ERR_INVALID_ORDERING);
     }
 }
@@ -2227,24 +2228,229 @@ int mtxfileordering_parse(
     } else if (strncmp("nd", t, strlen("nd")) == 0) {
         t += strlen("nd");
         *ordering = mtxfile_nd;
-    } else {
-        return MTX_ERR_INVALID_ORDERING;
-    }
+    } else if (strncmp("metis", t, strlen("metis")) == 0) {
+        t += strlen("metis");
+        *ordering = mtxfile_metis;
+    } else { return MTX_ERR_INVALID_ORDERING; }
     if (valid_delimiters && *t != '\0') {
         if (!strchr(valid_delimiters, *t))
             return MTX_ERR_INVALID_ORDERING;
         t++;
     }
-    if (bytes_read)
-        *bytes_read += t-s;
-    if (endptr)
-        *endptr = t;
+    if (bytes_read) *bytes_read += t-s;
+    if (endptr) *endptr = t;
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxfile_reorder_nd()’ reorders the rows of a sparse matrix
- * according to the nested dissection algorithm.
+ * ‘mtxfile_reorder_metis()’ reorders the rows and columns of a sparse
+ * matrix based on a graph partitioning performed with METIS.
+ *
+ * For a square matrix, the reordering algorithm is carried out on the
+ * adjacency matrix of the symmetrisation ‘A+A'’, where ‘A'’ denotes
+ * the transpose of ‘A’. For a rectangular matrix, the reordering is
+ * carried out on a bipartite graph formed by the matrix rows and
+ * columns. The adjacency matrix ‘B’ of the bipartite graph is square
+ * and symmetric and takes the form of a 2-by-2 block matrix where ‘A’
+ * is placed in the upper right corner and ‘A'’ is placed in the lower
+ * left corner:
+ *
+ *     ⎡  0   A ⎤
+ * B = ⎢        ⎥.
+ *     ⎣  A'  0 ⎦
+ *
+ * The reordering is symmetric if the matrix is square, and
+ * unsymmetric otherwise.
+ *
+ * If successful, this function returns ‘MTX_SUCCESS’, and the rows
+ * and columns of ‘mtxfile’ have been reordered. If ‘rowperm’ is not
+ * ‘NULL’, then it must point to an array that is large enough to hold
+ * one ‘int’ for each row of the matrix. In this case, the array is
+ * used to store the permutation for reordering the matrix
+ * rows. Similarly, ‘colperm’ is used to store the permutation for
+ * reordering the matrix columns.
+ */
+int mtxfile_reorder_metis(
+    struct mtxfile * mtxfile,
+    int * rowperm,
+    int * rowperminv,
+    int * colperm,
+    int * colperminv,
+    bool permute,
+    bool * symmetric_permutation,
+    int num_parts,
+    int * rowpartsizes,
+    int * colpartsizes,
+    int verbose)
+{
+    int err;
+    int64_t num_rows = mtxfile->size.num_rows;
+    int64_t num_columns = mtxfile->size.num_columns;
+    int64_t size = mtxfile->datasize;
+    bool square = num_rows == num_columns;
+    bool symmetric_pattern = square && (
+        mtxfile->header.symmetry == mtxfile_symmetric ||
+        mtxfile->header.symmetry == mtxfile_skew_symmetric ||
+        mtxfile->header.symmetry == mtxfile_hermitian);
+
+    if (symmetric_permutation) *symmetric_permutation = square;
+    if (mtxfile->header.object != mtxfile_matrix)
+        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+    if (mtxfile->header.format != mtxfile_coordinate)
+        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
+
+    /* 1. obtain row and column offsets */
+    int idxstride;
+    int64_t * rowidx;
+    int64_t * colidx;
+    err = mtxfiledata_rowcolidxptr(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision,
+        &idxstride, &rowidx, &colidx);
+    if (err) return err;
+
+    int * dstrowpart = malloc(num_rows * sizeof(int));
+    if (!dstrowpart) return MTX_ERR_ERRNO;
+    int * dstcolpart = malloc(num_columns * sizeof(int));
+    if (!dstrowpart) { free(dstrowpart); return MTX_ERR_ERRNO; }
+
+    /* 2. partition the graph */
+    if (symmetric_pattern) {
+        err = metis_partgraphsym(
+            num_parts, num_rows, size,
+            idxstride, 1, rowidx, idxstride, 1, colidx,
+            dstrowpart, verbose);
+        if (err) {
+            free(dstcolpart); free(dstrowpart);
+            return err;
+        }
+    } else {
+        err = metis_partgraph(
+            num_parts, num_rows, num_columns, size,
+            idxstride, 1, rowidx, idxstride, 1, colidx,
+            dstrowpart, dstcolpart, verbose);
+        if (err) {
+            free(dstcolpart); free(dstrowpart);
+            return err;
+        }
+    }
+
+    /* 3. allocate storage for permutations and inverse permutations */
+    bool alloc_rowperm = !rowperm;
+    if (alloc_rowperm) {
+        rowperm = malloc(num_rows * sizeof(int));
+        if (!rowperm) {
+            free(dstcolpart); free(dstrowpart);
+            return MTX_ERR_ERRNO;
+        }
+    }
+    bool alloc_rowperminv = !rowperminv;
+    if (alloc_rowperminv) {
+        rowperminv = malloc(num_rows * sizeof(int));
+        if (!rowperminv) {
+            if (alloc_rowperm) free(rowperm);
+            free(dstcolpart); free(dstrowpart);
+            return MTX_ERR_ERRNO;
+        }
+    }
+    bool alloc_colperm = !square && !colperm;
+    if (alloc_colperm) {
+        colperm = malloc(num_columns * sizeof(int));
+        if (!colperm) {
+            if (alloc_rowperminv) free(rowperminv);
+            if (alloc_rowperm) free(rowperm);
+            free(dstcolpart); free(dstrowpart);
+            return MTX_ERR_ERRNO;
+        }
+    }
+    bool alloc_colperminv = !square && !colperminv;
+    if (alloc_colperminv) {
+        colperminv = malloc(num_columns * sizeof(int));
+        if (!colperminv) {
+            if (alloc_colperm) free(colperm);
+            if (alloc_rowperminv) free(rowperminv);
+            if (alloc_rowperm) free(rowperm);
+            free(dstcolpart); free(dstrowpart);
+            return MTX_ERR_ERRNO;
+        }
+    }
+
+    int64_t * rowpartptr = malloc((num_parts+1) * sizeof(int64_t));
+    if (!rowpartptr) {
+        if (alloc_colperminv) free(colperminv);
+        if (alloc_colperm) free(colperm);
+        if (alloc_rowperminv) free(rowperminv);
+        if (alloc_rowperm) free(rowperm);
+        free(dstcolpart); free(dstrowpart);
+        return MTX_ERR_ERRNO;
+    }
+    int64_t * colpartptr = NULL;
+    if (!square) {
+        colpartptr = malloc((num_parts+1) * sizeof(int64_t));
+        if (!colpartptr) {
+            free(rowpartptr);
+            if (alloc_colperminv) free(colperminv);
+            if (alloc_colperm) free(colperm);
+            if (alloc_rowperminv) free(rowperminv);
+            if (alloc_rowperm) free(rowperm);
+            free(dstcolpart); free(dstrowpart);
+            return MTX_ERR_ERRNO;
+        }
+    }
+
+    /* 4. reorder the graph */
+    for (int p = 0; p <= num_parts; p++) rowpartptr[p] = 0;
+    for (int64_t i = 0; i < num_rows; i++) rowpartptr[dstrowpart[i]+1]++;
+    for (int p = 0; p < num_parts; p++) rowpartptr[p+1] += rowpartptr[p];
+    for (int64_t i = 0; i < num_rows; i++) { rowperm[i] = rowpartptr[dstrowpart[i]]++; rowperminv[rowperm[i]] = i; }
+    for (int p = num_parts; p > 0; p--) rowpartptr[p] = rowpartptr[p-1];
+    rowpartptr[0] = 0;
+    if (rowpartsizes) {
+        for (int p = 0; p < num_parts; p++)
+            rowpartsizes[p] = rowpartptr[p+1] - rowpartptr[p];
+    }
+    if (!square) {
+        for (int p = 0; p <= num_parts; p++) colpartptr[p] = 0;
+        for (int64_t i = 0; i < num_columns; i++) colpartptr[dstcolpart[i]+1]++;
+        for (int p = 0; p < num_parts; p++) colpartptr[p+1] += colpartptr[p];
+        for (int64_t i = 0; i < num_columns; i++) { colperm[i] = colpartptr[dstcolpart[i]]++; colperminv[colperm[i]] = i; }
+        for (int p = num_parts; p > 0; p--) colpartptr[p] = colpartptr[p-1];
+        colpartptr[0] = 0;
+        if (colpartsizes) {
+            for (int p = 0; p < num_parts; p++)
+                colpartsizes[p] = colpartptr[p+1] - colpartptr[p];
+        }
+    }
+
+    free(colpartptr); free(rowpartptr);
+    free(dstcolpart); free(dstrowpart);
+
+    /* add one to shift from 0-based to 1-based indexing */
+    for (int i = 0; i < num_rows; i++) { rowperm[i]++; rowperminv[i]++; }
+    if (!square) for (int i = 0; i < num_columns; i++) { colperm[i]++; colperminv[i]++; }
+
+    /* 5. Permute the matrix. */
+    if (permute) {
+        err = mtxfile_permute(mtxfile, rowperm, square ? rowperm : colperm);
+        if (err) {
+            if (alloc_colperminv) free(colperminv);
+            if (alloc_colperm) free(colperm);
+            if (alloc_rowperminv) free(rowperminv);
+            if (alloc_rowperm) free(rowperm);
+            return err;
+        }
+    }
+
+    if (alloc_colperminv) free(colperminv);
+    if (alloc_colperm) free(colperm);
+    if (alloc_rowperminv) free(rowperminv);
+    if (alloc_rowperm) free(rowperm);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxfile_reorder_nd()’ reorders the rows and columns of a sparse
+ * matrix according to the nested dissection algorithm.
  *
  * For a square matrix, the reordering algorithm is carried out on the
  * adjacency matrix of the symmetrisation ‘A+A'’, where ‘A'’ denotes
@@ -2627,6 +2833,9 @@ int mtxfile_reorder(
     bool permute,
     bool * symmetric,
     int * rcm_starting_vertex,
+    int nparts,
+    int * rowpartsizes,
+    int * colpartsizes,
     int verbose)
 {
     /* rectangular matrices always yield unsymmetric orderings */
@@ -2664,6 +2873,10 @@ int mtxfile_reorder(
         return mtxfile_reorder_nd(
             mtxfile, rowperm, rowperminv, colperm, colperminv,
             permute, symmetric, verbose);
+    } else if (ordering == mtxfile_metis) {
+        return mtxfile_reorder_metis(
+            mtxfile, rowperm, rowperminv, colperm, colperminv,
+            permute, symmetric, nparts, rowpartsizes, colpartsizes, verbose);
     } else { return MTX_ERR_INVALID_ORDERING; }
     return MTX_SUCCESS;
 }
