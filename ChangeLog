@@ -1,3 +1,8 @@
+2023-03-25  James D. Trotter  <james@simula.no>
+
+	* libmtx/util/metis.c (metis_partgraphsym): Fix maximum allowed
+	load imbalance to use the default value (up to 3%) instead of 0%.
+
 2023-03-24  James D. Trotter  <james@simula.no>
 
 	* mtxreorder: implement reordering based on graph partitioning

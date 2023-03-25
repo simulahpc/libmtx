@@ -252,9 +252,11 @@ int metis_partgraphsym(
      * tpwgts[] entries must be 1.0. A NULL value can be passed to
      * indicate that the graph should be equally divided among the
      * partitions. */
-    real_t * tpwgts = malloc(nparts * sizeof(real_t));
-    if (!tpwgts) { free(adjncy); free(xadj); return MTX_ERR_ERRNO; }
-    for (idx_t p = 0; p < nparts; p++) tpwgts[p] = 1.0 / nparts;
+
+    real_t * tpwgts = NULL;
+    /* real_t * tpwgts = malloc(nparts * sizeof(real_t)); */
+    /* if (!tpwgts) { free(adjncy); free(xadj); return MTX_ERR_ERRNO; } */
+    /* for (idx_t p = 0; p < nparts; p++) tpwgts[p] = 1.0 / nparts; */
 
     /* This is an array of size ncon that specifies the allowed load
      * imbalance tolerance for each constraint. For the ith partition
@@ -264,7 +266,9 @@ int metis_partgraphsym(
      * NULL value can be passed indicating that the load imbalance
      * tolerance for each constraint should be 1.001 for ncon=1 or
      * 1.01 otherwise. */
-    real_t ubvec[1] = {1};
+
+    real_t * ubvec = NULL;
+    /* real_t ubvec[1] = {1}; */
 
     /* edge-cut or the total communication volume of the partitioning
      * solution */
