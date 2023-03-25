@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2023-03-24
+ * Last modified: 2023-03-25
  *
  * Matrix Market files.
  */
@@ -1750,6 +1750,10 @@ int mtxfile_partition_2d(
  * ‘dstrowpartsizes’ and ‘dstcolpartsizes’ must be arrays of length
  * ‘num_parts’, which are used to store the number of nonzeros, rows
  * and columns, respectively, belonging to each part.
+ *
+ * If it is not ‘NULL’, then ‘objval’ is used to store the value of
+ * the objective function minimized by the partitioner, which, by
+ * default, is the edge-cut of the partitioning solution.
  */
 static int mtxfile_partition_metis(
     const struct mtxfile * mtxfile,
@@ -1762,6 +1766,7 @@ static int mtxfile_partition_metis(
     bool * colpart,
     int * dstcolpart,
     int64_t * dstcolpartsizes,
+    int64_t * objval,
     int verbose)
 {
     int err;
@@ -1793,13 +1798,13 @@ static int mtxfile_partition_metis(
         err = metis_partgraphsym(
             num_parts, num_rows, size,
             idxstride, 1, rowidx, idxstride, 1, colidx,
-            dstrowpart, verbose);
+            dstrowpart, objval, verbose);
         if (err) return err;
     } else {
         err = metis_partgraph(
             num_parts, num_rows, num_columns, size,
             idxstride, 1, rowidx, idxstride, 1, colidx,
-            dstrowpart, dstcolpart, verbose);
+            dstrowpart, dstcolpart, objval, verbose);
         if (err) return err;
     }
 
@@ -1888,6 +1893,11 @@ static int mtxfile_partition_metis(
  * ‘dstrowpartsizes’ and ‘dstcolpartsizes’ must be arrays of length
  * ‘num_parts’, which are then used to store the number of nonzeros,
  * rows and columns assigned to each part, respectively.
+ *
+ * If ‘matrixparttype’ is ‘matrixparttype_metis’ and ‘objval’ is not
+ * ‘NULL’, then it is used to store the value of the objective
+ * function minimized by the partitioner, which, by default, is the
+ * edge-cut of the partitioning solution.
  */
 int mtxfile_partition(
     struct mtxfile * mtxfile,
@@ -1915,6 +1925,7 @@ int mtxfile_partition(
     bool * colpart,
     int * dstcolpart,
     int64_t * dstcolpartsizes,
+    int64_t * objval,
     int verbose)
 {
     if (matrixparttype == mtx_matrixparttype_nonzeros) {
@@ -1948,7 +1959,7 @@ int mtxfile_partition(
         return mtxfile_partition_metis(
             mtxfile, num_nz_parts, dstnzpart, dstnzpartsizes,
             rowpart, dstrowpart, dstrowpartsizes,
-            colpart, dstcolpart, dstcolpartsizes, verbose);
+            colpart, dstcolpart, dstcolpartsizes, objval, verbose);
     } else { return MTX_ERR_INVALID_MATRIXPARTTYPE; }
     return MTX_SUCCESS;
 }
@@ -2269,6 +2280,10 @@ int mtxfileordering_parse(
  * used to store the permutation for reordering the matrix
  * rows. Similarly, ‘colperm’ is used to store the permutation for
  * reordering the matrix columns.
+ *
+ * If it is not ‘NULL’, then ‘objval’ is used to store the value of
+ * the objective function minimized by the partitioner, which, by
+ * default, is the edge-cut of the partitioning solution.
  */
 int mtxfile_reorder_metis(
     struct mtxfile * mtxfile,
@@ -2281,6 +2296,7 @@ int mtxfile_reorder_metis(
     int num_parts,
     int * rowpartsizes,
     int * colpartsizes,
+    int64_t * objval,
     int verbose)
 {
     int err;
@@ -2319,7 +2335,7 @@ int mtxfile_reorder_metis(
         err = metis_partgraphsym(
             num_parts, num_rows, size,
             idxstride, 1, rowidx, idxstride, 1, colidx,
-            dstrowpart, verbose);
+            dstrowpart, objval, verbose);
         if (err) {
             free(dstcolpart); free(dstrowpart);
             return err;
@@ -2328,7 +2344,7 @@ int mtxfile_reorder_metis(
         err = metis_partgraph(
             num_parts, num_rows, num_columns, size,
             idxstride, 1, rowidx, idxstride, 1, colidx,
-            dstrowpart, dstcolpart, verbose);
+            dstrowpart, dstcolpart, objval, verbose);
         if (err) {
             free(dstcolpart); free(dstrowpart);
             return err;
@@ -2822,6 +2838,11 @@ int mtxfile_reorder_rcm(
  * not the reordering is symmetric. That is, if the value returned in
  * ‘symmetric’ is ‘true’ then ‘rowperm’ and ‘colperm’ are identical,
  * and only one of them is needed.
+ *
+ * If ‘ordering’ is ‘mtxfile_metis’ and ‘objval’ is not ‘NULL’, then
+ * it is used to store the value of the objective function minimized
+ * by the partitioner, which, by default, is the edge-cut of the
+ * partitioning solution.
  */
 int mtxfile_reorder(
     struct mtxfile * mtxfile,
@@ -2836,6 +2857,7 @@ int mtxfile_reorder(
     int nparts,
     int * rowpartsizes,
     int * colpartsizes,
+    int64_t * objval,
     int verbose)
 {
     /* rectangular matrices always yield unsymmetric orderings */
@@ -2876,7 +2898,8 @@ int mtxfile_reorder(
     } else if (ordering == mtxfile_metis) {
         return mtxfile_reorder_metis(
             mtxfile, rowperm, rowperminv, colperm, colperminv,
-            permute, symmetric, nparts, rowpartsizes, colpartsizes, verbose);
+            permute, symmetric, nparts, rowpartsizes, colpartsizes,
+            objval, verbose);
     } else { return MTX_ERR_INVALID_ORDERING; }
     return MTX_SUCCESS;
 }

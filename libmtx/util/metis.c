@@ -1,6 +1,6 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2022 James D. Trotter
+ * Copyright (C) 2023 James D. Trotter
  *
  * Libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-11-28
+ * Last modified: 2023-03-25
  *
  * METIS graph partitioning and sparse matrix reordering algorithms.
  */
@@ -59,6 +59,10 @@
  * On success, the array ‘dstpart’ contains the part numbers assigned
  * by the partitioner to the graph vertices. Therefore, ‘dstpart’ must
  * be an array of length ‘N’.
+ *
+ * If it is not ‘NULL’, then ‘objval’ is used to store the value of
+ * the objective function minimized by the partitioner, which, by
+ * default, is the edge-cut of the partitioning solution.
  */
 int metis_partgraphsym(
     int num_parts,
@@ -71,6 +75,7 @@ int metis_partgraphsym(
     int colidxbase,
     const int64_t * colidx,
     int * dstpart,
+    int64_t * outobjval,
     int verbose)
 {
 #ifndef LIBMTX_HAVE_METIS
@@ -320,6 +325,7 @@ int metis_partgraphsym(
         return err;
     }
 
+    if (outobjval) *outobjval = objval;
     if (sizeof(*dstpart) != sizeof(*part)) {
         for (idx_t i = 0; i < N; i++) {
             if (part[i] > INT_MAX) {
@@ -378,6 +384,10 @@ int metis_partgraphsym(
  * matrix is non-square, then ‘dstcolpart’ must be an array of length
  * ‘num_columns’, which is then similarly used to store the part
  * numbers assigned to the matrix columns.
+ *
+ * If it is not ‘NULL’, then ‘objval’ is used to store the value of
+ * the objective function minimized by the partitioner, which, by
+ * default, is the edge-cut of the partitioning solution.
  */
 int metis_partgraph(
     int num_parts,
@@ -392,6 +402,7 @@ int metis_partgraph(
     const int64_t * colidx,
     int * dstrowpart,
     int * dstcolpart,
+    int64_t * objval,
     int verbose)
 {
 #ifndef LIBMTX_HAVE_METIS
@@ -419,7 +430,7 @@ int metis_partgraph(
         if (err) { free(idx); return err; }
         err = metis_partgraphsym(
             num_parts, N, num_nonzeros, sizeof(*idx), 0, &idx[0][0],
-            sizeof(*idx), 0, &idx[0][1], dstrowpart, verbose);
+            sizeof(*idx), 0, &idx[0][1], dstrowpart, objval, verbose);
         if (err) { free(idx); return err; }
         free(idx);
     } else {
@@ -439,7 +450,7 @@ int metis_partgraph(
         }
         int err = metis_partgraphsym(
             num_parts, N, num_nonzeros, rowidxstride, rowidxbase, rowidx,
-            sizeof(*tmpcolidx), 0, tmpcolidx, dstpart, verbose);
+            sizeof(*tmpcolidx), 0, tmpcolidx, dstpart, objval, verbose);
         if (err) { free(tmpcolidx); free(dstpart); return err; }
         free(tmpcolidx);
         for (int64_t i = 0; i < num_rows; i++) dstrowpart[i] = dstpart[i];

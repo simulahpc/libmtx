@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2023-03-24
+ * Last modified: 2023-03-25
  *
  * Matrix Market files.
  */
@@ -1028,6 +1028,11 @@ int LIBMTX_API mtxfile_partition_2d(
  * ‘dstrowpartsizes’ and ‘dstcolpartsizes’ must be arrays of length
  * ‘num_parts’, which are then used to store the number of nonzeros,
  * rows and columns assigned to each part, respectively.
+ *
+ * If ‘matrixparttype’ is ‘matrixparttype_metis’ and ‘objval’ is not
+ * ‘NULL’, then it is used to store the value of the objective
+ * function minimized by the partitioner, which, by default, is the
+ * edge-cut of the partitioning solution.
  */
 int LIBMTX_API mtxfile_partition(
     struct mtxfile * mtxfile,
@@ -1055,6 +1060,7 @@ int LIBMTX_API mtxfile_partition(
     bool * colpart,
     int * dstcolpart,
     int64_t * dstcolpartsizes,
+    int64_t * objval,
     int verbose);
 
 /**
@@ -1199,6 +1205,10 @@ int mtxfileordering_parse(
  * used to store the permutation for reordering the matrix
  * rows. Similarly, ‘colperm’ is used to store the permutation for
  * reordering the matrix columns.
+ *
+ * If it is not ‘NULL’, then ‘objval’ is used to store the value of
+ * the objective function minimized by the partitioner, which, by
+ * default, is the edge-cut of the partitioning solution.
  */
 int LIBMTX_API mtxfile_reorder_metis(
     struct mtxfile * mtxfile,
@@ -1211,6 +1221,7 @@ int LIBMTX_API mtxfile_reorder_metis(
     int nparts,
     int * rowpartsizes,
     int * colpartsizes,
+    int64_t * objval,
     int verbose);
 
 /**
@@ -1320,6 +1331,11 @@ int LIBMTX_API mtxfile_reorder_rcm(
  * not the reordering is symmetric. That is, if the value returned in
  * ‘symmetric’ is ‘true’ then ‘rowperm’ and ‘colperm’ are identical,
  * and only one of them is needed.
+ *
+ * If ‘ordering’ is ‘mtxfile_metis’ and ‘objval’ is not ‘NULL’, then
+ * it is used to store the value of the objective function minimized
+ * by the partitioner, which, by default, is the edge-cut of the
+ * partitioning solution.
  */
 int LIBMTX_API mtxfile_reorder(
     struct mtxfile * mtxfile,
@@ -1334,6 +1350,7 @@ int LIBMTX_API mtxfile_reorder(
     int nparts,
     int * rowpartsizes,
     int * colpartsizes,
+    int64_t * objval,
     int verbose);
 
 /*

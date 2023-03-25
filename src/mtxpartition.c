@@ -1,6 +1,6 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2022 James D. Trotter
+ * Copyright (C) 2023 James D. Trotter
  *
  * Libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-10-08
+ * Last modified: 2023-03-25
  *
  * Partition a Matrix Market file.
  */
@@ -593,13 +593,14 @@ int main(int argc, char *argv[])
     }
 
     bool rowpart, colpart;
+    int64_t objval;
     err = mtxfile_partition(
         &mtxfile, args.matrixparttype,
         args.nzparttype, args.num_nz_parts, NULL, args.nzblksize, NULL,
         args.rowparttype, args.num_row_parts, NULL, args.rowblksize, NULL,
         args.colparttype, args.num_column_parts, NULL, args.colblksize, NULL,
         dstnzpart, dstnzpartsizes, &rowpart, dstrowpart, dstrowpartsizes,
-        &colpart, dstcolpart, dstcolpartsizes,
+        &colpart, dstcolpart, dstcolpartsizes, &objval,
         args.verbose > 2 ? args.verbose-2 : 0);
     if (err) {
         if (args.verbose > 0) fprintf(diagf, "\n");
@@ -614,7 +615,10 @@ int main(int argc, char *argv[])
 
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%'.6f seconds\n", timespec_duration(t0, t1));
+        fprintf(diagf, "%'.6f seconds", timespec_duration(t0, t1));
+        if (args.matrixparttype == mtx_matrixparttype_metis)
+            fprintf(diagf, ", edge-cut: %'"PRId64, objval);
+        fprintf(diagf, "\n");
     }
 
     mtxfile_free(&mtxfile);

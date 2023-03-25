@@ -51,6 +51,10 @@
  * On success, the array ‘dstpart’ contains the part numbers assigned
  * by the partitioner to the graph vertices. Therefore, ‘dstpart’ must
  * be an array of length ‘N’.
+ *
+ * If it is not ‘NULL’, then ‘objval’ is used to store the value of
+ * the objective function minimized by the partitioner, which, by
+ * default, is the edge-cut of the partitioning solution.
  */
 int metis_partgraphsym(
     int num_parts,
@@ -63,6 +67,7 @@ int metis_partgraphsym(
     int colidxbase,
     const int64_t * colidx,
     int * dstpart,
+    int64_t * objval,
     int verbose);
 
 /**
@@ -107,6 +112,10 @@ int metis_partgraphsym(
  * matrix is non-square, then ‘dstcolpart’ must be an array of length
  * ‘num_columns’, which is then similarly used to store the part
  * numbers assigned to the matrix columns.
+ *
+ * If it is not ‘NULL’, then ‘objval’ is used to store the value of
+ * the objective function minimized by the partitioner, which, by
+ * default, is the edge-cut of the partitioning solution.
  */
 int metis_partgraph(
     int num_parts,
@@ -121,6 +130,7 @@ int metis_partgraph(
     const int64_t * colidx,
     int * dstrowpart,
     int * dstcolpart,
+    int64_t * objval,
     int verbose);
 
 /**

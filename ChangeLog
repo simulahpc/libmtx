@@ -3,6 +3,9 @@
 	* libmtx/util/metis.c (metis_partgraphsym): Fix maximum allowed
 	load imbalance to use the default value (up to 3%) instead of 0%.
 
+	* mtxreorder, mtxpartition: print the edge-cut of the partitioning
+	solution when using the METIS partitioner.
+
 2023-03-24  James D. Trotter  <james@simula.no>
 
 	* mtxreorder: implement reordering based on graph partitioning
