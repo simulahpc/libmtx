@@ -1,4 +1,4 @@
-* Noteworthy changes in the upcoming release
+* Noteworthy changes in release 0.4.0 (2023-04-17)
 
   This version adds support for reordering sparse matrices by first
   partitioning the adjacency graph using METIS and then grouping rows
