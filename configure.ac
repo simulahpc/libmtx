@@ -22,7 +22,7 @@ dnl autoconf script for the top-level directory of Libmtx.
 dnl
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([Libmtx],[0.3.1-alpha],[james@simula.no],[libmtx],[https://github.com/simulahpc/libmtx])
+AC_INIT([Libmtx],[0.4.0],[james@simula.no],[libmtx],[https://github.com/simulahpc/libmtx])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h libmtx/libmtx-config.h])
@@ -32,7 +32,7 @@ AM_INIT_AUTOMAKE([subdir-objects])
 dnl Library versioning (C:R:A == current:revision:age)
 dnl See the libtool manual for an explanation of the numbers
 dnl
-dnl libmtx-0.3.1-alpha	libmtx 2:0:2
+dnl libmtx-0.4.0	libmtx 2:0:2
 dnl
 dnl How to update library version number
 dnl ====================================
