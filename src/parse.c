@@ -466,6 +466,8 @@ int parse_mtxfileordering(
         t += strlen("nd"); *fileordering = mtxfile_nd;
     } else if (strncmp("metis", t, strlen("metis")) == 0) {
         t += strlen("metis"); *fileordering = mtxfile_metis;
+    } else if (strncmp("scotch", t, strlen("scotch")) == 0) {
+        t += strlen("scotch"); *fileordering = mtxfile_scotch;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
     if (endptr) *endptr = (char *) t;
@@ -681,7 +683,8 @@ int parse_mtxgemvoverlap(
  * ‘parse_mtxmatrixparttype()’ parses a string to obtain a value of type
  * ‘enum mtxmatrixparttype’.
  *
- * Valid strings are: ‘nonzeros’, ‘rows’, ‘columns’, ‘2d’ and ‘metis’.
+ * Valid strings are: ‘nonzeros’, ‘rows’, ‘columns’, ‘2d’, ‘metis’ and
+ * ‘scotch’.
  *
  * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
  * points to the first character beyond the characters that were
@@ -708,6 +711,8 @@ int parse_mtxmatrixparttype(
         t += strlen("2d"); *matrixparttype = mtx_matrixparttype_2d;
     } else if (strncmp("metis", t, strlen("metis")) == 0) {
         t += strlen("metis"); *matrixparttype = mtx_matrixparttype_metis;
+    } else if (strncmp("scotch", t, strlen("scotch")) == 0) {
+        t += strlen("scotch"); *matrixparttype = mtx_matrixparttype_scotch;
     } else { return EINVAL; }
     if (bytes_read) *bytes_read += t-s;
     if (endptr) *endptr = (char *) t;

@@ -102,6 +102,8 @@ libmtx_la_SOURCES = \
 	libmtx/util/partition.h \
 	libmtx/util/permute.c \
 	libmtx/util/permute.h \
+	libmtx/util/scotch.c \
+	libmtx/util/scotch.h \
 	libmtx/util/sort.c \
 	libmtx/util/sort.h \
 	libmtx/version.c

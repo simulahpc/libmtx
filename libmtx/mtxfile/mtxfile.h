@@ -1007,6 +1007,10 @@ int LIBMTX_API mtxfile_partition_2d(
  *    METIS graph partitioner, and the matrix nonzeros are partitioned
  *    accordingly.
  *
+ *  - If ‘matrixparttype’ is ‘mtx_matrixparttype_scotch’, then the
+ *    rows and columns of the underlying matrix are partitioned by the
+ *    SCOTCH graph partitioner, and the matrix nonzeros are
+ *    partitioned accordingly.
  *
  * In any case, the array ‘dstnzpart’ is used to store the part
  * numbers assigned to the matrix nonzeros and must therefore be of
@@ -1029,7 +1033,8 @@ int LIBMTX_API mtxfile_partition_2d(
  * ‘num_parts’, which are then used to store the number of nonzeros,
  * rows and columns assigned to each part, respectively.
  *
- * If ‘matrixparttype’ is ‘matrixparttype_metis’ and ‘objval’ is not
+ * If ‘matrixparttype’ is ‘matrixparttype_metis’ or
+ * ‘matrixparttype_scotch’  and ‘objval’ is not
  * ‘NULL’, then it is used to store the value of the objective
  * function minimized by the partitioner, which, by default, is the
  * edge-cut of the partitioning solution.
@@ -1141,6 +1146,7 @@ enum mtxfileordering
     mtxfile_rcm,           /* Reverse Cuthill-McKee ordering */
     mtxfile_nd,            /* nested dissection ordering */
     mtxfile_metis,         /* graph partitioning reordering with METIS */
+    mtxfile_scotch,        /* graph partitioning reordering with SCOTCH */
 };
 
 /**
@@ -1211,6 +1217,52 @@ int mtxfileordering_parse(
  * default, is the edge-cut of the partitioning solution.
  */
 int LIBMTX_API mtxfile_reorder_metis(
+    struct mtxfile * mtxfile,
+    int * rowperm,
+    int * rowperminv,
+    int * colperm,
+    int * colperminv,
+    bool permute,
+    bool * symmetric,
+    int nparts,
+    int * rowpartsizes,
+    int * colpartsizes,
+    int64_t * objval,
+    int verbose);
+
+/**
+ * ‘mtxfile_reorder_scotch()’ reorders the rows and columns of a sparse
+ * matrix based on a graph partitioning performed with SCOTCH.
+ *
+ * For a square matrix, the reordering algorithm is carried out on the
+ * adjacency matrix of the symmetrisation ‘A+A'’, where ‘A'’ denotes
+ * the transpose of ‘A’. For a rectangular matrix, the reordering is
+ * carried out on a bipartite graph formed by the matrix rows and
+ * columns. The adjacency matrix ‘B’ of the bipartite graph is square
+ * and symmetric and takes the form of a 2-by-2 block matrix where ‘A’
+ * is placed in the upper right corner and ‘A'’ is placed in the lower
+ * left corner:
+ *
+ *     ⎡  0   A ⎤
+ * B = ⎢        ⎥.
+ *     ⎣  A'  0 ⎦
+ *
+ * The reordering is symmetric if the matrix is square, and
+ * unsymmetric otherwise.
+ *
+ * If successful, this function returns ‘MTX_SUCCESS’, and the rows
+ * and columns of ‘mtxfile’ have been reordered. If ‘rowperm’ is not
+ * ‘NULL’, then it must point to an array that is large enough to hold
+ * one ‘int’ for each row of the matrix. In this case, the array is
+ * used to store the permutation for reordering the matrix
+ * rows. Similarly, ‘colperm’ is used to store the permutation for
+ * reordering the matrix columns.
+ *
+ * If it is not ‘NULL’, then ‘objval’ is used to store the value of
+ * the objective function minimized by the partitioner, which, by
+ * default, is the edge-cut of the partitioning solution.
+ */
+int LIBMTX_API mtxfile_reorder_scotch(
     struct mtxfile * mtxfile,
     int * rowperm,
     int * rowperminv,
@@ -1332,10 +1384,10 @@ int LIBMTX_API mtxfile_reorder_rcm(
  * ‘symmetric’ is ‘true’ then ‘rowperm’ and ‘colperm’ are identical,
  * and only one of them is needed.
  *
- * If ‘ordering’ is ‘mtxfile_metis’ and ‘objval’ is not ‘NULL’, then
- * it is used to store the value of the objective function minimized
- * by the partitioner, which, by default, is the edge-cut of the
- * partitioning solution.
+ * If ‘ordering’ is ‘mtxfile_metis’ or ‘mtxfile_scotch’ and ‘objval’
+ * is not ‘NULL’, then it is used to store the value of the objective
+ * function minimized by the partitioner, which, by default, is the
+ * edge-cut of the partitioning solution.
  */
 int LIBMTX_API mtxfile_reorder(
     struct mtxfile * mtxfile,

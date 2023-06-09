@@ -1,6 +1,6 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2022 James D. Trotter
+ * Copyright (C) 2023 James D. Trotter
  *
  * Libmtx is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-10-08
+ * Last modified: 2023-06-09
  *
  * Build configuration
  */
@@ -39,6 +39,9 @@
 
 /* Define if you have METIS */
 #undef LIBMTX_HAVE_METIS
+
+/* Define if you have SCOTCH */
+#undef LIBMTX_HAVE_SCOTCH
 
 /* Define if you have OpenBLAS. */
 #undef LIBMTX_HAVE_OPENBLAS

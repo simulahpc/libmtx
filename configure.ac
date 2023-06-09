@@ -22,7 +22,7 @@ dnl autoconf script for the top-level directory of Libmtx.
 dnl
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([Libmtx],[0.4.0],[james@simula.no],[libmtx],[https://github.com/simulahpc/libmtx])
+AC_INIT([Libmtx],[0.5.0-alpha],[james@simula.no],[libmtx],[https://github.com/simulahpc/libmtx])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h libmtx/libmtx-config.h])
@@ -32,7 +32,7 @@ AM_INIT_AUTOMAKE([subdir-objects])
 dnl Library versioning (C:R:A == current:revision:age)
 dnl See the libtool manual for an explanation of the numbers
 dnl
-dnl libmtx-0.4.0	libmtx 2:0:2
+dnl libmtx-0.5.0-alpha	libmtx 3:0:3
 dnl
 dnl How to update library version number
 dnl ====================================
@@ -177,6 +177,18 @@ AX_LIB_METIS([
  [AC_MSG_WARN([could not find a valid METIS installation; building without METIS support])])
 AM_CONDITIONAL([HAVE_METIS],
   [test x"$with_metis" != xno -a x"$metis_found" != xno])
+
+dnl Check for SCOTCH
+AX_LIB_SCOTCH([
+  CPPFLAGS="$CPPFLAGS $SCOTCH_INCLUDE"
+  LDFLAGS="$LDFLAGS $SCOTCH_LIB"
+  LIBS="-lscotch $LIBS"
+  libmtx_CPPFLAGS="$libmtx_CPPFLAGS -DLIBMTX_HAVE_SCOTCH"
+  AC_DEFINE([LIBMTX_HAVE_SCOTCH], [1], [Define to 1 if you have SCOTCH])
+  AC_SUBST(LIBMTX_HAVE_SCOTCH)],
+ [AC_MSG_WARN([could not find a valid SCOTCH installation; building without SCOTCH support])])
+AM_CONDITIONAL([HAVE_SCOTCH],
+  [test x"$with_scotch" != xno -a x"$scotch_found" != xno])
 
 dnl check for BLAS libraries
 blas_found=no

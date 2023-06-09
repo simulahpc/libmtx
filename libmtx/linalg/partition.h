@@ -39,6 +39,7 @@ enum mtxmatrixparttype
     mtx_matrixparttype_columns,
     mtx_matrixparttype_2d,
     mtx_matrixparttype_metis,
+    mtx_matrixparttype_scotch,
 };
 
 /**

@@ -31,6 +31,7 @@
 #include <libmtx/mtxfile/size.h>
 #include <libmtx/util/cuthill_mckee.h>
 #include <libmtx/util/metis.h>
+#include <libmtx/util/scotch.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/linalg/precision.h>
 
@@ -1841,6 +1842,114 @@ static int mtxfile_partition_metis(
 }
 
 /**
+ * ‘mtxfile_partition_scotch()’ partitions a matrix in Matrix Market
+ * format using the SCOTCH graph partitioner.
+ *
+ * The array ‘dstnzpart’ must be of length ‘mtxfile->datasize’, and it
+ * is used to store the part numbers assigned to the matrix nonzeros.
+ *
+ * The array ‘dstrowpart’ must be of length ‘mtxfile->size.num_rows’.
+ * This array is used to store the part numbers assigned to the matrix
+ * rows. If the matrix is non-square, then ‘dstcolpart’ must be an
+ * array of length ‘mtxfile->size.num_columns’, which is then
+ * similarly used to store the part numbers assigned to the matrix
+ * columns.
+ *
+ * Unless they are set to ‘NULL’, then ‘dstnzpartsizes’,
+ * ‘dstrowpartsizes’ and ‘dstcolpartsizes’ must be arrays of length
+ * ‘num_parts’, which are used to store the number of nonzeros, rows
+ * and columns, respectively, belonging to each part.
+ *
+ * If it is not ‘NULL’, then ‘objval’ is used to store the value of
+ * the objective function minimized by the partitioner, which, by
+ * default, is the edge-cut of the partitioning solution.
+ */
+static int mtxfile_partition_scotch(
+    const struct mtxfile * mtxfile,
+    int num_parts,
+    int * dstnzpart,
+    int64_t * dstnzpartsizes,
+    bool * rowpart,
+    int * dstrowpart,
+    int64_t * dstrowpartsizes,
+    bool * colpart,
+    int * dstcolpart,
+    int64_t * dstcolpartsizes,
+    int64_t * objval,
+    int verbose)
+{
+    int err;
+    int64_t num_rows = mtxfile->size.num_rows;
+    int64_t num_columns = mtxfile->size.num_columns;
+    int64_t size = mtxfile->datasize;
+    bool square = num_rows == num_columns;
+    bool symmetric = square && (
+        mtxfile->header.symmetry == mtxfile_symmetric ||
+        mtxfile->header.symmetry == mtxfile_skew_symmetric ||
+        mtxfile->header.symmetry == mtxfile_hermitian);
+    if (mtxfile->header.object != mtxfile_matrix)
+        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+    if (mtxfile->header.format != mtxfile_coordinate)
+        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
+
+    /* 1. obtain row and column offsets */
+    int idxstride;
+    int64_t * rowidx;
+    int64_t * colidx;
+    err = mtxfiledata_rowcolidxptr(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision,
+        &idxstride, &rowidx, &colidx);
+    if (err) return err;
+
+    /* 2. partition the graph */
+    if (symmetric) {
+        err = scotch_partgraphsym(
+            num_parts, num_rows, size,
+            idxstride, 1, rowidx, idxstride, 1, colidx,
+            dstrowpart, objval, verbose);
+        if (err) return err;
+    } else {
+        err = scotch_partgraph(
+            num_parts, num_rows, num_columns, size,
+            idxstride, 1, rowidx, idxstride, 1, colidx,
+            dstrowpart, dstcolpart, objval, verbose);
+        if (err) return err;
+    }
+
+    /* 3. assign parts to the nonzeros */
+    if (square) {
+        for (int64_t k = 0; k < size; k++) {
+            int64_t i = *(const int64_t *) ((const char *) rowidx + k*idxstride)-1;
+            dstnzpart[k] = dstrowpart[i];
+        }
+    } else {
+        for (int64_t k = 0; k < size; k++) {
+            int64_t i = *(const int64_t *) ((const char *) rowidx + k*idxstride)-1;
+            dstnzpart[k] = dstrowpart[i];
+        }
+    }
+
+    /* 4. calculate part sizes */
+    if (dstnzpartsizes) {
+        for (int p = 0; p < num_parts; p++) dstnzpartsizes[p] = 0;
+        for (int64_t k = 0; k < size; k++) dstnzpartsizes[dstnzpart[k]]++;
+    }
+    if (dstrowpartsizes) {
+        for (int p = 0; p < num_parts; p++) dstrowpartsizes[p] = 0;
+        for (int64_t i = 0; i < num_rows; i++) dstrowpartsizes[dstrowpart[i]]++;
+    }
+    if (!square && dstcolpartsizes) {
+        for (int p = 0; p < num_parts; p++) dstcolpartsizes[p] = 0;
+        for (int64_t j = 0; j < num_columns; j++) dstcolpartsizes[dstcolpart[j]]++;
+    }
+
+    *rowpart = true;
+    *colpart = !square;
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxfile_partition()’ partitions the entries of a Matrix Market
  * file, and, optionally, also partitions the rows and columns of the
  * underlying matrix or vector.
@@ -1872,6 +1981,10 @@ static int mtxfile_partition_metis(
  *    METIS graph partitioner, and the matrix nonzeros are partitioned
  *    accordingly.
  *
+ *  - If ‘matrixparttype’ is ‘mtx_matrixparttype_scotch’, then the rows
+ *    and columns of the underlying matrix are partitioned by the
+ *    SCOTCH graph partitioner, and the matrix nonzeros are partitioned
+ *    accordingly.
  *
  * In any case, the array ‘dstnzpart’ is used to store the part
  * numbers assigned to the matrix nonzeros and must therefore be of
@@ -1894,7 +2007,8 @@ static int mtxfile_partition_metis(
  * ‘num_parts’, which are then used to store the number of nonzeros,
  * rows and columns assigned to each part, respectively.
  *
- * If ‘matrixparttype’ is ‘matrixparttype_metis’ and ‘objval’ is not
+ * If ‘matrixparttype’ is ‘matrixparttype_metis’ or
+ * ‘matrixparttype_scotch’ and ‘objval’ is not
  * ‘NULL’, then it is used to store the value of the objective
  * function minimized by the partitioner, which, by default, is the
  * edge-cut of the partitioning solution.
@@ -1957,6 +2071,13 @@ int mtxfile_partition(
         *rowpart = true;
         *colpart = true;
         return mtxfile_partition_metis(
+            mtxfile, num_nz_parts, dstnzpart, dstnzpartsizes,
+            rowpart, dstrowpart, dstrowpartsizes,
+            colpart, dstcolpart, dstcolpartsizes, objval, verbose);
+    } else if (matrixparttype == mtx_matrixparttype_scotch) {
+        *rowpart = true;
+        *colpart = true;
+        return mtxfile_partition_scotch(
             mtxfile, num_nz_parts, dstnzpart, dstnzpartsizes,
             rowpart, dstrowpart, dstrowpartsizes,
             colpart, dstcolpart, dstcolpartsizes, objval, verbose);
@@ -2194,6 +2315,7 @@ const char * mtxfileorderingstr(
     case mtxfile_rcm: return "rcm";
     case mtxfile_nd: return "nd";
     case mtxfile_metis: return "metis";
+    case mtxfile_scotch: return "scotch";
     default: return mtxstrerror(MTX_ERR_INVALID_ORDERING);
     }
 }
@@ -2242,6 +2364,9 @@ int mtxfileordering_parse(
     } else if (strncmp("metis", t, strlen("metis")) == 0) {
         t += strlen("metis");
         *ordering = mtxfile_metis;
+    } else if (strncmp("scotch", t, strlen("scotch")) == 0) {
+        t += strlen("scotch");
+        *ordering = mtxfile_scotch;
     } else { return MTX_ERR_INVALID_ORDERING; }
     if (valid_delimiters && *t != '\0') {
         if (!strchr(valid_delimiters, *t))
@@ -2342,6 +2467,217 @@ int mtxfile_reorder_metis(
         }
     } else {
         err = metis_partgraph(
+            num_parts, num_rows, num_columns, size,
+            idxstride, 1, rowidx, idxstride, 1, colidx,
+            dstrowpart, dstcolpart, objval, verbose);
+        if (err) {
+            free(dstcolpart); free(dstrowpart);
+            return err;
+        }
+    }
+
+    /* 3. allocate storage for permutations and inverse permutations */
+    bool alloc_rowperm = !rowperm;
+    if (alloc_rowperm) {
+        rowperm = malloc(num_rows * sizeof(int));
+        if (!rowperm) {
+            free(dstcolpart); free(dstrowpart);
+            return MTX_ERR_ERRNO;
+        }
+    }
+    bool alloc_rowperminv = !rowperminv;
+    if (alloc_rowperminv) {
+        rowperminv = malloc(num_rows * sizeof(int));
+        if (!rowperminv) {
+            if (alloc_rowperm) free(rowperm);
+            free(dstcolpart); free(dstrowpart);
+            return MTX_ERR_ERRNO;
+        }
+    }
+    bool alloc_colperm = !square && !colperm;
+    if (alloc_colperm) {
+        colperm = malloc(num_columns * sizeof(int));
+        if (!colperm) {
+            if (alloc_rowperminv) free(rowperminv);
+            if (alloc_rowperm) free(rowperm);
+            free(dstcolpart); free(dstrowpart);
+            return MTX_ERR_ERRNO;
+        }
+    }
+    bool alloc_colperminv = !square && !colperminv;
+    if (alloc_colperminv) {
+        colperminv = malloc(num_columns * sizeof(int));
+        if (!colperminv) {
+            if (alloc_colperm) free(colperm);
+            if (alloc_rowperminv) free(rowperminv);
+            if (alloc_rowperm) free(rowperm);
+            free(dstcolpart); free(dstrowpart);
+            return MTX_ERR_ERRNO;
+        }
+    }
+
+    int64_t * rowpartptr = malloc((num_parts+1) * sizeof(int64_t));
+    if (!rowpartptr) {
+        if (alloc_colperminv) free(colperminv);
+        if (alloc_colperm) free(colperm);
+        if (alloc_rowperminv) free(rowperminv);
+        if (alloc_rowperm) free(rowperm);
+        free(dstcolpart); free(dstrowpart);
+        return MTX_ERR_ERRNO;
+    }
+    int64_t * colpartptr = NULL;
+    if (!square) {
+        colpartptr = malloc((num_parts+1) * sizeof(int64_t));
+        if (!colpartptr) {
+            free(rowpartptr);
+            if (alloc_colperminv) free(colperminv);
+            if (alloc_colperm) free(colperm);
+            if (alloc_rowperminv) free(rowperminv);
+            if (alloc_rowperm) free(rowperm);
+            free(dstcolpart); free(dstrowpart);
+            return MTX_ERR_ERRNO;
+        }
+    }
+
+    /* 4. reorder the graph */
+    for (int p = 0; p <= num_parts; p++) rowpartptr[p] = 0;
+    for (int64_t i = 0; i < num_rows; i++) rowpartptr[dstrowpart[i]+1]++;
+    for (int p = 0; p < num_parts; p++) rowpartptr[p+1] += rowpartptr[p];
+    for (int64_t i = 0; i < num_rows; i++) { rowperm[i] = rowpartptr[dstrowpart[i]]++; rowperminv[rowperm[i]] = i; }
+    for (int p = num_parts; p > 0; p--) rowpartptr[p] = rowpartptr[p-1];
+    rowpartptr[0] = 0;
+    if (rowpartsizes) {
+        for (int p = 0; p < num_parts; p++)
+            rowpartsizes[p] = rowpartptr[p+1] - rowpartptr[p];
+    }
+    if (!square) {
+        for (int p = 0; p <= num_parts; p++) colpartptr[p] = 0;
+        for (int64_t i = 0; i < num_columns; i++) colpartptr[dstcolpart[i]+1]++;
+        for (int p = 0; p < num_parts; p++) colpartptr[p+1] += colpartptr[p];
+        for (int64_t i = 0; i < num_columns; i++) { colperm[i] = colpartptr[dstcolpart[i]]++; colperminv[colperm[i]] = i; }
+        for (int p = num_parts; p > 0; p--) colpartptr[p] = colpartptr[p-1];
+        colpartptr[0] = 0;
+        if (colpartsizes) {
+            for (int p = 0; p < num_parts; p++)
+                colpartsizes[p] = colpartptr[p+1] - colpartptr[p];
+        }
+    }
+
+    free(colpartptr); free(rowpartptr);
+    free(dstcolpart); free(dstrowpart);
+
+    /* add one to shift from 0-based to 1-based indexing */
+    for (int i = 0; i < num_rows; i++) { rowperm[i]++; rowperminv[i]++; }
+    if (!square) for (int i = 0; i < num_columns; i++) { colperm[i]++; colperminv[i]++; }
+
+    /* 5. Permute the matrix. */
+    if (permute) {
+        err = mtxfile_permute(mtxfile, rowperm, square ? rowperm : colperm);
+        if (err) {
+            if (alloc_colperminv) free(colperminv);
+            if (alloc_colperm) free(colperm);
+            if (alloc_rowperminv) free(rowperminv);
+            if (alloc_rowperm) free(rowperm);
+            return err;
+        }
+    }
+
+    if (alloc_colperminv) free(colperminv);
+    if (alloc_colperm) free(colperm);
+    if (alloc_rowperminv) free(rowperminv);
+    if (alloc_rowperm) free(rowperm);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxfile_reorder_scotch()’ reorders the rows and columns of a sparse
+ * matrix based on a graph partitioning performed with SCOTCH.
+ *
+ * For a square matrix, the reordering algorithm is carried out on the
+ * adjacency matrix of the symmetrisation ‘A+A'’, where ‘A'’ denotes
+ * the transpose of ‘A’. For a rectangular matrix, the reordering is
+ * carried out on a bipartite graph formed by the matrix rows and
+ * columns. The adjacency matrix ‘B’ of the bipartite graph is square
+ * and symmetric and takes the form of a 2-by-2 block matrix where ‘A’
+ * is placed in the upper right corner and ‘A'’ is placed in the lower
+ * left corner:
+ *
+ *     ⎡  0   A ⎤
+ * B = ⎢        ⎥.
+ *     ⎣  A'  0 ⎦
+ *
+ * The reordering is symmetric if the matrix is square, and
+ * unsymmetric otherwise.
+ *
+ * If successful, this function returns ‘MTX_SUCCESS’, and the rows
+ * and columns of ‘mtxfile’ have been reordered. If ‘rowperm’ is not
+ * ‘NULL’, then it must point to an array that is large enough to hold
+ * one ‘int’ for each row of the matrix. In this case, the array is
+ * used to store the permutation for reordering the matrix
+ * rows. Similarly, ‘colperm’ is used to store the permutation for
+ * reordering the matrix columns.
+ *
+ * If it is not ‘NULL’, then ‘objval’ is used to store the value of
+ * the objective function minimized by the partitioner, which, by
+ * default, is the edge-cut of the partitioning solution.
+ */
+int mtxfile_reorder_scotch(
+    struct mtxfile * mtxfile,
+    int * rowperm,
+    int * rowperminv,
+    int * colperm,
+    int * colperminv,
+    bool permute,
+    bool * symmetric_permutation,
+    int num_parts,
+    int * rowpartsizes,
+    int * colpartsizes,
+    int64_t * objval,
+    int verbose)
+{
+    int err;
+    int64_t num_rows = mtxfile->size.num_rows;
+    int64_t num_columns = mtxfile->size.num_columns;
+    int64_t size = mtxfile->datasize;
+    bool square = num_rows == num_columns;
+    bool symmetric_pattern = square && (
+        mtxfile->header.symmetry == mtxfile_symmetric ||
+        mtxfile->header.symmetry == mtxfile_skew_symmetric ||
+        mtxfile->header.symmetry == mtxfile_hermitian);
+
+    if (symmetric_permutation) *symmetric_permutation = square;
+    if (mtxfile->header.object != mtxfile_matrix)
+        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+    if (mtxfile->header.format != mtxfile_coordinate)
+        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
+
+    /* 1. obtain row and column offsets */
+    int idxstride;
+    int64_t * rowidx;
+    int64_t * colidx;
+    err = mtxfiledata_rowcolidxptr(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision,
+        &idxstride, &rowidx, &colidx);
+    if (err) return err;
+
+    int * dstrowpart = malloc(num_rows * sizeof(int));
+    if (!dstrowpart) return MTX_ERR_ERRNO;
+    int * dstcolpart = malloc(num_columns * sizeof(int));
+    if (!dstrowpart) { free(dstrowpart); return MTX_ERR_ERRNO; }
+
+    /* 2. partition the graph */
+    if (symmetric_pattern) {
+        err = scotch_partgraphsym(
+            num_parts, num_rows, size,
+            idxstride, 1, rowidx, idxstride, 1, colidx,
+            dstrowpart, objval, verbose);
+        if (err) {
+            free(dstcolpart); free(dstrowpart);
+            return err;
+        }
+    } else {
+        err = scotch_partgraph(
             num_parts, num_rows, num_columns, size,
             idxstride, 1, rowidx, idxstride, 1, colidx,
             dstrowpart, dstcolpart, objval, verbose);
@@ -2839,10 +3175,10 @@ int mtxfile_reorder_rcm(
  * ‘symmetric’ is ‘true’ then ‘rowperm’ and ‘colperm’ are identical,
  * and only one of them is needed.
  *
- * If ‘ordering’ is ‘mtxfile_metis’ and ‘objval’ is not ‘NULL’, then
- * it is used to store the value of the objective function minimized
- * by the partitioner, which, by default, is the edge-cut of the
- * partitioning solution.
+ * If ‘ordering’ is ‘mtxfile_metis’ or ‘mtxfile_scotch’ and ‘objval’
+ * is not ‘NULL’, then it is used to store the value of the objective
+ * function minimized by the partitioner, which, by default, is the
+ * edge-cut of the partitioning solution.
  */
 int mtxfile_reorder(
     struct mtxfile * mtxfile,
@@ -2897,6 +3233,11 @@ int mtxfile_reorder(
             permute, symmetric, verbose);
     } else if (ordering == mtxfile_metis) {
         return mtxfile_reorder_metis(
+            mtxfile, rowperm, rowperminv, colperm, colperminv,
+            permute, symmetric, nparts, rowpartsizes, colpartsizes,
+            objval, verbose);
+    } else if (ordering == mtxfile_scotch) {
+        return mtxfile_reorder_scotch(
             mtxfile, rowperm, rowperminv, colperm, colperminv,
             permute, symmetric, nparts, rowpartsizes, colpartsizes,
             objval, verbose);

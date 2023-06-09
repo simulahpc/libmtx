@@ -1,6 +1,6 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2022 James D. Trotter
+ * Copyright (C) 2023 James D. Trotter
  *
  * Libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-02
+ * Last modified: 2023-06-09
  *
  * Error handling.
  */
@@ -133,6 +133,8 @@ const char * mtxstrerror(
         return "libpng not supported; please rebuild with libpng support";
     case MTX_ERR_METIS_NOT_SUPPORTED:
         return "METIS not supported; please rebuild with METIS support";
+    case MTX_ERR_SCOTCH_NOT_SUPPORTED:
+        return "SCOTCH not supported; please rebuild with SCOTCH support";
     case MTX_ERR_MPI:
         return "MPI error";
     case MTX_ERR_MPI_COLLECTIVE:
@@ -149,6 +151,8 @@ const char * mtxstrerror(
 #else
         return "METIS: value too large for defined data type";
 #endif
+    case MTX_ERR_SCOTCH: return "SCOTCH: error";
+    case MTX_ERR_SCOTCH_EOVERFLOW: return "SCOTCH: value too large for defined data type";
     case MTX_ERR_EOF:
         if (errno) return strerror(errno);
         else return "end of file";

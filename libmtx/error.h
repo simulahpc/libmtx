@@ -1,6 +1,6 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2022 James D. Trotter
+ * Copyright (C) 2023 James D. Trotter
  *
  * Libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-10-08
+ * Last modified: 2023-06-09
  *
  * Error handling.
  */
@@ -49,6 +49,7 @@ enum mtxerror
     MTX_ERR_BLAS_NOT_SUPPORTED,       /* BLAS not supported */
     MTX_ERR_LIBPNG_NOT_SUPPORTED,     /* libpng not supported */
     MTX_ERR_METIS_NOT_SUPPORTED,      /* METIS not supported */
+    MTX_ERR_SCOTCH_NOT_SUPPORTED,     /* SCOTCH not supported */
     MTX_ERR_MPI,                      /* MPI error */
     MTX_ERR_MPI_COLLECTIVE,           /* MPI collective error */
     MTX_ERR_MPI_NOT_INITIALIZED,      /* MPI not initialized */
@@ -57,6 +58,8 @@ enum mtxerror
     MTX_ERR_METIS_MEMORY,             /* METIS: cannot allocate memory */
     MTX_ERR_METIS,                    /* METIS: error */
     MTX_ERR_METIS_EOVERFLOW,          /* METIS: value too large for defined data type */
+    MTX_ERR_SCOTCH,                   /* SCOTCH: error */
+    MTX_ERR_SCOTCH_EOVERFLOW,         /* SCOTCH: value too large for defined data type */
     MTX_ERR_EOF,                      /* unexpected end-of-file */
     MTX_ERR_LINE_TOO_LONG,            /* line exceeds maximum length */
     MTX_ERR_INVALID_MTX_HEADER,       /* invalid Matrix Market header */
