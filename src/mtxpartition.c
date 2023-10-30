@@ -148,7 +148,7 @@ static void program_options_print_help(
     fprintf(f, "\n");
     fprintf(f, " Options for partitioning are:\n");
     fprintf(f, "  --part-type=TYPE\tmethod of partitioning: ‘nonzeros’ (default),\n");
-    fprintf(f, "\t\t\t‘rows’, ‘columns’, ‘2d’ or ‘metis’.\n");
+    fprintf(f, "\t\t\t‘rows’, ‘columns’, ‘2d’, ‘metis’ or ‘scotch’.\n");
     fprintf(f, "  --nz-parts=N\t\tnumber of parts to use when partitioning nonzeros.\n");
     fprintf(f, "  --nz-part-type=TYPE\tmethod of partitioning nonzeros if --part-type=nonzeros:\n");
     fprintf(f, "\t\t\t‘block’ (default), ‘cyclic’ or ‘block-cyclic’.\n");
@@ -517,7 +517,9 @@ int main(int argc, char *argv[])
         num_parts = args.num_column_parts;
     } else if (args.matrixparttype == mtx_matrixparttype_2d) {
         num_parts = args.num_row_parts*args.num_column_parts;
-    } else if (args.matrixparttype == mtx_matrixparttype_metis) {
+    } else if (args.matrixparttype == mtx_matrixparttype_metis ||
+               args.matrixparttype == mtx_matrixparttype_scotch)
+    {
         num_parts = args.num_nz_parts;
     } else {
         if (args.verbose > 0) fprintf(diagf, "\n");
@@ -616,7 +618,8 @@ int main(int argc, char *argv[])
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
         fprintf(diagf, "%'.6f seconds", timespec_duration(t0, t1));
-        if (args.matrixparttype == mtx_matrixparttype_metis)
+        if (args.matrixparttype == mtx_matrixparttype_metis ||
+            args.matrixparttype == mtx_matrixparttype_scotch)
             fprintf(diagf, ", edge-cut: %'"PRId64, objval);
         fprintf(diagf, "\n");
     }
