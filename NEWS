@@ -1,5 +1,9 @@
 * Noteworthy changes in the next release
 
+  ...
+
+* Noteworthy changes in release 0.5.0 (2023-10-30)
+
   This version adds support for sparse matrix reordering using SCOTCH
   as the underlying graph partitioner.
 
