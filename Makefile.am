@@ -242,7 +242,7 @@ mtxtranspose_SOURCES = src/mtxtranspose.c src/parse.c src/parse.h
 if HAVE_LIBPNG
 bin_PROGRAMS += mtxspy
 mtxspy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS) $(LIBPNG_CPPFLAGS)
-mtxspy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS) $(LIBPNG_LIBS)
+mtxspy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(BLAS_LDFLAGS) $(LIBPNG_LDFLAGS) $(LIBPNG_LIBS) 
 mtxspy_SOURCES = src/mtxspy.c src/parse.c src/parse.h
 endif
 
